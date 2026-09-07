@@ -36,7 +36,7 @@ export function getElectricalRecordPage(params: PageParam) {
 /** 查询电气安全检测详情 */
 export function getElectricalRecord(id: number) {
   return requestClient.get<MesSetElectricalRecordApi.ElectricalRecord>(
-    `%s/get?id=${id}`,
+    `/mes/safety-env/electrical-record/get?id=${id}`,
   );
 }
 

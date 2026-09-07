@@ -34,7 +34,7 @@ export function getHazardousWastePage(params: PageParam) {
 /** 查询危险废物管理详情 */
 export function getHazardousWaste(id: number) {
   return requestClient.get<MesSetHazardousWasteApi.HazardousWaste>(
-    `%s/get?id=${id}`,
+    `/mes/safety-env/hazardous-waste/get?id=${id}`,
   );
 }
 

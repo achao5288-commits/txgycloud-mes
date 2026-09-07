@@ -36,7 +36,7 @@ export function getExhaustGasPage(params: PageParam) {
 /** 查询废气排放检测详情 */
 export function getExhaustGas(id: number) {
   return requestClient.get<MesSetExhaustGasApi.ExhaustGas>(
-    `%s/get?id=${id}`,
+    `/mes/safety-env/exhaust-gas/get?id=${id}`,
   );
 }
 

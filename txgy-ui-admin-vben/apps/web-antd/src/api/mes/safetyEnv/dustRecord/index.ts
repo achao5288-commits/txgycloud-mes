@@ -40,7 +40,7 @@ export function getDustRecordPage(params: PageParam) {
 /** 查询粉尘浓度检测详情 */
 export function getDustRecord(id: number) {
   return requestClient.get<MesSetDustRecordApi.DustRecord>(
-    `%s/get?id=${id}`,
+    `/mes/safety-env/dust-record/get?id=${id}`,
   );
 }
 

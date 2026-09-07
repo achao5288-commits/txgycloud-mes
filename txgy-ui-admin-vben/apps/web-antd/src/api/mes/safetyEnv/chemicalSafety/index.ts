@@ -35,7 +35,7 @@ export function getChemicalSafetyPage(params: PageParam) {
 /** 查询危化品安全管理详情 */
 export function getChemicalSafety(id: number) {
   return requestClient.get<MesSetChemicalSafetyApi.ChemicalSafety>(
-    `%s/get?id=${id}`,
+    `/mes/safety-env/chemical-safety/get?id=${id}`,
   );
 }
 

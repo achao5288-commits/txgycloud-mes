@@ -38,7 +38,7 @@ export function getGasRecordPage(params: PageParam) {
 /** 查询气体检测记录详情 */
 export function getGasRecord(id: number) {
   return requestClient.get<MesSetGasRecordApi.GasRecord>(
-    `%s/get?id=${id}`,
+    `/mes/safety-env/gas-record/get?id=${id}`,
   );
 }
 

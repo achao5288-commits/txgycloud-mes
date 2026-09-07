@@ -33,7 +33,7 @@ export function getStandardPage(params: PageParam) {
 /** 查询检测标准管理详情 */
 export function getStandard(id: number) {
   return requestClient.get<MesSetStandardApi.Standard>(
-    `%s/get?id=${id}`,
+    `/mes/safety-env/standard/get?id=${id}`,
   );
 }
 

@@ -35,7 +35,7 @@ export function getEmissionOutletPage(params: PageParam) {
 /** 查询排放口管理详情 */
 export function getEmissionOutlet(id: number) {
   return requestClient.get<MesSetEmissionOutletApi.EmissionOutlet>(
-    `%s/get?id=${id}`,
+    `/mes/safety-env/emission-outlet/get?id=${id}`,
   );
 }
 

@@ -32,7 +32,7 @@ export function getPollutionPermitPage(params: PageParam) {
 /** 查询排污许可管理详情 */
 export function getPollutionPermit(id: number) {
   return requestClient.get<MesSetPollutionPermitApi.PollutionPermit>(
-    `%s/get?id=${id}`,
+    `/mes/safety-env/pollution-permit/get?id=${id}`,
   );
 }
 

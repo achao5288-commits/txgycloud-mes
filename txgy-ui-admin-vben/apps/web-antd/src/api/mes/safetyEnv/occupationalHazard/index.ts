@@ -38,7 +38,7 @@ export function getOccupationalHazardPage(params: PageParam) {
 /** 查询职业病危害检测详情 */
 export function getOccupationalHazard(id: number) {
   return requestClient.get<MesSetOccupationalHazardApi.OccupationalHazard>(
-    `%s/get?id=${id}`,
+    `/mes/safety-env/occupational-hazard/get?id=${id}`,
   );
 }
 

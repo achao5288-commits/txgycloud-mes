@@ -32,7 +32,7 @@ export function getFireCheckPage(params: PageParam) {
 /** 查询消防设施检测详情 */
 export function getFireCheck(id: number) {
   return requestClient.get<MesSetFireCheckApi.FireCheck>(
-    `%s/get?id=${id}`,
+    `/mes/safety-env/fire-check/get?id=${id}`,
   );
 }
 

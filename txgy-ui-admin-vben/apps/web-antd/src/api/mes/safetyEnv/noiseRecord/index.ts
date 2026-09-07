@@ -42,7 +42,7 @@ export function getNoiseRecordPage(params: PageParam) {
 /** 查询噪声检测记录详情 */
 export function getNoiseRecord(id: number) {
   return requestClient.get<MesSetNoiseRecordApi.NoiseRecord>(
-    `%s/get?id=${id}`,
+    `/mes/safety-env/noise-record/get?id=${id}`,
   );
 }
 

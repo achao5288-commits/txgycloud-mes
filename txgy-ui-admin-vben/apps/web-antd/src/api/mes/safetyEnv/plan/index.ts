@@ -33,7 +33,7 @@ export function getPlanPage(params: PageParam) {
 /** 查询检测计划管理详情 */
 export function getPlan(id: number) {
   return requestClient.get<MesSetPlanApi.Plan>(
-    `%s/get?id=${id}`,
+    `/mes/safety-env/plan/get?id=${id}`,
   );
 }
 

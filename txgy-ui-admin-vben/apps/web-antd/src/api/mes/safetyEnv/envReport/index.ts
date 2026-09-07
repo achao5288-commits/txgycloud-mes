@@ -37,7 +37,7 @@ export function getEnvReportPage(params: PageParam) {
 /** 查询环保检测报告详情 */
 export function getEnvReport(id: number) {
   return requestClient.get<MesSetEnvReportApi.EnvReport>(
-    `%s/get?id=${id}`,
+    `/mes/safety-env/env-report/get?id=${id}`,
   );
 }
 

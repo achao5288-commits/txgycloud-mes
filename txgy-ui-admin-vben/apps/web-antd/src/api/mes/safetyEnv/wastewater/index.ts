@@ -37,7 +37,7 @@ export function getWastewaterPage(params: PageParam) {
 /** 查询废水排放检测详情 */
 export function getWastewater(id: number) {
   return requestClient.get<MesSetWastewaterApi.Wastewater>(
-    `%s/get?id=${id}`,
+    `/mes/safety-env/wastewater/get?id=${id}`,
   );
 }
 

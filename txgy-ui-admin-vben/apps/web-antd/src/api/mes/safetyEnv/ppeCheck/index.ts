@@ -38,7 +38,7 @@ export function getPpeCheckPage(params: PageParam) {
 /** 查询PPE防护检查详情 */
 export function getPpeCheck(id: number) {
   return requestClient.get<MesSetPpeCheckApi.PpeCheck>(
-    `%s/get?id=${id}`,
+    `/mes/safety-env/ppe-check/get?id=${id}`,
   );
 }
 

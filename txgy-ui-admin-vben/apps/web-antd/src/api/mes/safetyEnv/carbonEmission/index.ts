@@ -34,7 +34,7 @@ export function getCarbonEmissionPage(params: PageParam) {
 /** 查询碳排放核算详情 */
 export function getCarbonEmission(id: number) {
   return requestClient.get<MesSetCarbonEmissionApi.CarbonEmission>(
-    `%s/get?id=${id}`,
+    `/mes/safety-env/carbon-emission/get?id=${id}`,
   );
 }
 
