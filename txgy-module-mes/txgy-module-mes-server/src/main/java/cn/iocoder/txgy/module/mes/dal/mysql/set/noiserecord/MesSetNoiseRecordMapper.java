@@ -15,16 +15,19 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface MesSetNoiseRecordMapper extends BaseMapperX<MesSetNoiseRecordDO> {
 
-    default PageResult<MesSetNoiseRecordDO> selectPage(MesSetNoiseRecordPageReqVO reqVO) {
-        return selectPage(reqVO, new LambdaQueryWrapperX<MesSetNoiseRecordDO>()
-                .eqIfPresent(MesSetNoiseRecordDO::getSourceType, reqVO.getSourceType())
-                .eqIfPresent(MesSetNoiseRecordDO::getResult, reqVO.getResult())
-                .betweenIfPresent(MesSetNoiseRecordDO::getInspectTime, reqVO.getInspectTime())
-                .orderByDesc(MesSetNoiseRecordDO::getId));
+    default MesSetNoiseRecordDO selectByRecordNo(String record_no) {
+        return selectOne(MesSetNoiseRecordDO::getRecordNo, record_no);
     }
 
-    default MesSetNoiseRecordDO selectByRecordNo(String recordNo) {
-        return selectOne(MesSetNoiseRecordDO::getRecordNo, recordNo);
+    default PageResult<MesSetNoiseRecordDO> selectPage(MesSetNoiseRecordPageReqVO reqVO) {
+        LambdaQueryWrapperX<MesSetNoiseRecordDO> query = new LambdaQueryWrapperX<MesSetNoiseRecordDO>()
+                .likeIfPresent(MesSetNoiseRecordDO::getRecordNo, reqVO.getRecordNo())
+                .likeIfPresent(MesSetNoiseRecordDO::getSourceType, reqVO.getSourceType())
+                .likeIfPresent(MesSetNoiseRecordDO::getLocation, reqVO.getLocation())
+                .eqIfPresent(MesSetNoiseRecordDO::getCollectionMode, reqVO.getCollectionMode())
+                .eqIfPresent(MesSetNoiseRecordDO::getResult, reqVO.getResult())
+                .orderByDesc(MesSetNoiseRecordDO::getId);
+        return selectPage(reqVO, query);
     }
 
 }

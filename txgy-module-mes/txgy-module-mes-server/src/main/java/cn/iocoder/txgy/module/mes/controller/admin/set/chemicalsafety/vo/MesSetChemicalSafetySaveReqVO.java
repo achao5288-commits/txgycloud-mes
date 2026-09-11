@@ -4,57 +4,55 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-
 import java.time.LocalDateTime;
 
-@Schema(description = "管理后台 - MES 安全环保检测-危化品安全巡查记录 新增/修改 Request VO")
+@Schema(description = "管理后台 - MES 安全环保检测-危化品安全检查 新增/修改 Request VO")
 @Data
 public class MesSetChemicalSafetySaveReqVO {
 
     @Schema(description = "编号", example = "1")
     private Long id;
 
-    @Schema(description = "记录编号", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "记录编号")
     @NotEmpty(message = "记录编号不能为空")
     private String recordNo;
 
-    @Schema(description = "关联检测计划编号", example = "1")
+    @Schema(description = "关联检测计划编号")
     private Long planId;
 
-    @Schema(description = "危化品代码（CAS号等）")
+    @Schema(description = "危化品编码")
     private String chemicalCode;
 
-    @Schema(description = "危化品名称", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "危化品名称")
     @NotEmpty(message = "危化品名称不能为空")
     private String chemicalName;
 
-    @Schema(description = "储存地点")
+    @Schema(description = "存储地点")
     private String storageLocation;
 
-    @Schema(description = "标识标签齐全：1-是 0-否", example = "1")
-    private Integer labelOk;
+    @Schema(description = "标识完整性：1是/0否")
+    private Boolean labelOk;
 
-    @Schema(description = "MSDS（安全技术说明书）齐全：1-是 0-否", example = "1")
-    private Integer msdsOk;
+    @Schema(description = "MSDS有效性：1是/0否")
+    private Boolean msdsOk;
 
-    @Schema(description = "储存条件符合要求：1-是 0-否", example = "1")
-    private Integer storageOk;
+    @Schema(description = "储存条件(温湿度/通风)合格：1是/0否")
+    private Boolean storageOk;
 
-    @Schema(description = "分类存放/隔离存放合规：1-是 0-否", example = "1")
-    private Integer separationOk;
+    @Schema(description = "禁忌物分离合格：1是/0否")
+    private Boolean separationOk;
 
-    @Schema(description = "结果：PASS/FAIL", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotEmpty(message = "结果不能为空")
+    @Schema(description = "结果：PASS/FAIL")
     private String result;
 
     @Schema(description = "异常/不合格描述")
     private String problemDesc;
 
-    @Schema(description = "巡查人")
+    @Schema(description = "检测人")
     private String inspector;
 
-    @Schema(description = "巡查时间", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotNull(message = "巡查时间不能为空")
+    @Schema(description = "检测时间")
+    @NotNull(message = "检测时间不能为空")
     private LocalDateTime inspectTime;
 
     @Schema(description = "备注")

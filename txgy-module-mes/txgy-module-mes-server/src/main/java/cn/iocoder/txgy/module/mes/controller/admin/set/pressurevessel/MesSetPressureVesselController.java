@@ -19,53 +19,54 @@ import org.springframework.web.bind.annotation.*;
 
 import static cn.iocoder.txgy.framework.common.pojo.CommonResult.success;
 
-@Tag(name = "管理后台 - MES 安全环保检测-压力容器检测记录")
+@Tag(name = "管理后台 - MES 安全环保检测-压力容器检查")
 @RestController
 @RequestMapping("/mes/safety-env/pressure-vessel")
 @Validated
 public class MesSetPressureVesselController {
 
     @Resource
-    private MesSetPressureVesselService pressureVesselService;
+    private MesSetPressureVesselService pressurevesselService;
 
     @PostMapping("/create")
-    @Operation(summary = "创建压力容器检测记录")
+    @Operation(summary = "创建压力容器检查")
     @PreAuthorize("@ss.hasPermission('mes:set-pressure-vessel:create')")
     public CommonResult<Long> createPressureVessel(@Valid @RequestBody MesSetPressureVesselSaveReqVO createReqVO) {
-        return success(pressureVesselService.createPressureVessel(createReqVO));
+        return success(pressurevesselService.createPressureVessel(createReqVO));
     }
 
     @PutMapping("/update")
-    @Operation(summary = "更新压力容器检测记录")
+    @Operation(summary = "更新压力容器检查")
     @PreAuthorize("@ss.hasPermission('mes:set-pressure-vessel:update')")
     public CommonResult<Boolean> updatePressureVessel(@Valid @RequestBody MesSetPressureVesselSaveReqVO updateReqVO) {
-        pressureVesselService.updatePressureVessel(updateReqVO);
+        pressurevesselService.updatePressureVessel(updateReqVO);
         return success(true);
     }
 
     @DeleteMapping("/delete")
-    @Operation(summary = "删除压力容器检测记录")
+    @Operation(summary = "删除压力容器检查")
     @Parameter(name = "id", description = "编号", required = true)
     @PreAuthorize("@ss.hasPermission('mes:set-pressure-vessel:delete')")
     public CommonResult<Boolean> deletePressureVessel(@RequestParam("id") Long id) {
-        pressureVesselService.deletePressureVessel(id);
+        pressurevesselService.deletePressureVessel(id);
         return success(true);
     }
 
     @GetMapping("/get")
-    @Operation(summary = "获得压力容器检测记录")
-    @Parameter(name = "id", description = "编号", required = true, example = "1024")
+    @Operation(summary = "获得压力容器检查")
+    @Parameter(name = "id", description = "编号", required = true, example = "1")
     @PreAuthorize("@ss.hasPermission('mes:set-pressure-vessel:query')")
     public CommonResult<MesSetPressureVesselRespVO> getPressureVessel(@RequestParam("id") Long id) {
-        MesSetPressureVesselDO pressureVessel = pressureVesselService.getPressureVessel(id);
-        return success(BeanUtils.toBean(pressureVessel, MesSetPressureVesselRespVO.class));
+        MesSetPressureVesselDO obj = pressurevesselService.getPressureVessel(id);
+        return success(BeanUtils.toBean(obj, MesSetPressureVesselRespVO.class));
     }
 
     @GetMapping("/page")
-    @Operation(summary = "获得压力容器检测记录分页")
+    @Operation(summary = "获得压力容器检查分页")
     @PreAuthorize("@ss.hasPermission('mes:set-pressure-vessel:query')")
-    public CommonResult<PageResult<MesSetPressureVesselRespVO>> getPressureVesselPage(@Valid MesSetPressureVesselPageReqVO pageReqVO) {
-        PageResult<MesSetPressureVesselDO> pageResult = pressureVesselService.getPressureVesselPage(pageReqVO);
+    public CommonResult<PageResult<MesSetPressureVesselRespVO>> getPressureVesselPage(
+            @Valid MesSetPressureVesselPageReqVO pageReqVO) {
+        PageResult<MesSetPressureVesselDO> pageResult = pressurevesselService.getPressureVesselPage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, MesSetPressureVesselRespVO.class));
     }
 

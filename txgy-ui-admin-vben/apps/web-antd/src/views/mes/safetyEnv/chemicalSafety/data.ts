@@ -2,25 +2,21 @@ import type { VbenFormSchema } from '#/adapter/form';
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { MesSetChemicalSafetyApi } from '#/api/mes/safetyEnv/chemicalSafety';
 
-import { getRangePickerDefaultProps } from '#/utils';
-
-/** 检测结论 PASS/FAIL */
-const RESULT_OPTIONS = [
-  { label: '合格', value: 'PASS' },
-  { label: '不合格', value: 'FAIL' },
+/** 结果：PASS/FAIL选项 */
+export const RESULT_OPTIONS = [
+  { label: '超标', value: 'FAIL' },
+  { label: '达标', value: 'PASS' },
 ];
 
-/** 新增/修改危化品安全管理的表单 */
-export function useFormSchema(): VbenFormSchema[] {
+/** 结果：PASS/FAIL文案 */
+export const RESULT_MAP: Record<string, { text: string; color: string }> = {
+  FAIL: { text: '超标', color: 'success' },
+  PASS: { text: '达标', color: 'error' },
+};
+
+/** 搜索表单 */
+export function useGridFormSchema(): VbenFormSchema[] {
   return [
-    {
-      fieldName: 'id',
-      component: 'Input',
-      dependencies: {
-        triggerFields: [''],
-        show: () => false,
-      },
-    },
     {
       fieldName: 'recordNo',
       label: '记录编号',
@@ -29,15 +25,14 @@ export function useFormSchema(): VbenFormSchema[] {
         allowClear: true,
         placeholder: '请输入记录编号',
       },
-      rules: 'required',
     },
     {
       fieldName: 'chemicalCode',
-      label: '危化品代码',
+      label: '危化品编码',
       component: 'Input',
       componentProps: {
         allowClear: true,
-        placeholder: '请输入危化品代码',
+        placeholder: '请输入危化品编码',
       },
     },
     {
@@ -48,95 +43,160 @@ export function useFormSchema(): VbenFormSchema[] {
         allowClear: true,
         placeholder: '请输入危化品名称',
       },
+    },
+    {
+      fieldName: 'result',
+      label: '结果：PASS/FAIL',
+      component: 'Select',
+      componentProps: {
+        allowClear: true,
+        options: RESULT_OPTIONS,
+        placeholder: '请选择',
+      },
+    },
+  ];
+}
+
+/** 列表字段 */
+export function useGridColumns(): VxeTableGridOptions<MesSetChemicalSafetyApi.ChemicalSafety>['columns'] {
+  return [
+    { field: 'recordNo', title: '记录编号', minWidth: 170, showOverflow: true },
+    { field: 'chemicalCode', title: '危化品编码', minWidth: 170, showOverflow: true },
+    { field: 'chemicalName', title: '危化品名称', minWidth: 170, showOverflow: true },
+    { field: 'storageLocation', title: '存储地点', minWidth: 170, showOverflow: true },
+    { field: 'labelOk', title: '标识完整性：1是/0否', width: 120 },
+    { field: 'msdsOk', title: 'MSDS有效性：1是/0否', width: 120 },
+    { field: 'storageOk', title: '储存条件(温湿度/通风)合格：1是/0否', width: 120 },
+    { field: 'result', title: '结果：PASS/FAIL', minWidth: 170, showOverflow: true, slots: { default: 'result' } },
+    { field: 'inspector', title: '检测人', minWidth: 170, showOverflow: true },
+    { field: 'inspectTime', title: '检测时间', width: 120 },
+    {
+      title: '操作',
+      width: 150,
+      fixed: 'right',
+      slots: {
+        default: 'actions',
+      },
+    },
+  ];
+}
+
+/** 新增/编辑表单 */
+export function useFormSchema(): VbenFormSchema[] {
+  return [
+    {
+      fieldName: 'recordNo',
+      label: '记录编号',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入记录编号',
+      },
+      rules: 'required',
+    },
+    {
+      fieldName: 'planId',
+      label: '关联检测计划编号',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入关联检测计划编号',
+      },
+    },
+    {
+      fieldName: 'chemicalCode',
+      label: '危化品编码',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入危化品编码',
+      },
+    },
+    {
+      fieldName: 'chemicalName',
+      label: '危化品名称',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入危化品名称',
+      },
       rules: 'required',
     },
     {
       fieldName: 'storageLocation',
-      label: '储存地点',
+      label: '存储地点',
       component: 'Input',
       componentProps: {
-        allowClear: true,
-        placeholder: '请输入储存地点',
+        placeholder: '请输入存储地点',
       },
     },
     {
       fieldName: 'labelOk',
-      label: '标识标签齐全',
-      component: 'Select',
+      label: '标识完整性：1是/0否',
+      component: 'Switch',
       componentProps: {
-        options: [{ label: "是", value: 1 }, { label: "否", value: 0 }],
-        placeholder: '请选择标识标签齐全',
-        allowClear: true,
+        checkedValue: true,
+        unCheckedValue: false,
       },
     },
     {
       fieldName: 'msdsOk',
-      label: 'MSDS',
-      component: 'Select',
+      label: 'MSDS有效性：1是/0否',
+      component: 'Switch',
       componentProps: {
-        options: [{ label: "是", value: 1 }, { label: "否", value: 0 }],
-        placeholder: '请选择MSDS',
-        allowClear: true,
+        checkedValue: true,
+        unCheckedValue: false,
       },
     },
     {
       fieldName: 'storageOk',
-      label: '储存条件符合要求',
-      component: 'Select',
+      label: '储存条件(温湿度/通风)合格：1是/0否',
+      component: 'Switch',
       componentProps: {
-        options: [{ label: "是", value: 1 }, { label: "否", value: 0 }],
-        placeholder: '请选择储存条件符合要求',
-        allowClear: true,
+        checkedValue: true,
+        unCheckedValue: false,
       },
     },
     {
       fieldName: 'separationOk',
-      label: '分类存放/隔离存放合规',
-      component: 'Select',
+      label: '禁忌物分离合格：1是/0否',
+      component: 'Switch',
       componentProps: {
-        options: [{ label: "是", value: 1 }, { label: "否", value: 0 }],
-        placeholder: '请选择分类存放/隔离存放合规',
-        allowClear: true,
+        checkedValue: true,
+        unCheckedValue: false,
       },
     },
     {
       fieldName: 'result',
-      label: '综合结论',
+      label: '结果：PASS/FAIL',
       component: 'Select',
       componentProps: {
         options: RESULT_OPTIONS,
-        placeholder: '请选择综合结论',
+        placeholder: '请选择',
       },
-      rules: 'selectRequired',
     },
     {
       fieldName: 'problemDesc',
       label: '异常/不合格描述',
       component: 'Textarea',
       componentProps: {
+        rows: 3,
         placeholder: '请输入异常/不合格描述',
-        rows: 2,
       },
-      formItemClass: 'col-span-3',
     },
     {
       fieldName: 'inspector',
-      label: '巡查人',
+      label: '检测人',
       component: 'Input',
       componentProps: {
-        allowClear: true,
-        placeholder: '请输入巡查人',
+        placeholder: '请输入检测人',
       },
     },
     {
       fieldName: 'inspectTime',
-      label: '巡查时间',
+      label: '检测时间',
       component: 'DatePicker',
       componentProps: {
-        format: 'YYYY-MM-DD HH:mm:ss',
-        placeholder: '请选择时间',
         showTime: true,
-        valueFormat: 'x',
+        valueFormat: 'YYYY-MM-DD HH:mm:ss',
+        format: 'YYYY-MM-DD HH:mm:ss',
+        placeholder: '选择时间',
       },
       rules: 'required',
     },
@@ -145,81 +205,8 @@ export function useFormSchema(): VbenFormSchema[] {
       label: '备注',
       component: 'Textarea',
       componentProps: {
+        rows: 3,
         placeholder: '请输入备注',
-        rows: 2,
-      },
-      formItemClass: 'col-span-3',
-    },
-  ];
-}
-
-/** 列表的搜索表单 */
-export function useGridFormSchema(): VbenFormSchema[] {
-  return [
-    {
-      fieldName: 'chemicalCode',
-      label: '危化品代码',
-      component: 'Input',
-      componentProps: {
-        allowClear: true,
-        placeholder: '请输入危化品代码',
-      },
-    },
-    {
-      fieldName: 'chemicalName',
-      label: '危化品名称',
-      component: 'Input',
-      componentProps: {
-        allowClear: true,
-        placeholder: '请输入危化品名称',
-      },
-    },
-    {
-      fieldName: 'storageLocation',
-      label: '储存地点',
-      component: 'Input',
-      componentProps: {
-        allowClear: true,
-        placeholder: '请输入储存地点',
-      },
-    },
-    {
-      fieldName: 'result',
-      label: '结果',
-      component: 'Select',
-      componentProps: {
-        allowClear: true,
-        options: RESULT_OPTIONS,
-        placeholder: '请选择结果',
-      },
-    },
-    {
-      fieldName: 'inspectTime',
-      label: '巡查时间',
-      component: 'RangePicker',
-      componentProps: {
-        ...getRangePickerDefaultProps(),
-      },
-    },
-  ];
-}
-
-/** 列表的字段 */
-export function useGridColumns(): VxeTableGridOptions<MesSetChemicalSafetyApi.ChemicalSafety>['columns'] {
-  return [
-    { field: 'recordNo', title: '记录编号', minWidth: 150 },
-    { field: 'chemicalCode', title: '危化品代码', minWidth: 150 },
-    { field: 'chemicalName', title: '危化品名称', minWidth: 150 },
-    { field: 'storageLocation', title: '储存地点', minWidth: 150 },
-    { field: 'result', title: '综合结论', width: 110, slots: { default: 'result' } },
-    { field: 'inspectTime', title: '巡查时间', width: 180, formatter: 'formatDateTime' },
-    { field: 'inspector', title: '巡查人', minWidth: 150 },
-    {
-      title: '操作',
-      width: 160,
-      fixed: 'right',
-      slots: {
-        default: 'actions',
       },
     },
   ];

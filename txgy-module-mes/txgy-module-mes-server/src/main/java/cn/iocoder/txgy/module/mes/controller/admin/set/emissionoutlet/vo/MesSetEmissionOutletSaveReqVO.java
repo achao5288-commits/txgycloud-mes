@@ -3,7 +3,6 @@ package cn.iocoder.txgy.module.mes.controller.admin.set.emissionoutlet.vo;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
-
 import java.math.BigDecimal;
 
 @Schema(description = "管理后台 - MES 安全环保检测-排放口 新增/修改 Request VO")
@@ -13,16 +12,16 @@ public class MesSetEmissionOutletSaveReqVO {
     @Schema(description = "编号", example = "1")
     private Long id;
 
-    @Schema(description = "排放口编号", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotEmpty(message = "排放口编号不能为空")
+    @Schema(description = "排放口编号(如 DA001/DW001)")
+    @NotEmpty(message = "排放口编号(如 DA001/DW001)不能为空")
     private String outletCode;
 
-    @Schema(description = "排放口名称", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "排放口名称")
     @NotEmpty(message = "排放口名称不能为空")
     private String outletName;
 
-    @Schema(description = "排放类型：GAS/WASTEWATER/NOISE", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotEmpty(message = "排放类型不能为空")
+    @Schema(description = "排放类型：GAS/WASTEWATER/NOISE")
+    @NotEmpty(message = "排放类型：GAS/WASTEWATER/NOISE不能为空")
     private String outletType;
 
     @Schema(description = "主要污染物列表(JSON/CSV文本)")
@@ -50,7 +49,7 @@ public class MesSetEmissionOutletSaveReqVO {
     private String permitLimits;
 
     @Schema(description = "是否重点/国控排放口：1是/0否")
-    private Integer isKeyOutlet;
+    private Boolean isKeyOutlet;
 
     @Schema(description = "状态：ACTIVE/INACTIVE")
     private String status;

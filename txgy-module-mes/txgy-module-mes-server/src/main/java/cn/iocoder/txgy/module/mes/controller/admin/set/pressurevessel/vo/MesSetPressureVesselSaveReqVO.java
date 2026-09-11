@@ -4,43 +4,42 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-@Schema(description = "管理后台 - MES 安全环保检测-压力容器检测记录 新增/修改 Request VO")
+@Schema(description = "管理后台 - MES 安全环保检测-压力容器检查 新增/修改 Request VO")
 @Data
 public class MesSetPressureVesselSaveReqVO {
 
     @Schema(description = "编号", example = "1")
     private Long id;
 
-    @Schema(description = "记录编号", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotEmpty(message = "记录编号不能为空")
+    @Schema(description = "检验记录/报告编号 PV-YYYY-NNN")
+    @NotEmpty(message = "检验记录/报告编号 PV-YYYY-NNN不能为空")
     private String recordNo;
 
-    @Schema(description = "关联检测计划编号", example = "1")
+    @Schema(description = "关联检测计划编号")
     private Long planId;
 
-    @Schema(description = "关联设备编号", requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
-    @NotNull(message = "关联设备编号不能为空")
+    @Schema(description = "关联设备编号(特种设备台账)")
+    @NotNull(message = "关联设备编号(特种设备台账)不能为空")
     private Long deviceId;
 
-    @Schema(description = "压力容器使用登记证号")
+    @Schema(description = "压力容器使用登记证号(特种设备注册代码)")
     private String vesselRegNo;
 
     @Schema(description = "壁厚测定最小壁厚 mm")
     private BigDecimal wallThickness;
 
-    @Schema(description = "无损检测方法：UT/RT/MT/PT")
+    @Schema(description = "无损检测方法：UT/RT/MT/PT(多选逗号分隔)")
     private String ndtMethods;
 
-    @Schema(description = "无损检测结果 JSON 文本")
+    @Schema(description = "无损检测结果JSON文本如{UT:PASS,MT:PASS}")
     private String ndtResults;
 
     @Schema(description = "安全阀校验合格：1是/0否")
-    private Integer safetyValveOk;
+    private Boolean safetyValveOk;
 
     @Schema(description = "耐压试验压力 MPa")
     private BigDecimal pressureTestValue;
@@ -54,21 +53,21 @@ public class MesSetPressureVesselSaveReqVO {
     @Schema(description = "综合结论 PASS/FAIL")
     private String result;
 
-    @Schema(description = "检验机构", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotEmpty(message = "检验机构不能为空")
+    @Schema(description = "检验机构(需资质)")
+    @NotEmpty(message = "检验机构(需资质)不能为空")
     private String inspectOrg;
 
-    @Schema(description = "下次检验日期", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "下次检验日期")
     @NotNull(message = "下次检验日期不能为空")
     private LocalDate nextInspectDate;
 
-    @Schema(description = "检验报告文件 URL")
+    @Schema(description = "检验报告文件URL")
     private String reportFileUrl;
 
     @Schema(description = "检验人")
     private String inspector;
 
-    @Schema(description = "检验时间", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "检验时间")
     @NotNull(message = "检验时间不能为空")
     private LocalDateTime inspectTime;
 

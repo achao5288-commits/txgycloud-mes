@@ -1,7 +1,6 @@
 package cn.iocoder.txgy.module.mes.dal.dataobject.set.envreport;
 
 import cn.iocoder.txgy.framework.mybatis.core.dataobject.BaseDO;
-import com.baomidou.mybatisplus.annotation.KeySequence;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.*;
@@ -15,7 +14,6 @@ import java.time.LocalDateTime;
  * @author OPENLAB BS
  */
 @TableName("mes_set_env_report")
-@KeySequence("mes_set_env_report_seq") // 用于 Oracle、PostgreSQL、Kingbase、DB2、H2 数据库的主键自增。如果是 MySQL 等数据库，可不写。
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
@@ -29,66 +27,82 @@ public class MesSetEnvReportDO extends BaseDO {
      */
     @TableId
     private Long id;
+
     /**
-     * 报告编号
+     * 报告编号 EP-YYYYMMDD-NNN
      */
     private String reportNo;
+
     /**
      * 报告名称
      */
     private String reportName;
+
     /**
-     * 报告类型：MONTHLY(月度)/QUARTERLY(季度)/ANNUAL(年度)/OTHER(其他)
+     * 报告来源：THIRD_PARTY/INTERNAL
      */
     private String reportType;
+
     /**
-     * 报告类别：SELF_MONITOR(自行监测)/COMPLIANCE(合规性)/OTHER(其他)
+     * 类别：EXHAUST_GAS/WASTEWATER/NOISE/SOLID_WASTE/AMBIENT/COMPREHENSIVE等
      */
     private String reportCategory;
+
     /**
-     * 关联报告模板编号
+     * 复用质检报告模板编号
      */
     private Long templateId;
+
     /**
-     * 报告周期开始日期
+     * 报告统计期起
      */
     private LocalDate periodStart;
+
     /**
-     * 报告周期结束日期
+     * 报告统计期止
      */
     private LocalDate periodEnd;
+
     /**
-     * 报告生成日期
+     * 报告日期
      */
     private LocalDate reportDate;
+
     /**
-     * 数据汇总摘要
+     * 检测结果摘要JSON文本
      */
     private String dataSummary;
+
     /**
-     * 报告文件 URL
+     * 报告文件URL(第三方导入PDF)
      */
     private String fileUrl;
+
     /**
-     * 签章文件 URL
+     * 电子签名文件URL
      */
     private String signUrl;
+
     /**
-     * 关联表单编号
+     * 自定义表单配置id
      */
     private Long formId;
+
     /**
-     * 状态：DRAFT(草稿)/SUBMITTED(已提交)/APPROVED(已审批)/REJECTED(已驳回)
+     * 状态：DRAFT/APPROVED/REJECTED/ARCHIVED
      */
     private String status;
+
     /**
-     * 审核人
+     * 审核人(终审)
      */
     private String auditBy;
+
     /**
      * 审核时间
      */
     private LocalDateTime auditTime;
+
     /**
      * 备注
      */

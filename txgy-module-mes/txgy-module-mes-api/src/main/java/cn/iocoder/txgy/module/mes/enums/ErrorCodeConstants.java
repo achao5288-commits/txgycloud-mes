@@ -313,6 +313,15 @@ public interface ErrorCodeConstants {
     ErrorCode WORK_RECORD_NOT_CLOCK_IN = new ErrorCode(1_040_508_001, "当前用户未上工，无法下工");
     ErrorCode WORK_RECORD_ALREADY_CLOCK_IN = new ErrorCode(1_040_508_002, "当前用户已上工，请先下工再操作");
 
+    // ========== MES 生产管理-项目管理（1-040-509-000） ==========
+    ErrorCode PRO_PROJECT_NOT_EXISTS = new ErrorCode(1_040_509_000, "项目不存在");
+    ErrorCode PRO_PROJECT_CODE_DUPLICATE = new ErrorCode(1_040_509_001, "项目编码已存在");
+    ErrorCode PRO_PROJECT_HAS_WORK_ORDERS = new ErrorCode(1_040_509_002, "项目下已关联生产工单，无法删除");
+    ErrorCode PRO_PROJECT_WORK_ORDER_NOT_EXISTS = new ErrorCode(1_040_509_100, "关联的生产工单不存在");
+    ErrorCode PRO_PROJECT_WORK_ORDER_CANCELED = new ErrorCode(1_040_509_101, "已取消的工单不允许挂接项目");
+    ErrorCode PRO_PROJECT_STATUS_CLOSED = new ErrorCode(1_040_509_102, "项目已完成或已取消，不允许挂接生产工单");
+    ErrorCode PRO_PROJECT_STATUS_FORBIDDEN = new ErrorCode(1_040_509_103, "项目状态不允许该操作，请刷新后重试");
+
     // ========== MES 质量管理-质检方案（1-040-600-000） ==========
     ErrorCode QC_TEMPLATE_NOT_EXISTS = new ErrorCode(1_040_600_000, "质检方案不存在");
     ErrorCode QC_TEMPLATE_CODE_DUPLICATE = new ErrorCode(1_040_600_001, "质检方案编号已存在");
@@ -708,78 +717,6 @@ public interface ErrorCodeConstants {
     ErrorCode WM_PACKAGE_HAS_CHILDREN = new ErrorCode(1_040_740_008, "存在子箱，不允许删除");
     ErrorCode WM_PACKAGE_LINE_NOT_EXISTS = new ErrorCode(1_040_740_100, "装箱明细不存在");
 
-    // ========== MES 安全环保检测-检测标准（1-040-800-000） ==========
-    ErrorCode SET_STANDARD_NOT_EXISTS = new ErrorCode(1_040_800_000, "检测标准不存在");
-    ErrorCode SET_STANDARD_NO_DUPLICATE = new ErrorCode(1_040_800_001, "检测标准编号已存在");
-
-    // ========== MES 安全环保检测-检测计划（1-040-801-000） ==========
-    ErrorCode SET_PLAN_NOT_EXISTS = new ErrorCode(1_040_801_000, "检测计划不存在");
-    ErrorCode SET_PLAN_NO_DUPLICATE = new ErrorCode(1_040_801_001, "检测计划编号已存在");
-
-    // ========== MES 安全环保检测-气体检测记录（1-040-802-000） ==========
-    ErrorCode SET_GAS_RECORD_NOT_EXISTS = new ErrorCode(1_040_802_000, "气体检测记录不存在");
-    ErrorCode SET_GAS_RECORD_NO_DUPLICATE = new ErrorCode(1_040_802_001, "气体检测记录编号已存在");
-
-    // ========== MES 安全环保检测-消防设施检测记录（1-040-803-000） ==========
-    ErrorCode SET_FIRE_CHECK_NOT_EXISTS = new ErrorCode(1_040_803_000, "消防设施检测记录不存在");
-    ErrorCode SET_FIRE_CHECK_NO_DUPLICATE = new ErrorCode(1_040_803_001, "消防设施检测记录编号已存在");
-
-    // ========== MES 安全环保检测-危化品安全检测记录（1-040-804-000） ==========
-    ErrorCode SET_CHEMICAL_SAFETY_NOT_EXISTS = new ErrorCode(1_040_804_000, "危化品安全检测记录不存在");
-    ErrorCode SET_CHEMICAL_SAFETY_NO_DUPLICATE = new ErrorCode(1_040_804_001, "危化品安全检测记录编号已存在");
-
-    // ========== MES 安全环保检测-危废台账（1-040-805-000） ==========
-    ErrorCode SET_HAZARDOUS_WASTE_NOT_EXISTS = new ErrorCode(1_040_805_000, "危废台账记录不存在");
-    ErrorCode SET_HAZARDOUS_WASTE_NO_DUPLICATE = new ErrorCode(1_040_805_001, "危废联单号已存在");
-
-    // ========== MES 安全环保检测-噪声检测记录（1-040-806-000） ==========
-    ErrorCode SET_NOISE_RECORD_NOT_EXISTS = new ErrorCode(1_040_806_000, "噪声检测记录不存在");
-    ErrorCode SET_NOISE_RECORD_NO_DUPLICATE = new ErrorCode(1_040_806_001, "噪声检测记录编号已存在");
-
-    // ========== MES 安全环保检测-粉尘检测记录（1-040-807-000） ==========
-    ErrorCode SET_DUST_RECORD_NOT_EXISTS = new ErrorCode(1_040_807_000, "粉尘检测记录不存在");
-    ErrorCode SET_DUST_RECORD_NO_DUPLICATE = new ErrorCode(1_040_807_001, "粉尘检测记录编号已存在");
-
-    // ========== MES 安全环保检测-电气安全检测记录（1-040-808-000） ==========
-    ErrorCode SET_ELECTRICAL_RECORD_NOT_EXISTS = new ErrorCode(1_040_808_000, "电气安全检测记录不存在");
-    ErrorCode SET_ELECTRICAL_RECORD_NO_DUPLICATE = new ErrorCode(1_040_808_001, "电气安全检测记录编号已存在");
-
-    // ========== MES 安全环保检测-压力容器检测记录（1-040-809-000） ==========
-    ErrorCode SET_PRESSURE_VESSEL_NOT_EXISTS = new ErrorCode(1_040_809_000, "压力容器检测记录不存在");
-    ErrorCode SET_PRESSURE_VESSEL_NO_DUPLICATE = new ErrorCode(1_040_809_001, "压力容器检测记录编号已存在");
-
-    // ========== MES 安全环保检测-PPE检查记录（1-040-810-000） ==========
-    ErrorCode SET_PPE_CHECK_NOT_EXISTS = new ErrorCode(1_040_810_000, "PPE检查记录不存在");
-    ErrorCode SET_PPE_CHECK_NO_DUPLICATE = new ErrorCode(1_040_810_001, "PPE检查记录编号已存在");
-
-    // ========== MES 安全环保检测-排放口（1-040-811-000） ==========
-    ErrorCode SET_EMISSION_OUTLET_NOT_EXISTS = new ErrorCode(1_040_811_000, "排放口不存在");
-    ErrorCode SET_EMISSION_OUTLET_NO_DUPLICATE = new ErrorCode(1_040_811_001, "排放口编号已存在");
-
-    // ========== MES 安全环保检测-废气检测记录（1-040-812-000） ==========
-    ErrorCode SET_EXHAUST_GAS_NOT_EXISTS = new ErrorCode(1_040_812_000, "废气检测记录不存在");
-    ErrorCode SET_EXHAUST_GAS_NO_DUPLICATE = new ErrorCode(1_040_812_001, "废气检测记录编号已存在");
-
-    // ========== MES 安全环保检测-废水检测记录（1-040-813-000） ==========
-    ErrorCode SET_WASTEWATER_NOT_EXISTS = new ErrorCode(1_040_813_000, "废水检测记录不存在");
-    ErrorCode SET_WASTEWATER_NO_DUPLICATE = new ErrorCode(1_040_813_001, "废水检测记录编号已存在");
-
-    // ========== MES 安全环保检测-碳排放记录（1-040-814-000） ==========
-    ErrorCode SET_CARBON_EMISSION_NOT_EXISTS = new ErrorCode(1_040_814_000, "碳排放记录不存在");
-    ErrorCode SET_CARBON_EMISSION_NO_DUPLICATE = new ErrorCode(1_040_814_001, "碳排放记录编号已存在");
-
-    // ========== MES 安全环保检测-排污许可（1-040-815-000） ==========
-    ErrorCode SET_POLLUTION_PERMIT_NOT_EXISTS = new ErrorCode(1_040_815_000, "排污许可不存在");
-    ErrorCode SET_POLLUTION_PERMIT_NO_DUPLICATE = new ErrorCode(1_040_815_001, "排污许可证编号已存在");
-
-    // ========== MES 安全环保检测-环保报告（1-040-816-000） ==========
-    ErrorCode SET_ENV_REPORT_NOT_EXISTS = new ErrorCode(1_040_816_000, "环保报告不存在");
-    ErrorCode SET_ENV_REPORT_NO_DUPLICATE = new ErrorCode(1_040_816_001, "环保报告编号已存在");
-
-    // ========== MES 安全环保检测-职业病危害检测记录（1-040-817-000） ==========
-    ErrorCode SET_OCCUPATIONAL_HAZARD_NOT_EXISTS = new ErrorCode(1_040_817_000, "职业病危害检测记录不存在");
-    ErrorCode SET_OCCUPATIONAL_HAZARD_NO_DUPLICATE = new ErrorCode(1_040_817_001, "职业病危害检测记录编号已存在");
-
     // ========== MES 安全环保检测-污染判定记录（1-040-818-000） ==========
     ErrorCode SET_POLLUTION_CHECK_NOT_EXISTS = new ErrorCode(1_040_818_000, "污染判定记录不存在");
     ErrorCode SET_POLLUTION_CHECK_ALREADY_REVIEWED = new ErrorCode(1_040_818_001, "该记录已复核，禁止修改或删除");
@@ -789,11 +726,180 @@ public interface ErrorCodeConstants {
     ErrorCode SET_POLLUTION_CHECK_BATCH_REQUIRED = new ErrorCode(1_040_818_005, "有污染判定必须关联真实批次号（中间废弃物环节除外）");
     ErrorCode SET_POLLUTION_CHECK_LOCATION_REQUIRED = new ErrorCode(1_040_818_006, "有污染判定必须填写去向/库位");
     ErrorCode SET_POLLUTION_CHECK_BATCH_NOT_FOUND = new ErrorCode(1_040_818_007, "批次 {} 不存在，无法落地有污染管控，请核对批次号后再复核");
-
-    // ========== MES 环保管控-污染批次门禁/暂存台账（1-040-819-000） ==========
+    ErrorCode SET_POLLUTION_CHECK_LOCATION_ID_REQUIRED = new ErrorCode(1_040_818_008, "有污染判定必须选择污染管控（受控/危废）库位，请从库位下拉中选择");
+    ErrorCode SET_POLLUTION_CHECK_LOCATION_NOT_FOUND = new ErrorCode(1_040_818_009, "库位 {} 不存在，请重新选择");
+    ErrorCode SET_POLLUTION_CHECK_LOCATION_NOT_CONTROLLED = new ErrorCode(1_040_818_010, "库位「{}」不是污染管控库位，有污染品只能入受控/危废库位（防混放）");
+    ErrorCode SET_POLLUTION_CHECK_LOCATION_CONTROLLED_FORBIDDEN = new ErrorCode(1_040_818_011, "无污染复核不得占用污染管控库位「{}」，请选择普通库位（防混放）");
+    // ========== 成品达标分支（需求文档 §11 用例5 / 团队终版 环节5） ==========
+    ErrorCode SET_POLLUTION_CHECK_FINISHED_RESULT_REQUIRED = new ErrorCode(1_040_818_012, "成品环节必须选择达标分支（达标/局部缺陷返工/整体报废）");
+    ErrorCode SET_POLLUTION_CHECK_FINISHED_RESULT_INVALID = new ErrorCode(1_040_818_013, "达标分支不合法（仅支持 QUALIFIED/REWORK/SCRAPPED）");
+    ErrorCode SET_POLLUTION_CHECK_FINISHED_RESULT_NOT_ALLOWED = new ErrorCode(1_040_818_014, "非成品环节不得填写达标分支");
+    ErrorCode SET_POLLUTION_CHECK_SCRAP_LOCATION_REQUIRED = new ErrorCode(1_040_818_015, "整体报废必须指定存放去向（受控存储或直接存储），请选择库位");
+    // ========== MES 安全环保检测-污染管控门禁与台账（1-040-819-000） ==========
     ErrorCode MES_POLLUTION_ISSUE_BLOCKED = new ErrorCode(1_040_819_000, "批次 {} 存在有污染环保判定（去向：{}），拒绝领用，请先在污染/危废暂存区完成处理");
     ErrorCode MES_POLLUTION_OUTBOUND_BLOCKED = new ErrorCode(1_040_819_001, "批次 {} 存在有污染/标记环保判定（去向：{}），禁止出库");
     ErrorCode SET_POLLUTION_LEDGER_NOT_EXISTS = new ErrorCode(1_040_819_002, "污染/危废暂存台账记录不存在");
     ErrorCode SET_POLLUTION_LEDGER_STATUS_INVALID = new ErrorCode(1_040_819_003, "台账状态不合法（支持：处置中/已回用/已排放/已处置）");
+    // ========== MES 安全环保检测-排污许可证（1-040-820-000） ==========
+    // ========== MES 安全环保检测-追溯链/称重（1-040-821-000） ==========
+    ErrorCode MES_SET_WEIGH_NET_WEIGHT_INVALID = new ErrorCode(1_040_821_000, "净重必须大于 0，请核对毛重与皮重");
+
+    ErrorCode SET_POLLUTION_PERMIT_NOT_EXISTS = new ErrorCode(1_040_820_000, "排污许可证不存在");
+    ErrorCode SET_POLLUTION_PERMIT_NO_DUPLICATE = new ErrorCode(1_040_820_001, "排污许可证编号已存在");
+    ErrorCode SET_POLLUTION_PERMIT_STATUS_INVALID = new ErrorCode(1_040_820_002, "许可证状态不合法（支持：ACTIVE/EXPIRED/REVOKED）");
+    ErrorCode SET_POLLUTION_PERMIT_DATE_INVALID = new ErrorCode(1_040_820_003, "有效期止不能早于有效期始");
+    ErrorCode SET_POLLUTION_PERMIT_OUTLET_MISSING = new ErrorCode(1_040_820_004, "必须至少绑定一个排放口编号（outletCode）");
+    ErrorCode SET_POLLUTION_PERMIT_LIMIT_ILLEGAL = new ErrorCode(1_040_820_005, "许可排放总量 JSON 格式不合法（[{pollutantCode, pollutantName, annualLimitT, annualUsedT}]）");
+
+    // ========== MES 安全环保检测-空壳表落成（1-040-822-000 起，一表一段） ==========
+    // 由 codegen/gen_shell_modules.py 生成，勿手改段号（822/823/... 与表一一对应）
+    // ========== 环保检测报告（1-040-822-000） ==========
+    ErrorCode SET_ENV_REPORT_NOT_EXISTS = new ErrorCode(1_040_822_000, "环保检测报告不存在");
+    ErrorCode SET_ENV_REPORT_NO_DUPLICATE = new ErrorCode(1_040_822_001, "环保检测报告编号已存在");
+    ErrorCode SET_ENV_REPORT_REPORT_TYPE_INVALID = new ErrorCode(1_040_822_002, "报告来源不合法");
+    ErrorCode SET_ENV_REPORT_STATUS_INVALID = new ErrorCode(1_040_822_003, "状态不合法");
+    ErrorCode SET_ENV_REPORT_PERIOD_MISSING = new ErrorCode(1_040_822_004, "报告统计期起止未填写，无法自动取数汇总");
+    ErrorCode SET_ENV_REPORT_ARCHIVE_FAILED = new ErrorCode(1_040_822_005, "报告归档失败：文件服务不可用或返回异常");
+    // ========== 排放口（1-040-823-000） ==========
+    ErrorCode SET_EMISSION_OUTLET_NOT_EXISTS = new ErrorCode(1_040_823_000, "排放口不存在");
+    ErrorCode SET_EMISSION_OUTLET_NO_DUPLICATE = new ErrorCode(1_040_823_001, "排放口编号已存在");
+    ErrorCode SET_EMISSION_OUTLET_OUTLET_TYPE_INVALID = new ErrorCode(1_040_823_002, "排放类型不合法");
+    ErrorCode SET_EMISSION_OUTLET_MONITOR_METHOD_INVALID = new ErrorCode(1_040_823_003, "在线监测方式不合法");
+    // ========== 废气监测记录（1-040-824-000） ==========
+    ErrorCode SET_EXHAUST_GAS_NOT_EXISTS = new ErrorCode(1_040_824_000, "废气监测记录不存在");
+    ErrorCode SET_EXHAUST_GAS_NO_DUPLICATE = new ErrorCode(1_040_824_001, "废气监测记录编号已存在");
+    ErrorCode SET_EXHAUST_GAS_COLLECTION_MODE_INVALID = new ErrorCode(1_040_824_002, "采集方式不合法");
+    // ========== 废水监测记录（1-040-825-000） ==========
+    ErrorCode SET_WASTEWATER_NOT_EXISTS = new ErrorCode(1_040_825_000, "废水监测记录不存在");
+    ErrorCode SET_WASTEWATER_NO_DUPLICATE = new ErrorCode(1_040_825_001, "废水监测记录编号已存在");
+    ErrorCode SET_WASTEWATER_COLLECTION_MODE_INVALID = new ErrorCode(1_040_825_002, "采集方式不合法");
+    // ========== 碳排放核算（1-040-826-000） ==========
+    ErrorCode SET_CARBON_EMISSION_NOT_EXISTS = new ErrorCode(1_040_826_000, "碳排放核算不存在");
+    ErrorCode SET_CARBON_EMISSION_NO_DUPLICATE = new ErrorCode(1_040_826_001, "碳排放核算编号已存在");
+    ErrorCode SET_CARBON_EMISSION_ENERGY_TYPE_INVALID = new ErrorCode(1_040_826_002, "能源类型不合法");
+    // ========== 危化品安全检查（1-040-827-000） ==========
+    ErrorCode SET_CHEMICAL_SAFETY_NOT_EXISTS = new ErrorCode(1_040_827_000, "危化品安全检查不存在");
+    ErrorCode SET_CHEMICAL_SAFETY_NO_DUPLICATE = new ErrorCode(1_040_827_001, "危化品安全检查编号已存在");
+    ErrorCode SET_CHEMICAL_SAFETY_RESULT_INVALID = new ErrorCode(1_040_827_002, "结果不合法");
+
+    // ========== 排污许可合规（限值比对 / 年总量红线）1_040_828_xxx ==========
+    ErrorCode SET_PERMIT_OUTLET_LIMITS_INVALID = new ErrorCode(1_040_828_000, "排放口许可限值配置格式错误");
+    ErrorCode SET_PERMIT_ANNUAL_LIMITS_INVALID = new ErrorCode(1_040_828_001, "许可年排放量配置格式错误");
+
+    // ========== 危废链（台账 / 国家固废联单五方 / 门卫硬放行 / HJ1276 标签）1_040_829_xxx ==========
+    ErrorCode SET_HAZWASTE_NOT_EXISTS = new ErrorCode(1_040_829_000, "危废台账记录不存在");
+    ErrorCode SET_HAZWASTE_MANIFEST_NO_DUPLICATE = new ErrorCode(1_040_829_001, "危废联单号已存在");
+    ErrorCode SET_HAZWASTE_MANIFEST_NOT_EXISTS = new ErrorCode(1_040_829_002, "危废转移联单不存在");
+    ErrorCode SET_HAZWASTE_STAGE_INVALID = new ErrorCode(1_040_829_003, "危废台账环节不合法（支持：GENERATED/STORED/TRANSFERRED/DISPOSED）");
+    ErrorCode SET_HAZWASTE_STAGE_TRANSITION_INVALID = new ErrorCode(1_040_829_004, "危废台账环节流转不合法：只能按 产生→贮存→转移→处置 逐级推进，不得回退");
+    ErrorCode SET_HAZWASTE_MANIFEST_STATUS_INVALID = new ErrorCode(1_040_829_005, "危废联单状态不合法（支持：DRAFT/DECLARED/EFFECTIVE/TRANSFERRED/CLOSED）");
+    ErrorCode SET_HAZWASTE_MANIFEST_STATUS_TRANSITION_INVALID = new ErrorCode(1_040_829_006, "危废联单状态流转不合法：只能按 草稿→已申报→已生效→已出厂→已归档 逐级推进，不得回退");
+    ErrorCode SET_HAZWASTE_GATE_MANIFEST_MISSING = new ErrorCode(1_040_829_007, "门卫拦截：联单号不存在，无有效转移联单不得出厂");
+    ErrorCode SET_HAZWASTE_GATE_NOT_EFFECTIVE = new ErrorCode(1_040_829_008, "门卫拦截：联单尚未生效（须已申报且运输方、接收方均已确认）");
+    ErrorCode SET_HAZWASTE_GATE_VEHICLE_MISMATCH = new ErrorCode(1_040_829_009, "门卫拦截：车牌号与联单登记不一致");
+    ErrorCode SET_HAZWASTE_GATE_SIGN_INCOMPLETE = new ErrorCode(1_040_829_010, "门卫拦截：四方签字不齐（须移交环保员、押运司机、接收经手人三方先签，门卫方可放行）");
+    ErrorCode SET_HAZWASTE_LABEL_ARCHIVE_FAILED = new ErrorCode(1_040_829_011, "危废标签归档失败：文件服务不可用或返回异常");
+    ErrorCode SET_HAZWASTE_SIGN_ROLE_INVALID = new ErrorCode(1_040_829_012, "会签角色不合法（支持：HANDOVER/DRIVER/RECEIVER/GUARD）");
+    ErrorCode SET_HAZWASTE_PARTY_ROLE_INVALID = new ErrorCode(1_040_829_013, "联单五方角色不合法（支持：GENERATOR/CARRIER/RECEIVER_PARTY/STORAGE/DISPOSER；GENERATOR 的确认走申报接口）");
+
+    // ========== 危化品链（档案 / 分级储存禁配 / 储量上限 / 五双双人签字）1_040_830_xxx ==========
+    ErrorCode SET_CHEMICAL_PROFILE_NOT_EXISTS = new ErrorCode(1_040_830_000, "危化品档案不存在");
+    ErrorCode SET_CHEMICAL_PROFILE_NO_DUPLICATE = new ErrorCode(1_040_830_001, "危化品档案编号已存在");
+    ErrorCode SET_CHEMICAL_PROFILE_STATUS_INVALID = new ErrorCode(1_040_830_002, "危化品档案状态不合法（支持：ENABLED/DISABLED）");
+    ErrorCode SET_CHEMICAL_MSDS_MISSING = new ErrorCode(1_040_830_003, "危化品拦截：未挂载 MSDS，无 MSDS 的危化品不得入库");
+    ErrorCode SET_CHEMICAL_ZONE_MISMATCH = new ErrorCode(1_040_830_004, "危化品拦截：该物料须存放于防爆区，当前库位专区不符");
+    ErrorCode SET_CHEMICAL_INCOMPATIBLE = new ErrorCode(1_040_830_005, "危化品拦截：与该库位已有物料禁配（禁同区），不得同区存放");
+    ErrorCode SET_CHEMICAL_QUOTA_EXCEEDED = new ErrorCode(1_040_830_006, "危化品拦截：入库后将超过储量上限");
+    ErrorCode SET_CHEMICAL_DOUBLE_SIGN_SAME_USER = new ErrorCode(1_040_830_007, "五双拦截：同一账号不能连签两次，双人制须双账号各签一次");
+    ErrorCode SET_CHEMICAL_DOUBLE_SIGN_ACTION_INVALID = new ErrorCode(1_040_830_008, "五双作业类型不合法（支持：RECEIVE 双人收发 / KEEP 双人保管 / LOCK 双人双锁 / ISSUE 双人领料 / TRANSPORT 双人运输）");
+    ErrorCode SET_CHEMICAL_QUANTITY_INVALID = new ErrorCode(1_040_830_009, "数量不合法：必须大于 0");
+
+    // ========== 治污设施运行管控（台账 / 换炭→HW49 / 停运申报审批 / 同开同停）1_040_831_xxx ==========
+    ErrorCode SET_FACILITY_NOT_EXISTS = new ErrorCode(1_040_831_000, "治污设施不存在");
+    ErrorCode SET_FACILITY_NO_DUPLICATE = new ErrorCode(1_040_831_001, "治污设施编号已存在");
+    ErrorCode SET_FACILITY_TYPE_INVALID = new ErrorCode(1_040_831_002, "治污设施类型不合法（支持：ACTIVATED_CARBON 活性炭吸附 / CATALYTIC_COMBUSTION 催化燃烧 / BAG_FILTER 布袋除尘）");
+    ErrorCode SET_FACILITY_SHUTDOWN_ALREADY_PENDING = new ErrorCode(1_040_831_003, "停运申报已存在待审批记录，同一设施同时只能有一份待审申报");
+    ErrorCode SET_FACILITY_SHUTDOWN_NOT_PENDING = new ErrorCode(1_040_831_004, "无待审批的停运申报，无法审批（请先提交停运申报）");
+    ErrorCode SET_FACILITY_STOP_WITHOUT_APPROVAL = new ErrorCode(1_040_831_005, "未批先停：设施停运必须有已批准的停运申报，不得先停后报");
+    ErrorCode SET_FACILITY_CONSUMABLE_QUANTITY_INVALID = new ErrorCode(1_040_831_006, "换下耗材数量不合法：必须大于 0（换炭必须同时登记产生的废活性炭 HW49）");
+    ErrorCode SET_FACILITY_CORUN_VIOLATION = new ErrorCode(1_040_831_007, "同开同停违规：产线运行中，配套治污设施不得停运");
+
+
+    // ========== 第二批空壳表（粉尘/噪声/气体/电气/消防/劳保/压力容器/职业危害/检测计划/检测标准）1_040_832~841_xxx ==========
+    ErrorCode SET_DUST_RECORD_NOT_EXISTS = new ErrorCode(1_040_832_000, "粉尘检测记录不存在");
+    ErrorCode SET_DUST_RECORD_NO_DUPLICATE = new ErrorCode(1_040_832_001, "粉尘检测记录编号已存在");
+    ErrorCode SET_NOISE_RECORD_NOT_EXISTS = new ErrorCode(1_040_833_000, "噪声检测记录不存在");
+    ErrorCode SET_NOISE_RECORD_NO_DUPLICATE = new ErrorCode(1_040_833_001, "噪声检测记录编号已存在");
+    ErrorCode SET_NOISE_RECORD_COLLECTION_MODE_INVALID = new ErrorCode(1_040_833_002, "采集方式不合法");
+    ErrorCode SET_NOISE_RECORD_RESULT_INVALID = new ErrorCode(1_040_833_003, "结果不合法");
+    ErrorCode SET_GAS_RECORD_NOT_EXISTS = new ErrorCode(1_040_834_000, "气体检测记录不存在");
+    ErrorCode SET_GAS_RECORD_NO_DUPLICATE = new ErrorCode(1_040_834_001, "气体检测记录编号已存在");
+    ErrorCode SET_GAS_RECORD_GAS_TYPE_INVALID = new ErrorCode(1_040_834_002, "气体类型不合法");
+    ErrorCode SET_ELECTRICAL_RECORD_NOT_EXISTS = new ErrorCode(1_040_835_000, "电气安全检查不存在");
+    ErrorCode SET_ELECTRICAL_RECORD_NO_DUPLICATE = new ErrorCode(1_040_835_001, "电气安全检查编号已存在");
+    ErrorCode SET_FIRE_CHECK_NOT_EXISTS = new ErrorCode(1_040_836_000, "消防检查记录不存在");
+    ErrorCode SET_FIRE_CHECK_NO_DUPLICATE = new ErrorCode(1_040_836_001, "消防检查记录编号已存在");
+    ErrorCode SET_FIRE_CHECK_RESULT_INVALID = new ErrorCode(1_040_836_002, "结果不合法");
+    ErrorCode SET_PPE_CHECK_NOT_EXISTS = new ErrorCode(1_040_837_000, "劳保用品检查不存在");
+    ErrorCode SET_PPE_CHECK_NO_DUPLICATE = new ErrorCode(1_040_837_001, "劳保用品检查编号已存在");
+    ErrorCode SET_PPE_CHECK_CHECK_MODE_INVALID = new ErrorCode(1_040_837_002, "检查方式不合法");
+    ErrorCode SET_PPE_CHECK_RESULT_INVALID = new ErrorCode(1_040_837_003, "结果不合法");
+    ErrorCode SET_PRESSURE_VESSEL_NOT_EXISTS = new ErrorCode(1_040_838_000, "压力容器检查不存在");
+    ErrorCode SET_PRESSURE_VESSEL_NO_DUPLICATE = new ErrorCode(1_040_838_001, "压力容器检查编号已存在");
+    ErrorCode SET_OCCUPATIONAL_HAZARD_NOT_EXISTS = new ErrorCode(1_040_839_000, "职业危害检测不存在");
+    ErrorCode SET_OCCUPATIONAL_HAZARD_NO_DUPLICATE = new ErrorCode(1_040_839_001, "职业危害检测编号已存在");
+    ErrorCode SET_OCCUPATIONAL_HAZARD_FACTOR_CATEGORY_INVALID = new ErrorCode(1_040_839_002, "因素类别不合法");
+    ErrorCode SET_OCCUPATIONAL_HAZARD_RESULT_INVALID = new ErrorCode(1_040_839_003, "结果不合法");
+    ErrorCode SET_PLAN_NOT_EXISTS = new ErrorCode(1_040_840_000, "检测计划不存在");
+    ErrorCode SET_PLAN_NO_DUPLICATE = new ErrorCode(1_040_840_001, "检测计划编号已存在");
+    ErrorCode SET_PLAN_PLAN_TYPE_INVALID = new ErrorCode(1_040_840_002, "触发类型不合法");
+    ErrorCode SET_PLAN_PERIOD_TYPE_INVALID = new ErrorCode(1_040_840_003, "周期类型(周期型)不合法");
+    ErrorCode SET_PLAN_STATUS_INVALID = new ErrorCode(1_040_840_004, "状态不合法");
+    ErrorCode SET_STANDARD_NOT_EXISTS = new ErrorCode(1_040_841_000, "检测标准不存在");
+    ErrorCode SET_STANDARD_NO_DUPLICATE = new ErrorCode(1_040_841_001, "检测标准编号已存在");
+    ErrorCode SET_STANDARD_DOMAIN_INVALID = new ErrorCode(1_040_841_002, "检测域不合法");
+    ErrorCode SET_STANDARD_PERIOD_TYPE_INVALID = new ErrorCode(1_040_841_003, "周期类型不合法");
+
+
+    // ========== 应急管理（预案/物资/演练/事件/处置卡）1_040_842~846_xxx ==========
+    ErrorCode SET_EMERGENCY_PLAN_NOT_EXISTS = new ErrorCode(1_040_842_000, "应急预案不存在");
+    ErrorCode SET_EMERGENCY_PLAN_NO_DUPLICATE = new ErrorCode(1_040_842_001, "应急预案编号已存在");
+    ErrorCode SET_EMERGENCY_PLAN_TYPE_INVALID = new ErrorCode(1_040_842_002, "预案类型不合法（支持：COMPREHENSIVE 综合 / SPECIAL 专项 / ONSITE 现场处置）");
+    ErrorCode SET_EMERGENCY_PLAN_PUBLISH_DATE_REQUIRED = new ErrorCode(1_040_842_003, "预案发布前必须先填发布日期：备案时限（20 个工作日）与评估周期（3 年）都从发布日起算");
+    ErrorCode SET_EMERGENCY_PLAN_ALREADY_FILED = new ErrorCode(1_040_842_004, "预案已备案，不能重复备案（重新备案请先修订）");
+    ErrorCode SET_EMERGENCY_PLAN_FILING_NO_REQUIRED = new ErrorCode(1_040_842_005, "备案号不能为空");
+    ErrorCode SET_EMERGENCY_PLAN_FILING_BEFORE_PUBLISH = new ErrorCode(1_040_842_006, "备案日期不能早于发布日期");
+    ErrorCode SET_EMERGENCY_PLAN_FILED_IMMUTABLE = new ErrorCode(1_040_842_007, "预案已备案：发布日期与版本不可直接改，改了备案号就对不上了；请走「评估修订」，修订后重新备案");
+    ErrorCode SET_EMERGENCY_MATERIAL_NOT_EXISTS = new ErrorCode(1_040_843_000, "应急物资不存在");
+    ErrorCode SET_EMERGENCY_MATERIAL_NO_DUPLICATE = new ErrorCode(1_040_843_001, "应急物资编号已存在");
+    ErrorCode SET_EMERGENCY_MATERIAL_TYPE_INVALID = new ErrorCode(1_040_843_002, "物资类型不合法（支持：DRY_SAND 干沙 / OIL_ABSORBENT 吸油毡 / CHEM_SUIT 防化服 / GAS_MASK 防毒面具 / EXPLOSION_TOOL 防爆工具 / SANDBAG 围堰沙袋 / EYE_WASH 洗眼器 / DRY_POWDER 干粉灭火器）");
+    ErrorCode SET_EMERGENCY_DRILL_NOT_EXISTS = new ErrorCode(1_040_844_000, "应急演练不存在");
+    ErrorCode SET_EMERGENCY_DRILL_NO_DUPLICATE = new ErrorCode(1_040_844_001, "应急演练编号已存在");
+    ErrorCode SET_EMERGENCY_DRILL_TYPE_INVALID = new ErrorCode(1_040_844_002, "演练类型不合法（支持：COMPREHENSIVE 综合 / SPECIAL 专项 / ONSITE 现场处置）");
+    ErrorCode SET_EMERGENCY_DRILL_PLAN_NOT_FILED = new ErrorCode(1_040_844_003, "演练必须关联一份已发布/已备案的应急预案（演练是对预案的检验，不能演练一份还没发布的预案）");
+    ErrorCode SET_EMERGENCY_DRILL_STATUS_INVALID = new ErrorCode(1_040_844_004, "演练状态流转不合法：只能 已计划→已演练→已闭环，且不得回退");
+    ErrorCode SET_EMERGENCY_DRILL_RECTIFY_NOT_DONE = new ErrorCode(1_040_844_005, "演练有整改要求但未整改完成，不能闭环（整改闭环是演练闭环的前置）");
+    ErrorCode SET_EMERGENCY_DRILL_DATE_BEFORE_PUBLISH = new ErrorCode(1_040_844_006, "演练日期不能早于关联预案的发布日期");
+    ErrorCode SET_EMERGENCY_DRILL_RECORD_INCOMPLETE = new ErrorCode(1_040_844_007, "演练记录不完整：签到表/照片/视频至少留一项，且评估结论不能为空（计划→记录→评估缺一步都不算演练完成）");
+    ErrorCode SET_EMERGENCY_EVENT_NOT_EXISTS = new ErrorCode(1_040_845_000, "应急事件不存在");
+    ErrorCode SET_EMERGENCY_EVENT_NO_DUPLICATE = new ErrorCode(1_040_845_001, "应急事件编号已存在");
+    ErrorCode SET_EMERGENCY_EVENT_TYPE_INVALID = new ErrorCode(1_040_845_002, "事件类型不合法（支持：LEAK 泄漏 / EXCEED 超标 / FACILITY_FAULT 设施故障 / OTHER 其他）");
+    ErrorCode SET_EMERGENCY_EVENT_STATUS_INVALID = new ErrorCode(1_040_845_003, "事件状态流转不合法：已上报→处置中→待报告→已闭环，不得回退");
+    ErrorCode SET_EMERGENCY_EVENT_WASTE_REQUIRED = new ErrorCode(1_040_845_004, "应急废物必须逐桶登记：每桶给桶码、危废类别与过秤净重，本服务据此写称重记录并落危废台账（应急不绕过管控）");
+    ErrorCode SET_EMERGENCY_EVENT_WASTE_WEIGHT_INVALID = new ErrorCode(1_040_845_005, "应急废物净重必须大于 0：放行 0 等于给危废台账留一条空行，“记了”和“没记”就分不清了");
+    ErrorCode SET_EMERGENCY_EVENT_WASTE_ALREADY_BUILT = new ErrorCode(1_040_845_006, "本事件的应急废物已建档，不能重复处置（如需补录请先撤销处置）");
+    ErrorCode SET_EMERGENCY_EVENT_REPORT_CONTENT_REQUIRED = new ErrorCode(1_040_845_007, "事件报告不能为空：原因/数量/处置/整改四项是闭环的签字依据");
+    ErrorCode SET_EMERGENCY_EVENT_CHEMICAL_NOT_EXISTS = new ErrorCode(1_040_845_008, "化学品档案不存在，无法关联 MSDS 与禁配信息");
+    ErrorCode SET_EMERGENCY_SOP_SCENARIO_INVALID = new ErrorCode(1_040_846_000, "泄漏处置场景不合法（支持：MDI_LEAK 黑料泄漏 / THINNER_LEAK 稀释剂泄漏 / WASTE_OIL_LEAK 废机油泄漏）；也可以只给 chemicalCode，按危化品档案取处置卡");
+    ErrorCode SET_EMERGENCY_SOP_PARAM_REQUIRED = new ErrorCode(1_040_846_001, "取应急处置卡至少要给泄漏场景（scenario）或化学品代码（chemicalCode）之一：两者都没有就不知道该处置什么");
+    ErrorCode SET_EMERGENCY_SOP_CHEMICAL_NOT_EXISTS = new ErrorCode(1_040_846_002, "化学品档案不存在，取不到该化学品的 MSDS 与应急处置措施");
+
+    // ========== 追溯反向查来源 1_040_847_xxx ==========
+
+    ErrorCode SET_TRACE_REVERSE_PARAM_REQUIRED = new ErrorCode(1_040_847_000, "反向查来源至少要给危废桶码（containerCode）或联单号（manifestNo）之一：两者都没有就不知道该查哪只桶");
+
+    // ========== 通用业务附件 1_040_848_xxx ==========
+
+    ErrorCode SET_ATTACHMENT_NOT_EXISTS = new ErrorCode(1_040_848_000, "附件不存在（可能已被删除）");
 
 }

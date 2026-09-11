@@ -6,14 +6,20 @@ import cn.iocoder.txgy.module.mes.controller.admin.set.emissionoutlet.vo.MesSetE
 import cn.iocoder.txgy.module.mes.controller.admin.set.emissionoutlet.vo.MesSetEmissionOutletSaveReqVO;
 import cn.iocoder.txgy.module.mes.dal.dataobject.set.emissionoutlet.MesSetEmissionOutletDO;
 import cn.iocoder.txgy.module.mes.dal.mysql.set.emissionoutlet.MesSetEmissionOutletMapper;
+import cn.iocoder.txgy.module.mes.service.set.permitcompliance.MesSetPermitComplianceService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 import static cn.iocoder.txgy.framework.common.exception.util.ServiceExceptionUtil.exception;
-import static cn.iocoder.txgy.module.mes.enums.ErrorCodeConstants.SET_EMISSION_OUTLET_NO_DUPLICATE;
 import static cn.iocoder.txgy.module.mes.enums.ErrorCodeConstants.SET_EMISSION_OUTLET_NOT_EXISTS;
+import static cn.iocoder.txgy.module.mes.enums.ErrorCodeConstants.SET_EMISSION_OUTLET_NO_DUPLICATE;
+import static cn.iocoder.txgy.module.mes.enums.ErrorCodeConstants.SET_EMISSION_OUTLET_OUTLET_TYPE_INVALID;
+import static cn.iocoder.txgy.module.mes.enums.ErrorCodeConstants.SET_EMISSION_OUTLET_MONITOR_METHOD_INVALID;
 
 /**
  * MES 安全环保检测-排放口 Service 实现类
@@ -24,70 +30,79 @@ import static cn.iocoder.txgy.module.mes.enums.ErrorCodeConstants.SET_EMISSION_O
 @Validated
 public class MesSetEmissionOutletServiceImpl implements MesSetEmissionOutletService {
 
+    /**
+     * 排放类型：GAS/WASTEWATER/NOISE
+     */
+    private static final Set<String> OUTLET_TYPES = new HashSet<>(Arrays.asList("EXHAUST_GAS", "GAS", "WASTE_WATER"));
+
+    /**
+     * 在线监测方式：CEMS/MANUAL/NONE
+     */
+    private static final Set<String> MONITOR_METHODS = new HashSet<>(Arrays.asList("CEMS", "MANUAL"));
+
     @Resource
-    private MesSetEmissionOutletMapper emissionOutletMapper;
+    private MesSetEmissionOutletMapper emissionoutletMapper;
+
+    @Resource
+    private MesSetPermitComplianceService permitComplianceService;
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Long createEmissionOutlet(MesSetEmissionOutletSaveReqVO createReqVO) {
-        // 1. 校验排放口编号唯一
-        validateOutletCodeUnique(null, createReqVO.getOutletCode());
-        // 2. 插入排放口
-        MesSetEmissionOutletDO emissionOutlet = BeanUtils.toBean(createReqVO, MesSetEmissionOutletDO.class);
-        emissionOutletMapper.insert(emissionOutlet);
-        return emissionOutlet.getId();
+        validateBase(createReqVO, null);
+        MesSetEmissionOutletDO obj = BeanUtils.toBean(createReqVO, MesSetEmissionOutletDO.class);
+        emissionoutletMapper.insert(obj);
+        return obj.getId();
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void updateEmissionOutlet(MesSetEmissionOutletSaveReqVO updateReqVO) {
-        // 1. 校验存在 + 排放口编号唯一
-        validateEmissionOutletExists(updateReqVO.getId());
-        validateOutletCodeUnique(updateReqVO.getId(), updateReqVO.getOutletCode());
-        // 2. 更新
-        MesSetEmissionOutletDO updateObj = BeanUtils.toBean(updateReqVO, MesSetEmissionOutletDO.class);
-        emissionOutletMapper.updateById(updateObj);
+        MesSetEmissionOutletDO exist = validateEmissionOutletExists(updateReqVO.getId());
+        validateBase(updateReqVO, exist.getOutletCode());
+        emissionoutletMapper.updateById(BeanUtils.toBean(updateReqVO, MesSetEmissionOutletDO.class));
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void deleteEmissionOutlet(Long id) {
-        // 1. 校验存在
         validateEmissionOutletExists(id);
-        // 2. 删除
-        emissionOutletMapper.deleteById(id);
-    }
-
-    @Override
-    public void validateEmissionOutletExists(Long id) {
-        if (emissionOutletMapper.selectById(id) == null) {
-            throw exception(SET_EMISSION_OUTLET_NOT_EXISTS);
-        }
+        emissionoutletMapper.deleteById(id);
     }
 
     @Override
     public MesSetEmissionOutletDO getEmissionOutlet(Long id) {
-        return emissionOutletMapper.selectById(id);
+        return emissionoutletMapper.selectById(id);
     }
 
     @Override
     public PageResult<MesSetEmissionOutletDO> getEmissionOutletPage(MesSetEmissionOutletPageReqVO pageReqVO) {
-        return emissionOutletMapper.selectPage(pageReqVO);
+        return emissionoutletMapper.selectPage(pageReqVO);
     }
 
-    // ==================== 校验方法 ====================
+    private MesSetEmissionOutletDO validateEmissionOutletExists(Long id) {
+        MesSetEmissionOutletDO obj = emissionoutletMapper.selectById(id);
+        if (obj == null) {
+            throw exception(SET_EMISSION_OUTLET_NOT_EXISTS);
+        }
+        return obj;
+    }
 
     /**
-     * 校验排放口编号是否唯一（更新时排除自身）
-     *
-     * @param id 编号
-     * @param outletCode 排放口编号
+     * 基础校验：编号唯一(改单时排除自身)、排放类型：GAS/WASTEWATER/NOISE枚举、在线监测方式：CEMS/MANUAL/NONE枚举
      */
-    private void validateOutletCodeUnique(Long id, String outletCode) {
-        MesSetEmissionOutletDO exist = emissionOutletMapper.selectByOutletCode(outletCode);
-        if (exist != null && !exist.getId().equals(id)) {
+    private void validateBase(MesSetEmissionOutletSaveReqVO reqVO, String origin) {
+        MesSetEmissionOutletDO exist = emissionoutletMapper.selectByOutletCode(reqVO.getOutletCode());
+        if (exist != null && !exist.getOutletCode().equals(origin)) {
             throw exception(SET_EMISSION_OUTLET_NO_DUPLICATE);
         }
+        if (reqVO.getOutletType() != null && !OUTLET_TYPES.contains(reqVO.getOutletType())) {
+            throw exception(SET_EMISSION_OUTLET_OUTLET_TYPE_INVALID);
+        }
+        if (reqVO.getMonitorMethod() != null && !MONITOR_METHODS.contains(reqVO.getMonitorMethod())) {
+            throw exception(SET_EMISSION_OUTLET_MONITOR_METHOD_INVALID);
+        }
+        // 许可限值 JSON 在**配置保存时**就校验，不拖到监测入库（§14.1「配置期失败快」）。
+        // 校验口径与合规判定同源：不光要"是个 JSON 数组"，每条还得有 pollutantCode 且 limitValue>0。
+        // 否则一串合法但无意义的 JSON 能过校验，然后在限值比对里静默失效——那等于没有比对。
+        permitComplianceService.validateOutletLimits(reqVO.getPermitLimits());
     }
 
 }

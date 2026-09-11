@@ -2,7 +2,6 @@ package cn.iocoder.txgy.module.mes.controller.admin.set.noiserecord.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -10,73 +9,73 @@ import java.time.LocalDateTime;
 @Data
 public class MesSetNoiseRecordRespVO {
 
-    @Schema(description = "编号", requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
+    @Schema(description = "编号")
     private Long id;
 
-    @Schema(description = "记录编号", example = "NOISE-20260902-001")
+    @Schema(description = "记录编号 NOISE-YYYYMMDD-NNN")
     private String recordNo;
 
-    @Schema(description = "关联检测计划编号", example = "1")
+    @Schema(description = "关联检测计划编号")
     private Long planId;
 
-    @Schema(description = "关联工单编号", example = "1")
+    @Schema(description = "关联工单编号")
     private Long woId;
 
-    @Schema(description = "关联工序编号", example = "1")
+    @Schema(description = "关联工序编号")
     private Long operationId;
 
-    @Schema(description = "关联设备编号", example = "1")
+    @Schema(description = "关联设备编号")
     private Long deviceId;
 
-    @Schema(description = "关联作业人员编号", example = "1")
+    @Schema(description = "关联人员编号(个体剂量计佩戴人)")
     private Long empId;
 
-    @Schema(description = "噪声源类型", example = "EQUIPMENT")
+    @Schema(description = "监测类型：STATIONARY(固定式声级计)/PERSONAL(个体剂量计)")
     private String sourceType;
 
-    @Schema(description = "检测位置", example = "3号车间")
+    @Schema(description = "检测位置/区域")
     private String location;
 
-    @Schema(description = "采集方式", example = "MANUAL")
+    @Schema(description = "采集方式：IOT_AUTO/MANUAL")
     private String collectionMode;
 
-    @Schema(description = "8小时等效声级 Lex8h(dB(A))", example = "85.5")
+    @Schema(description = "8小时等效声级 dB(A)")
     private BigDecimal lex8h;
 
-    @Schema(description = "峰值声级 Lpeak(dB(C))", example = "110.2")
+    @Schema(description = "峰值声级 dB(C)")
     private BigDecimal lpeak;
 
-    @Schema(description = "8小时等效声级限值(dB(A))", example = "85")
+    @Schema(description = "限值 dB(A)≤85")
     private BigDecimal limitLex8h;
 
-    @Schema(description = "峰值声级限值(dB(C))", example = "120")
+    @Schema(description = "限值 dB(C)≤140")
     private BigDecimal limitLpeak;
 
-    @Schema(description = "频谱分析结果")
+    @Schema(description = "频谱分析(倍频程，JSON文本)")
     private String spectrum;
 
-    @Schema(description = "关联执行标准编号", example = "1")
+    @Schema(description = "关联检测标准编号")
     private Long standardId;
 
-    @Schema(description = "结果：PASS/FAIL", example = "PASS")
+    @Schema(description = "结果：PASS/FAIL")
     private String result;
 
-    @Schema(description = "检测仪器编号", example = "INS-001")
+    @Schema(description = "检测仪器编号")
     private String instrumentNo;
 
-    @Schema(description = "检测人", example = "张三")
+    @Schema(description = "检测人")
     private String inspector;
 
-    @Schema(description = "检测时间", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "检测时间")
     private LocalDateTime inspectTime;
 
-    @Schema(description = "检测照片 URL")
+    @Schema(description = "检测照片URL(逗号分隔)")
     private String photoUrls;
 
     @Schema(description = "备注")
     private String remark;
 
-    @Schema(description = "创建时间", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "创建时间")
     private LocalDateTime createTime;
 
 }

@@ -1,16 +1,16 @@
 <script lang="ts" setup>
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
-import type { MesSetElectricalRecordApi } from '#/api/mes/safetyEnv/electricalRecord';
+import type { MesSetElectricalRecordApi } from '#/api/mes/safetyEnv/electricalrecord';
 
 import { Page, useVbenModal } from '@vben/common-ui';
 
-import { message, Tag } from 'ant-design-vue';
+import { message } from 'ant-design-vue';
 
 import { ACTION_ICON, TableAction, useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   deleteElectricalRecord,
   getElectricalRecordPage,
-} from '#/api/mes/safetyEnv/electricalRecord';
+} from '#/api/mes/safetyEnv/electricalrecord';
 import { $t } from '#/locales';
 
 import { useGridColumns, useGridFormSchema } from './data';
@@ -26,19 +26,19 @@ function handleRefresh() {
   gridApi.query();
 }
 
-/** 创建电气安全检测 */
+/** 新建电气安全检查 */
 function handleCreate() {
   formModalApi.setData({ formType: 'create' }).open();
 }
 
-/** 编辑电气安全检测 */
+/** 编辑电气安全检查 */
 function handleEdit(row: MesSetElectricalRecordApi.ElectricalRecord) {
   formModalApi.setData({ id: row.id, formType: 'update' }).open();
 }
 
-/** 删除电气安全检测 */
+/** 删除电气安全检查 */
 async function handleDelete(row: MesSetElectricalRecordApi.ElectricalRecord) {
-  const label = row.recordNo ?? '';
+  const label = row.checkItem ?? '';
   const hideLoading = message.loading({
     content: $t('ui.actionMessage.deleting', [label]),
     duration: 0,
@@ -84,12 +84,12 @@ const [Grid, gridApi] = useVbenVxeGrid({
 <template>
   <Page auto-content-height>
     <FormModal @success="handleRefresh" />
-    <Grid table-title="电气安全检测列表">
+    <Grid table-title="电气安全检查列表">
       <template #toolbar-tools>
         <TableAction
           :actions="[
             {
-              label: $t('ui.actionTitle.create', ['电气安全检测']),
+              label: '新建电气安全检查',
               type: 'primary',
               icon: ACTION_ICON.ADD,
               auth: ['mes:set-electrical-record:create'],
@@ -97,12 +97,6 @@ const [Grid, gridApi] = useVbenVxeGrid({
             },
           ]"
         />
-      </template>
-      <template #result="{ row }">
-        <Tag v-if="row.result" :color="row.result === 'PASS' ? 'success' : 'error'">
-          {{ row.result === 'PASS' ? '合格' : '不合格' }}
-        </Tag>
-        <span v-else>-</span>
       </template>
       <template #actions="{ row }">
         <TableAction
@@ -121,7 +115,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
               icon: ACTION_ICON.DELETE,
               auth: ['mes:set-electrical-record:delete'],
               popConfirm: {
-                title: $t('ui.actionMessage.deleteConfirm', [row.recordNo]),
+                title: $t('ui.actionMessage.deleteConfirm', [row.checkItem]),
                 confirm: handleDelete.bind(null, row),
               },
             },

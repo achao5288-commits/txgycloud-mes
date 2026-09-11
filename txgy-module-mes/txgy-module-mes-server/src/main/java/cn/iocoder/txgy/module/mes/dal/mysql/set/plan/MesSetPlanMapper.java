@@ -15,16 +15,19 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface MesSetPlanMapper extends BaseMapperX<MesSetPlanDO> {
 
-    default PageResult<MesSetPlanDO> selectPage(MesSetPlanPageReqVO reqVO) {
-        return selectPage(reqVO, new LambdaQueryWrapperX<MesSetPlanDO>()
-                .likeIfPresent(MesSetPlanDO::getPlanName, reqVO.getPlanName())
-                .eqIfPresent(MesSetPlanDO::getPlanType, reqVO.getPlanType())
-                .eqIfPresent(MesSetPlanDO::getStatus, reqVO.getStatus())
-                .orderByDesc(MesSetPlanDO::getId));
+    default MesSetPlanDO selectByPlanNo(String plan_no) {
+        return selectOne(MesSetPlanDO::getPlanNo, plan_no);
     }
 
-    default MesSetPlanDO selectByPlanNo(String planNo) {
-        return selectOne(MesSetPlanDO::getPlanNo, planNo);
+    default PageResult<MesSetPlanDO> selectPage(MesSetPlanPageReqVO reqVO) {
+        LambdaQueryWrapperX<MesSetPlanDO> query = new LambdaQueryWrapperX<MesSetPlanDO>()
+                .likeIfPresent(MesSetPlanDO::getPlanNo, reqVO.getPlanNo())
+                .likeIfPresent(MesSetPlanDO::getPlanName, reqVO.getPlanName())
+                .eqIfPresent(MesSetPlanDO::getPlanType, reqVO.getPlanType())
+                .eqIfPresent(MesSetPlanDO::getPeriodType, reqVO.getPeriodType())
+                .eqIfPresent(MesSetPlanDO::getStatus, reqVO.getStatus())
+                .orderByDesc(MesSetPlanDO::getId);
+        return selectPage(reqVO, query);
     }
 
 }

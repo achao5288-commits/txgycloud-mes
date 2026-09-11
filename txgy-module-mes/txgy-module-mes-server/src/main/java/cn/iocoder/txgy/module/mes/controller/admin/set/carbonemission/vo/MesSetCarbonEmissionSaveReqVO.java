@@ -4,41 +4,40 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-@Schema(description = "管理后台 - MES 安全环保检测-碳排放核算记录 新增/修改 Request VO")
+@Schema(description = "管理后台 - MES 安全环保检测-碳排放核算 新增/修改 Request VO")
 @Data
 public class MesSetCarbonEmissionSaveReqVO {
 
     @Schema(description = "编号", example = "1")
     private Long id;
 
-    @Schema(description = "核算批次号", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotEmpty(message = "核算批次号不能为空")
+    @Schema(description = "核算批次号 CARBON-YYYYMM")
+    @NotEmpty(message = "核算批次号 CARBON-YYYYMM不能为空")
     private String calcNo;
 
-    @Schema(description = "核算周期：DAILY/MONTHLY/YEARLY", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotEmpty(message = "核算周期不能为空")
+    @Schema(description = "核算周期：DAILY/MONTHLY/YEARLY")
+    @NotEmpty(message = "核算周期：DAILY/MONTHLY/YEARLY不能为空")
     private String periodType;
 
-    @Schema(description = "周期开始日期", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "周期开始日期")
     @NotNull(message = "周期开始日期不能为空")
     private LocalDate periodStart;
 
-    @Schema(description = "周期结束日期", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "周期结束日期")
     @NotNull(message = "周期结束日期不能为空")
     private LocalDate periodEnd;
 
-    @Schema(description = "关联工单编号", example = "1")
+    @Schema(description = "关联工单编号(工单级碳足迹可空)")
     private Long woId;
 
-    @Schema(description = "关联能耗记录编号", example = "1")
+    @Schema(description = "关联能耗记录编号(能源台账)")
     private Long sourceRecordId;
 
-    @Schema(description = "能源类型", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotEmpty(message = "能源类型不能为空")
+    @Schema(description = "能源类型：ELECTRICITY/NATURAL_GAS/DIESEL/STEAM")
+    @NotEmpty(message = "能源类型：ELECTRICITY/NATURAL_GAS/DIESEL/STEAM不能为空")
     private String energyType;
 
     @Schema(description = "能源消耗量")

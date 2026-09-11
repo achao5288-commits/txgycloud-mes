@@ -3,6 +3,7 @@ package cn.iocoder.txgy.module.mes.controller.admin.set.pollutionledger;
 import cn.iocoder.txgy.framework.common.pojo.CommonResult;
 import cn.iocoder.txgy.framework.common.pojo.PageResult;
 import cn.iocoder.txgy.framework.common.util.object.BeanUtils;
+import cn.iocoder.txgy.module.mes.controller.admin.set.pollutionledger.vo.MesPollutionLedgerMarkReqVO;
 import cn.iocoder.txgy.module.mes.controller.admin.set.pollutionledger.vo.MesPollutionLedgerPageReqVO;
 import cn.iocoder.txgy.module.mes.controller.admin.set.pollutionledger.vo.MesPollutionLedgerRespVO;
 import cn.iocoder.txgy.module.mes.controller.admin.set.pollutionledger.vo.MesPollutionLedgerStatusReqVO;
@@ -36,6 +37,14 @@ public class MesPollutionLedgerController {
     @PreAuthorize("@ss.hasPermission('mes:set-pollution-check:review')")
     public CommonResult<Boolean> updateLedgerStatus(@Valid @RequestBody MesPollutionLedgerStatusReqVO reqVO) {
         pollutionLedgerService.updateLedgerStatus(reqVO);
+        return success(true);
+    }
+
+    @PutMapping("/mark")
+    @Operation(summary = "标记品终审(标记/解除标记，环保专员专属)")
+    @PreAuthorize("@ss.hasPermission('mes:set-pollution-mark:update')")
+    public CommonResult<Boolean> updateLedgerMark(@Valid @RequestBody MesPollutionLedgerMarkReqVO reqVO) {
+        pollutionLedgerService.updateLedgerMark(reqVO);
         return success(true);
     }
 

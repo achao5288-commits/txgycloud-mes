@@ -4,33 +4,32 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Schema(description = "管理后台 - MES 安全环保检测-废水排放检测记录 新增/修改 Request VO")
+@Schema(description = "管理后台 - MES 安全环保检测-废水监测记录 新增/修改 Request VO")
 @Data
 public class MesSetWastewaterSaveReqVO {
 
     @Schema(description = "编号", example = "1")
     private Long id;
 
-    @Schema(description = "记录编号", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotEmpty(message = "记录编号不能为空")
+    @Schema(description = "记录编号 WW-YYYYMMDD-NNN")
+    @NotEmpty(message = "记录编号 WW-YYYYMMDD-NNN不能为空")
     private String recordNo;
 
-    @Schema(description = "关联排放口编号", requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
+    @Schema(description = "关联排放口编号")
     @NotNull(message = "关联排放口编号不能为空")
     private Long outletId;
 
-    @Schema(description = "关联工单编号", example = "1")
+    @Schema(description = "关联工单编号")
     private Long woId;
 
     @Schema(description = "实验室样品编号(手工检测时)")
     private String sampleNo;
 
-    @Schema(description = "污染物", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotEmpty(message = "污染物不能为空")
+    @Schema(description = "污染物：PH/COD/BOD5/NH3_N/TP/PETROLEUM/SS/HEAVY_METAL等")
+    @NotEmpty(message = "污染物：PH/COD/BOD5/NH3_N/TP/PETROLEUM/SS/HEAVY_METAL等不能为空")
     private String pollutantCode;
 
     @Schema(description = "检测浓度 mg/L(pH无量纲)")
@@ -54,7 +53,7 @@ public class MesSetWastewaterSaveReqVO {
     @Schema(description = "采集方式：ONLINE_AUTO/LAB_MANUAL")
     private String collectionMode;
 
-    @Schema(description = "监测时间", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "监测时间")
     @NotNull(message = "监测时间不能为空")
     private LocalDateTime monitorTime;
 

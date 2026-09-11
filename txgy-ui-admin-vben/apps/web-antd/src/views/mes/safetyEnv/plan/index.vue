@@ -4,7 +4,7 @@ import type { MesSetPlanApi } from '#/api/mes/safetyEnv/plan';
 
 import { Page, useVbenModal } from '@vben/common-ui';
 
-import { message } from 'ant-design-vue';
+import { message, Tag } from 'ant-design-vue';
 
 import { ACTION_ICON, TableAction, useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
@@ -13,7 +13,7 @@ import {
 } from '#/api/mes/safetyEnv/plan';
 import { $t } from '#/locales';
 
-import { useGridColumns, useGridFormSchema } from './data';
+import { PERIOD_TYPE_MAP, PLAN_TYPE_MAP, STATUS_MAP, useGridColumns, useGridFormSchema } from './data';
 import Form from './modules/form.vue';
 
 const [FormModal, formModalApi] = useVbenModal({
@@ -26,19 +26,19 @@ function handleRefresh() {
   gridApi.query();
 }
 
-/** 创建检测计划管理 */
+/** 新建检测计划 */
 function handleCreate() {
   formModalApi.setData({ formType: 'create' }).open();
 }
 
-/** 编辑检测计划管理 */
+/** 编辑检测计划 */
 function handleEdit(row: MesSetPlanApi.Plan) {
   formModalApi.setData({ id: row.id, formType: 'update' }).open();
 }
 
-/** 删除检测计划管理 */
+/** 删除检测计划 */
 async function handleDelete(row: MesSetPlanApi.Plan) {
-  const label = row.planNo ?? '';
+  const label = row.planName ?? '';
   const hideLoading = message.loading({
     content: $t('ui.actionMessage.deleting', [label]),
     duration: 0,
@@ -84,12 +84,12 @@ const [Grid, gridApi] = useVbenVxeGrid({
 <template>
   <Page auto-content-height>
     <FormModal @success="handleRefresh" />
-    <Grid table-title="检测计划管理列表">
+    <Grid table-title="检测计划列表">
       <template #toolbar-tools>
         <TableAction
           :actions="[
             {
-              label: $t('ui.actionTitle.create', ['检测计划管理']),
+              label: '新建检测计划',
               type: 'primary',
               icon: ACTION_ICON.ADD,
               auth: ['mes:set-plan:create'],
@@ -97,6 +97,21 @@ const [Grid, gridApi] = useVbenVxeGrid({
             },
           ]"
         />
+      </template>
+      <template #planType="{ row }">
+        <Tag :color="PLAN_TYPE_MAP[row.planType]?.color">
+          {{ PLAN_TYPE_MAP[row.planType]?.text ?? row.planType }}
+        </Tag>
+      </template>
+      <template #periodType="{ row }">
+        <Tag :color="PERIOD_TYPE_MAP[row.periodType]?.color">
+          {{ PERIOD_TYPE_MAP[row.periodType]?.text ?? row.periodType }}
+        </Tag>
+      </template>
+      <template #status="{ row }">
+        <Tag :color="STATUS_MAP[row.status]?.color">
+          {{ STATUS_MAP[row.status]?.text ?? row.status }}
+        </Tag>
       </template>
       <template #actions="{ row }">
         <TableAction
@@ -115,7 +130,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
               icon: ACTION_ICON.DELETE,
               auth: ['mes:set-plan:delete'],
               popConfirm: {
-                title: $t('ui.actionMessage.deleteConfirm', [row.planNo]),
+                title: $t('ui.actionMessage.deleteConfirm', [row.planName]),
                 confirm: handleDelete.bind(null, row),
               },
             },

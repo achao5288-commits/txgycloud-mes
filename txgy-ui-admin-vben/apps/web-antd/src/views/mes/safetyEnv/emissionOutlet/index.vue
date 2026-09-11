@@ -4,7 +4,7 @@ import type { MesSetEmissionOutletApi } from '#/api/mes/safetyEnv/emissionOutlet
 
 import { Page, useVbenModal } from '@vben/common-ui';
 
-import { message } from 'ant-design-vue';
+import { message, Tag } from 'ant-design-vue';
 
 import { ACTION_ICON, TableAction, useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
@@ -13,7 +13,7 @@ import {
 } from '#/api/mes/safetyEnv/emissionOutlet';
 import { $t } from '#/locales';
 
-import { useGridColumns, useGridFormSchema } from './data';
+import { MONITOR_METHOD_MAP, OUTLET_TYPE_MAP, useGridColumns, useGridFormSchema } from './data';
 import Form from './modules/form.vue';
 
 const [FormModal, formModalApi] = useVbenModal({
@@ -26,19 +26,19 @@ function handleRefresh() {
   gridApi.query();
 }
 
-/** 创建排放口管理 */
+/** 新建排放口 */
 function handleCreate() {
   formModalApi.setData({ formType: 'create' }).open();
 }
 
-/** 编辑排放口管理 */
+/** 编辑排放口 */
 function handleEdit(row: MesSetEmissionOutletApi.EmissionOutlet) {
   formModalApi.setData({ id: row.id, formType: 'update' }).open();
 }
 
-/** 删除排放口管理 */
+/** 删除排放口 */
 async function handleDelete(row: MesSetEmissionOutletApi.EmissionOutlet) {
-  const label = row.outletCode ?? '';
+  const label = row.outletName ?? '';
   const hideLoading = message.loading({
     content: $t('ui.actionMessage.deleting', [label]),
     duration: 0,
@@ -84,12 +84,12 @@ const [Grid, gridApi] = useVbenVxeGrid({
 <template>
   <Page auto-content-height>
     <FormModal @success="handleRefresh" />
-    <Grid table-title="排放口管理列表">
+    <Grid table-title="排放口列表">
       <template #toolbar-tools>
         <TableAction
           :actions="[
             {
-              label: $t('ui.actionTitle.create', ['排放口管理']),
+              label: '新建排放口',
               type: 'primary',
               icon: ACTION_ICON.ADD,
               auth: ['mes:set-emission-outlet:create'],
@@ -97,6 +97,16 @@ const [Grid, gridApi] = useVbenVxeGrid({
             },
           ]"
         />
+      </template>
+      <template #outletType="{ row }">
+        <Tag :color="OUTLET_TYPE_MAP[row.outletType]?.color">
+          {{ OUTLET_TYPE_MAP[row.outletType]?.text ?? row.outletType }}
+        </Tag>
+      </template>
+      <template #monitorMethod="{ row }">
+        <Tag :color="MONITOR_METHOD_MAP[row.monitorMethod]?.color">
+          {{ MONITOR_METHOD_MAP[row.monitorMethod]?.text ?? row.monitorMethod }}
+        </Tag>
       </template>
       <template #actions="{ row }">
         <TableAction
@@ -115,7 +125,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
               icon: ACTION_ICON.DELETE,
               auth: ['mes:set-emission-outlet:delete'],
               popConfirm: {
-                title: $t('ui.actionMessage.deleteConfirm', [row.outletCode]),
+                title: $t('ui.actionMessage.deleteConfirm', [row.outletName]),
                 confirm: handleDelete.bind(null, row),
               },
             },

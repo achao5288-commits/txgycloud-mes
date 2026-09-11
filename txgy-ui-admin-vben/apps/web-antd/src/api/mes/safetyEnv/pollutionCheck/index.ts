@@ -13,14 +13,17 @@ export namespace MesSetPollutionCheckApi {
     itemCode?: string; // 物料/产品编码
     itemName?: string; // 物料/产品名称
     itemSpec?: string; // 规格
+    weight?: number; // 重量(kg)
     aiResult?: string; // AI 初筛结果 CLEAN/POLLUTED/UNCERTAIN
     aiConfidence?: number; // AI 置信度(%)
     aiReason?: string; // AI 判定依据
     suggestedStorage?: string; // AI 推荐存储方法
     reviewResult?: string; // 人工复核结果 CLEAN/POLLUTED，空=待复核
+    finishedResult?: string; // 成品达标分支 QUALIFIED/REWORK/SCRAPPED，仅成品环节有值
     storageMethod?: string; // 最终存储方法
     disposition?: string; // 处置方式
-    location?: string; // 去向/库位
+    location?: string; // 去向/库位（库位名称快照）
+    locationId?: number; // 受控库位编号
     marked?: boolean; // 是否标记
     reviewBy?: string; // 复核人
     reviewTime?: number; // 复核时间
@@ -40,11 +43,14 @@ export namespace MesSetPollutionCheckApi {
   export interface ReviewPayload {
     id: number;
     reviewResult: string;
+    finishedResult?: string; // 成品环节必填：QUALIFIED/REWORK/SCRAPPED（SCRAPPED 整批锁定，必带 locationId）
     storageMethod?: string;
     disposition?: string;
     location?: string;
+    locationId?: number; // 受控库位编号：有污染必填且须为污染管控库位（名称由后端回写）
     marked?: boolean;
     remark?: string;
+    signImg?: string; // 手写签名图片 URL（手写板上传后回填，留空不存）
   }
 
   /** 判定履历行：一次操作(创建/改单/复核)后的 AI+人工 完整快照(只增不改) */
@@ -59,6 +65,7 @@ export namespace MesSetPollutionCheckApi {
     aiReason?: string;
     suggestedStorage?: string;
     reviewResult?: string;
+    finishedResult?: string;
     storageMethod?: string;
     disposition?: string;
     location?: string;
@@ -118,4 +125,11 @@ export function getPollutionCheckHistory(checkId: number) {
   return requestClient.get<MesSetPollutionCheckApi.CheckHistoryLog[]>(
     `/mes/safety-env/pollution-check/history?checkId=${checkId}`,
   );
+}
+
+/** 导出污染判定记录(供环保检查/追溯，导出列与列表口径一致) */
+export function exportPollutionCheck(params: any) {
+  return requestClient.download('/mes/safety-env/pollution-check/export-excel', {
+    params,
+  });
 }

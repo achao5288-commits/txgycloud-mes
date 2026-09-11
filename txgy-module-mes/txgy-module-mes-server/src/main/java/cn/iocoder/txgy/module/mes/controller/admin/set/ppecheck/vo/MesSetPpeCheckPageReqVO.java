@@ -5,26 +5,23 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-import org.springframework.format.annotation.DateTimeFormat;
 
-import java.time.LocalDateTime;
-
-import static cn.iocoder.txgy.framework.common.util.date.DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND;
-
-@Schema(description = "管理后台 - MES 安全环保检测-PPE防护检查记录 分页 Request VO")
+@Schema(description = "管理后台 - MES 安全环保检测-劳保用品检查 分页 Request VO")
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 public class MesSetPpeCheckPageReqVO extends PageParam {
 
-    @Schema(description = "PPE类别", example = "HELMET")
+    @Schema(description = "记录编号 PPE-YYYYMMDD-NNN")
+    private String recordNo;
+
+    @Schema(description = "PPE类别：HELMET/GOGGLES/RESPIRATOR/ANTISTATIC_CLOTHING/EARPLUGS/GLOVES/SAFETY_SHOES等")
     private String ppeType;
 
-    @Schema(description = "结果：PASS/FAIL", example = "PASS")
-    private String result;
+    @Schema(description = "检查方式：AI_VISION/MANUAL")
+    private String checkMode;
 
-    @Schema(description = "检查时间")
-    @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
-    private LocalDateTime[] checkTime;
+    @Schema(description = "结果：PASS/FAIL")
+    private String result;
 
 }

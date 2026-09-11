@@ -19,53 +19,54 @@ import org.springframework.web.bind.annotation.*;
 
 import static cn.iocoder.txgy.framework.common.pojo.CommonResult.success;
 
-@Tag(name = "管理后台 - MES 安全环保检测-粉尘浓度检测记录")
+@Tag(name = "管理后台 - MES 安全环保检测-粉尘检测记录")
 @RestController
 @RequestMapping("/mes/safety-env/dust-record")
 @Validated
 public class MesSetDustRecordController {
 
     @Resource
-    private MesSetDustRecordService dustRecordService;
+    private MesSetDustRecordService dustrecordService;
 
     @PostMapping("/create")
-    @Operation(summary = "创建粉尘浓度检测记录")
+    @Operation(summary = "创建粉尘检测记录")
     @PreAuthorize("@ss.hasPermission('mes:set-dust-record:create')")
     public CommonResult<Long> createDustRecord(@Valid @RequestBody MesSetDustRecordSaveReqVO createReqVO) {
-        return success(dustRecordService.createDustRecord(createReqVO));
+        return success(dustrecordService.createDustRecord(createReqVO));
     }
 
     @PutMapping("/update")
-    @Operation(summary = "更新粉尘浓度检测记录")
+    @Operation(summary = "更新粉尘检测记录")
     @PreAuthorize("@ss.hasPermission('mes:set-dust-record:update')")
     public CommonResult<Boolean> updateDustRecord(@Valid @RequestBody MesSetDustRecordSaveReqVO updateReqVO) {
-        dustRecordService.updateDustRecord(updateReqVO);
+        dustrecordService.updateDustRecord(updateReqVO);
         return success(true);
     }
 
     @DeleteMapping("/delete")
-    @Operation(summary = "删除粉尘浓度检测记录")
+    @Operation(summary = "删除粉尘检测记录")
     @Parameter(name = "id", description = "编号", required = true)
     @PreAuthorize("@ss.hasPermission('mes:set-dust-record:delete')")
     public CommonResult<Boolean> deleteDustRecord(@RequestParam("id") Long id) {
-        dustRecordService.deleteDustRecord(id);
+        dustrecordService.deleteDustRecord(id);
         return success(true);
     }
 
     @GetMapping("/get")
-    @Operation(summary = "获得粉尘浓度检测记录")
-    @Parameter(name = "id", description = "编号", required = true, example = "1024")
+    @Operation(summary = "获得粉尘检测记录")
+    @Parameter(name = "id", description = "编号", required = true, example = "1")
     @PreAuthorize("@ss.hasPermission('mes:set-dust-record:query')")
     public CommonResult<MesSetDustRecordRespVO> getDustRecord(@RequestParam("id") Long id) {
-        MesSetDustRecordDO dustRecord = dustRecordService.getDustRecord(id);
-        return success(BeanUtils.toBean(dustRecord, MesSetDustRecordRespVO.class));
+        MesSetDustRecordDO obj = dustrecordService.getDustRecord(id);
+        return success(BeanUtils.toBean(obj, MesSetDustRecordRespVO.class));
     }
 
     @GetMapping("/page")
-    @Operation(summary = "获得粉尘浓度检测记录分页")
+    @Operation(summary = "获得粉尘检测记录分页")
     @PreAuthorize("@ss.hasPermission('mes:set-dust-record:query')")
-    public CommonResult<PageResult<MesSetDustRecordRespVO>> getDustRecordPage(@Valid MesSetDustRecordPageReqVO pageReqVO) {
-        PageResult<MesSetDustRecordDO> pageResult = dustRecordService.getDustRecordPage(pageReqVO);
+    public CommonResult<PageResult<MesSetDustRecordRespVO>> getDustRecordPage(
+            @Valid MesSetDustRecordPageReqVO pageReqVO) {
+        PageResult<MesSetDustRecordDO> pageResult = dustrecordService.getDustRecordPage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, MesSetDustRecordRespVO.class));
     }
 

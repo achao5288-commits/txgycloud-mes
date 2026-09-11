@@ -8,22 +8,26 @@ import cn.iocoder.txgy.module.mes.dal.dataobject.set.pressurevessel.MesSetPressu
 import org.apache.ibatis.annotations.Mapper;
 
 /**
- * MES 安全环保检测-压力容器检测记录 Mapper
+ * MES 安全环保检测-压力容器检查 Mapper
  *
  * @author OPENLAB BS
  */
 @Mapper
 public interface MesSetPressureVesselMapper extends BaseMapperX<MesSetPressureVesselDO> {
 
-    default PageResult<MesSetPressureVesselDO> selectPage(MesSetPressureVesselPageReqVO reqVO) {
-        return selectPage(reqVO, new LambdaQueryWrapperX<MesSetPressureVesselDO>()
-                .eqIfPresent(MesSetPressureVesselDO::getResult, reqVO.getResult())
-                .betweenIfPresent(MesSetPressureVesselDO::getInspectTime, reqVO.getInspectTime())
-                .orderByDesc(MesSetPressureVesselDO::getId));
+    default MesSetPressureVesselDO selectByRecordNo(String record_no) {
+        return selectOne(MesSetPressureVesselDO::getRecordNo, record_no);
     }
 
-    default MesSetPressureVesselDO selectByRecordNo(String recordNo) {
-        return selectOne(MesSetPressureVesselDO::getRecordNo, recordNo);
+    default PageResult<MesSetPressureVesselDO> selectPage(MesSetPressureVesselPageReqVO reqVO) {
+        LambdaQueryWrapperX<MesSetPressureVesselDO> query = new LambdaQueryWrapperX<MesSetPressureVesselDO>()
+                .likeIfPresent(MesSetPressureVesselDO::getRecordNo, reqVO.getRecordNo())
+                .likeIfPresent(MesSetPressureVesselDO::getVesselRegNo, reqVO.getVesselRegNo())
+                .likeIfPresent(MesSetPressureVesselDO::getNdtMethods, reqVO.getNdtMethods())
+                .likeIfPresent(MesSetPressureVesselDO::getResult, reqVO.getResult())
+                .likeIfPresent(MesSetPressureVesselDO::getInspectOrg, reqVO.getInspectOrg())
+                .orderByDesc(MesSetPressureVesselDO::getId);
+        return selectPage(reqVO, query);
     }
 
 }

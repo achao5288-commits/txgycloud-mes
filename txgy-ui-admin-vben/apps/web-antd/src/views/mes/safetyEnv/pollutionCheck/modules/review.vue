@@ -11,11 +11,15 @@ import { useVbenForm } from '#/adapter/form';
 import { reviewPollutionCheck } from '#/api/mes/safetyEnv/pollutionCheck';
 import { $t } from '#/locales';
 
+import AttachmentPanel from '../../components/AttachmentPanel.vue';
+import SignaturePad from '../../components/SignaturePad.vue';
 import { AI_RESULT_MAP, useReviewFormSchema } from '../data';
 
 const emit = defineEmits(['success']);
 /** 待复核记录(含 AI 初筛结果，只读) */
 const row = ref<MesSetPollutionCheckApi.PollutionCheck | null>(null);
+/** 手写签名板：确认时才上传，没签返回 undefined */
+const signPadRef = ref<InstanceType<typeof SignaturePad>>();
 
 const [Form, formApi] = useVbenForm({
   commonConfig: {
@@ -47,10 +51,13 @@ const [Modal, modalApi] = useVbenModal({
       await reviewPollutionCheck({
         id: row.value.id!,
         reviewResult: values.reviewResult,
+        // 仅成品环节有值；后端对"非成品传值/成品缺值"都会硬拒
+        finishedResult: values.finishedResult,
         disposition: values.disposition,
         storageMethod: values.storageMethod,
-        location: values.location,
+        locationId: values.locationId,
         remark: values.remark,
+        signImg: await signPadRef.value?.commit(),
       });
       await modalApi.close();
       emit('success');
@@ -67,13 +74,25 @@ const [Modal, modalApi] = useVbenModal({
     }
     const data = modalApi.getData<{ row: MesSetPollutionCheckApi.PollutionCheck }>();
     row.value = data.row;
-    formApi.setValues({ reviewResult: undefined });
+    // 回填环节驱动"成品达标分支"显隐/必填(隐藏字段，仅作 dependencies 触发器)
+    formApi.setValues({
+      finishedResult: undefined,
+      reviewResult: undefined,
+      stage: data.row.stage,
+    });
   },
 });
 </script>
 
 <template>
-  <Modal title="人工复核（终态：无污染 / 有污染）" class="w-2/3">
+  <Modal
+    :title="
+      row?.stage === 'FINISHED_PRODUCT'
+        ? '人工复核（污染态 + 成品达标分支）'
+        : '人工复核（终态：无污染 / 有污染）'
+    "
+    class="w-2/3"
+  >
     <Alert
       v-if="row"
       class="mx-4 mb-3"
@@ -89,5 +108,7 @@ const [Modal, modalApi] = useVbenModal({
       :description="`AI 初筛：${AI_RESULT_MAP[row.aiResult ?? '']?.text ?? row.aiResult ?? '-'}（置信度 ${row.aiConfidence ?? '-'}%）｜ 判定依据：${row.aiReason ?? '-'}｜ AI 推荐存储方法：${row.suggestedStorage ?? '-'}`"
     />
     <Form class="mx-4" />
+    <SignaturePad ref="signPadRef" class="mx-4 mt-3" />
+    <AttachmentPanel v-if="row?.recordNo" class="mx-4 mt-3" biz-type="CHECK" :biz-no="row.recordNo" />
   </Modal>
 </template>

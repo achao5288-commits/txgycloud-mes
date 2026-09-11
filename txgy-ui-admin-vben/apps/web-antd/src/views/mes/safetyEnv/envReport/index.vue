@@ -4,7 +4,7 @@ import type { MesSetEnvReportApi } from '#/api/mes/safetyEnv/envReport';
 
 import { Page, useVbenModal } from '@vben/common-ui';
 
-import { message } from 'ant-design-vue';
+import { message, Tag } from 'ant-design-vue';
 
 import { ACTION_ICON, TableAction, useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
@@ -13,7 +13,7 @@ import {
 } from '#/api/mes/safetyEnv/envReport';
 import { $t } from '#/locales';
 
-import { useGridColumns, useGridFormSchema } from './data';
+import { REPORT_TYPE_MAP, STATUS_MAP, useGridColumns, useGridFormSchema } from './data';
 import Form from './modules/form.vue';
 
 const [FormModal, formModalApi] = useVbenModal({
@@ -26,7 +26,7 @@ function handleRefresh() {
   gridApi.query();
 }
 
-/** 创建环保检测报告 */
+/** 新建环保检测报告 */
 function handleCreate() {
   formModalApi.setData({ formType: 'create' }).open();
 }
@@ -38,7 +38,7 @@ function handleEdit(row: MesSetEnvReportApi.EnvReport) {
 
 /** 删除环保检测报告 */
 async function handleDelete(row: MesSetEnvReportApi.EnvReport) {
-  const label = row.reportNo ?? '';
+  const label = row.reportName ?? '';
   const hideLoading = message.loading({
     content: $t('ui.actionMessage.deleting', [label]),
     duration: 0,
@@ -89,7 +89,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
         <TableAction
           :actions="[
             {
-              label: $t('ui.actionTitle.create', ['环保检测报告']),
+              label: '新建环保检测报告',
               type: 'primary',
               icon: ACTION_ICON.ADD,
               auth: ['mes:set-env-report:create'],
@@ -97,6 +97,16 @@ const [Grid, gridApi] = useVbenVxeGrid({
             },
           ]"
         />
+      </template>
+      <template #reportType="{ row }">
+        <Tag :color="REPORT_TYPE_MAP[row.reportType]?.color">
+          {{ REPORT_TYPE_MAP[row.reportType]?.text ?? row.reportType }}
+        </Tag>
+      </template>
+      <template #status="{ row }">
+        <Tag :color="STATUS_MAP[row.status]?.color">
+          {{ STATUS_MAP[row.status]?.text ?? row.status }}
+        </Tag>
       </template>
       <template #actions="{ row }">
         <TableAction
@@ -115,7 +125,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
               icon: ACTION_ICON.DELETE,
               auth: ['mes:set-env-report:delete'],
               popConfirm: {
-                title: $t('ui.actionMessage.deleteConfirm', [row.reportNo]),
+                title: $t('ui.actionMessage.deleteConfirm', [row.reportName]),
                 confirm: handleDelete.bind(null, row),
               },
             },

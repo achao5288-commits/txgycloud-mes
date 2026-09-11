@@ -8,15 +8,15 @@ import cn.iocoder.txgy.module.mes.dal.dataobject.set.dustrecord.MesSetDustRecord
 import cn.iocoder.txgy.module.mes.dal.mysql.set.dustrecord.MesSetDustRecordMapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
+
 import static cn.iocoder.txgy.framework.common.exception.util.ServiceExceptionUtil.exception;
-import static cn.iocoder.txgy.module.mes.enums.ErrorCodeConstants.SET_DUST_RECORD_NO_DUPLICATE;
 import static cn.iocoder.txgy.module.mes.enums.ErrorCodeConstants.SET_DUST_RECORD_NOT_EXISTS;
+import static cn.iocoder.txgy.module.mes.enums.ErrorCodeConstants.SET_DUST_RECORD_NO_DUPLICATE;
 
 /**
- * MES 安全环保检测-粉尘浓度检测记录 Service 实现类
+ * MES 安全环保检测-粉尘检测记录 Service 实现类
  *
  * @author OPENLAB BS
  */
@@ -25,67 +25,53 @@ import static cn.iocoder.txgy.module.mes.enums.ErrorCodeConstants.SET_DUST_RECOR
 public class MesSetDustRecordServiceImpl implements MesSetDustRecordService {
 
     @Resource
-    private MesSetDustRecordMapper dustRecordMapper;
+    private MesSetDustRecordMapper dustrecordMapper;
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Long createDustRecord(MesSetDustRecordSaveReqVO createReqVO) {
-        // 1. 校验记录编号唯一
-        validateRecordNoUnique(null, createReqVO.getRecordNo());
-        // 2. 插入记录
-        MesSetDustRecordDO dustRecord = BeanUtils.toBean(createReqVO, MesSetDustRecordDO.class);
-        dustRecordMapper.insert(dustRecord);
-        return dustRecord.getId();
+        validateBase(createReqVO, null);
+        MesSetDustRecordDO obj = BeanUtils.toBean(createReqVO, MesSetDustRecordDO.class);
+        dustrecordMapper.insert(obj);
+        return obj.getId();
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void updateDustRecord(MesSetDustRecordSaveReqVO updateReqVO) {
-        // 1. 校验存在 + 记录编号唯一
-        validateDustRecordExists(updateReqVO.getId());
-        validateRecordNoUnique(updateReqVO.getId(), updateReqVO.getRecordNo());
-        // 2. 更新
-        MesSetDustRecordDO updateObj = BeanUtils.toBean(updateReqVO, MesSetDustRecordDO.class);
-        dustRecordMapper.updateById(updateObj);
+        MesSetDustRecordDO exist = validateDustRecordExists(updateReqVO.getId());
+        validateBase(updateReqVO, exist.getRecordNo());
+        dustrecordMapper.updateById(BeanUtils.toBean(updateReqVO, MesSetDustRecordDO.class));
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void deleteDustRecord(Long id) {
-        // 1. 校验存在
         validateDustRecordExists(id);
-        // 2. 删除
-        dustRecordMapper.deleteById(id);
-    }
-
-    @Override
-    public void validateDustRecordExists(Long id) {
-        if (dustRecordMapper.selectById(id) == null) {
-            throw exception(SET_DUST_RECORD_NOT_EXISTS);
-        }
+        dustrecordMapper.deleteById(id);
     }
 
     @Override
     public MesSetDustRecordDO getDustRecord(Long id) {
-        return dustRecordMapper.selectById(id);
+        return dustrecordMapper.selectById(id);
     }
 
     @Override
     public PageResult<MesSetDustRecordDO> getDustRecordPage(MesSetDustRecordPageReqVO pageReqVO) {
-        return dustRecordMapper.selectPage(pageReqVO);
+        return dustrecordMapper.selectPage(pageReqVO);
     }
 
-    // ==================== 校验方法 ====================
+    private MesSetDustRecordDO validateDustRecordExists(Long id) {
+        MesSetDustRecordDO obj = dustrecordMapper.selectById(id);
+        if (obj == null) {
+            throw exception(SET_DUST_RECORD_NOT_EXISTS);
+        }
+        return obj;
+    }
 
     /**
-     * 校验记录编号是否唯一（更新时排除自身）
-     *
-     * @param id 编号
-     * @param recordNo 记录编号
+     * 基础校验：编号唯一(改单时排除自身)
      */
-    private void validateRecordNoUnique(Long id, String recordNo) {
-        MesSetDustRecordDO exist = dustRecordMapper.selectByRecordNo(recordNo);
-        if (exist != null && !exist.getId().equals(id)) {
+    private void validateBase(MesSetDustRecordSaveReqVO reqVO, String origin) {
+        MesSetDustRecordDO exist = dustrecordMapper.selectByRecordNo(reqVO.getRecordNo());
+        if (exist != null && !exist.getRecordNo().equals(origin)) {
             throw exception(SET_DUST_RECORD_NO_DUPLICATE);
         }
     }

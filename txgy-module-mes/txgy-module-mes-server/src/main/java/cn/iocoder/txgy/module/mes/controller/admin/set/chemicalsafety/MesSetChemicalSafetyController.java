@@ -19,53 +19,54 @@ import org.springframework.web.bind.annotation.*;
 
 import static cn.iocoder.txgy.framework.common.pojo.CommonResult.success;
 
-@Tag(name = "管理后台 - MES 安全环保检测-危化品安全巡查记录")
+@Tag(name = "管理后台 - MES 安全环保检测-危化品安全检查")
 @RestController
 @RequestMapping("/mes/safety-env/chemical-safety")
 @Validated
 public class MesSetChemicalSafetyController {
 
     @Resource
-    private MesSetChemicalSafetyService chemicalSafetyService;
+    private MesSetChemicalSafetyService chemicalsafetyService;
 
     @PostMapping("/create")
-    @Operation(summary = "创建危化品安全巡查记录")
+    @Operation(summary = "创建危化品安全检查")
     @PreAuthorize("@ss.hasPermission('mes:set-chemical-safety:create')")
     public CommonResult<Long> createChemicalSafety(@Valid @RequestBody MesSetChemicalSafetySaveReqVO createReqVO) {
-        return success(chemicalSafetyService.createChemicalSafety(createReqVO));
+        return success(chemicalsafetyService.createChemicalSafety(createReqVO));
     }
 
     @PutMapping("/update")
-    @Operation(summary = "更新危化品安全巡查记录")
+    @Operation(summary = "更新危化品安全检查")
     @PreAuthorize("@ss.hasPermission('mes:set-chemical-safety:update')")
     public CommonResult<Boolean> updateChemicalSafety(@Valid @RequestBody MesSetChemicalSafetySaveReqVO updateReqVO) {
-        chemicalSafetyService.updateChemicalSafety(updateReqVO);
+        chemicalsafetyService.updateChemicalSafety(updateReqVO);
         return success(true);
     }
 
     @DeleteMapping("/delete")
-    @Operation(summary = "删除危化品安全巡查记录")
+    @Operation(summary = "删除危化品安全检查")
     @Parameter(name = "id", description = "编号", required = true)
     @PreAuthorize("@ss.hasPermission('mes:set-chemical-safety:delete')")
     public CommonResult<Boolean> deleteChemicalSafety(@RequestParam("id") Long id) {
-        chemicalSafetyService.deleteChemicalSafety(id);
+        chemicalsafetyService.deleteChemicalSafety(id);
         return success(true);
     }
 
     @GetMapping("/get")
-    @Operation(summary = "获得危化品安全巡查记录")
-    @Parameter(name = "id", description = "编号", required = true, example = "1024")
+    @Operation(summary = "获得危化品安全检查")
+    @Parameter(name = "id", description = "编号", required = true, example = "1")
     @PreAuthorize("@ss.hasPermission('mes:set-chemical-safety:query')")
     public CommonResult<MesSetChemicalSafetyRespVO> getChemicalSafety(@RequestParam("id") Long id) {
-        MesSetChemicalSafetyDO chemicalSafety = chemicalSafetyService.getChemicalSafety(id);
-        return success(BeanUtils.toBean(chemicalSafety, MesSetChemicalSafetyRespVO.class));
+        MesSetChemicalSafetyDO obj = chemicalsafetyService.getChemicalSafety(id);
+        return success(BeanUtils.toBean(obj, MesSetChemicalSafetyRespVO.class));
     }
 
     @GetMapping("/page")
-    @Operation(summary = "获得危化品安全巡查记录分页")
+    @Operation(summary = "获得危化品安全检查分页")
     @PreAuthorize("@ss.hasPermission('mes:set-chemical-safety:query')")
-    public CommonResult<PageResult<MesSetChemicalSafetyRespVO>> getChemicalSafetyPage(@Valid MesSetChemicalSafetyPageReqVO pageReqVO) {
-        PageResult<MesSetChemicalSafetyDO> pageResult = chemicalSafetyService.getChemicalSafetyPage(pageReqVO);
+    public CommonResult<PageResult<MesSetChemicalSafetyRespVO>> getChemicalSafetyPage(
+            @Valid MesSetChemicalSafetyPageReqVO pageReqVO) {
+        PageResult<MesSetChemicalSafetyDO> pageResult = chemicalsafetyService.getChemicalSafetyPage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, MesSetChemicalSafetyRespVO.class));
     }
 

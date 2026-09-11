@@ -8,24 +8,25 @@ import cn.iocoder.txgy.module.mes.dal.dataobject.set.chemicalsafety.MesSetChemic
 import org.apache.ibatis.annotations.Mapper;
 
 /**
- * MES 安全环保检测-危化品安全巡查记录 Mapper
+ * MES 安全环保检测-危化品安全检查 Mapper
  *
  * @author OPENLAB BS
  */
 @Mapper
 public interface MesSetChemicalSafetyMapper extends BaseMapperX<MesSetChemicalSafetyDO> {
 
-    default PageResult<MesSetChemicalSafetyDO> selectPage(MesSetChemicalSafetyPageReqVO reqVO) {
-        return selectPage(reqVO, new LambdaQueryWrapperX<MesSetChemicalSafetyDO>()
-                .eqIfPresent(MesSetChemicalSafetyDO::getChemicalCode, reqVO.getChemicalCode())
-                .likeIfPresent(MesSetChemicalSafetyDO::getChemicalName, reqVO.getChemicalName())
-                .eqIfPresent(MesSetChemicalSafetyDO::getStorageLocation, reqVO.getStorageLocation())
-                .eqIfPresent(MesSetChemicalSafetyDO::getResult, reqVO.getResult())
-                .orderByDesc(MesSetChemicalSafetyDO::getId));
+    default MesSetChemicalSafetyDO selectByRecordNo(String record_no) {
+        return selectOne(MesSetChemicalSafetyDO::getRecordNo, record_no);
     }
 
-    default MesSetChemicalSafetyDO selectByRecordNo(String recordNo) {
-        return selectOne(MesSetChemicalSafetyDO::getRecordNo, recordNo);
+    default PageResult<MesSetChemicalSafetyDO> selectPage(MesSetChemicalSafetyPageReqVO reqVO) {
+        LambdaQueryWrapperX<MesSetChemicalSafetyDO> query = new LambdaQueryWrapperX<MesSetChemicalSafetyDO>()
+                .likeIfPresent(MesSetChemicalSafetyDO::getRecordNo, reqVO.getRecordNo())
+                .likeIfPresent(MesSetChemicalSafetyDO::getChemicalCode, reqVO.getChemicalCode())
+                .likeIfPresent(MesSetChemicalSafetyDO::getChemicalName, reqVO.getChemicalName())
+                .eqIfPresent(MesSetChemicalSafetyDO::getResult, reqVO.getResult())
+                .orderByDesc(MesSetChemicalSafetyDO::getId);
+        return selectPage(reqVO, query);
     }
 
 }

@@ -85,6 +85,10 @@ public class MesWmWarehouseAreaDO extends BaseDO {
      */
     private Boolean allowBatchMixing;
     /**
+     * 是否污染管控库位（1=受控/危废暂存，污染品只能入此处，普通品不得占用）
+     */
+    private Boolean pollutionControl;
+    /**
      * 备注
      */
     private String remark;

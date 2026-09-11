@@ -6,13 +6,13 @@ export namespace MesSetCarbonEmissionApi {
   /** MES 安全环保检测-碳排放核算 */
   export interface CarbonEmission {
     id?: number; // 编号
-    calcNo?: string; // 核算批次号
-    periodType?: string; // 核算周期
+    calcNo?: string; // 核算批次号 CARBON-YYYYMM
+    periodType?: string; // 核算周期：DAILY/MONTHLY/YEARLY
     periodStart?: string; // 周期开始日期
     periodEnd?: string; // 周期结束日期
-    woId?: number; // 关联工单编号
-    sourceRecordId?: number; // 关联能耗记录编号
-    energyType?: string; // 能源类型
+    woId?: number; // 关联工单编号(工单级碳足迹可空)
+    sourceRecordId?: number; // 关联能耗记录编号(能源台账)
+    energyType?: string; // 能源类型：ELECTRICITY/NATURAL_GAS/DIESEL/STEAM
     consumption?: number; // 能源消耗量
     emissionFactor?: number; // 排放因子
     carbonEmission?: number; // 碳排放量=consumption*factor

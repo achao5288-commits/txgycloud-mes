@@ -2,24 +2,128 @@ import type { VbenFormSchema } from '#/adapter/form';
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { MesSetPlanApi } from '#/api/mes/safetyEnv/plan';
 
+/** 触发类型：PERIODIC(周期)/EVENT(事件)选项 */
+export const PLAN_TYPE_OPTIONS = [
+  { label: '事件触发', value: 'EVENT' },
+  { label: '周期', value: 'PERIODIC' },
+  { label: 'YEAR', value: 'YEAR' },
+];
 
-/** 新增/修改检测计划管理的表单 */
-export function useFormSchema(): VbenFormSchema[] {
+/** 触发类型：PERIODIC(周期)/EVENT(事件)文案 */
+export const PLAN_TYPE_MAP: Record<string, { text: string; color: string }> = {
+  EVENT: { text: '事件触发', color: 'success' },
+  PERIODIC: { text: '周期', color: 'error' },
+  YEAR: { text: 'YEAR', color: 'warning' },
+};
+
+/** 周期类型(周期型)：DAILY/WEEKLY/MONTHLY/QUARTERLY/YEARLY选项 */
+export const PERIOD_TYPE_OPTIONS = [
+  { label: '月', value: 'MONTHLY' },
+  { label: 'YEAR', value: 'YEAR' },
+];
+
+/** 周期类型(周期型)：DAILY/WEEKLY/MONTHLY/QUARTERLY/YEARLY文案 */
+export const PERIOD_TYPE_MAP: Record<string, { text: string; color: string }> = {
+  MONTHLY: { text: '月', color: 'success' },
+  YEAR: { text: 'YEAR', color: 'error' },
+};
+
+/** 状态：DRAFT/ACTIVE/STOPPED选项 */
+export const STATUS_OPTIONS = [
+  { label: '有效', value: 'ACTIVE' },
+  { label: '草稿', value: 'DRAFT' },
+];
+
+/** 状态：DRAFT/ACTIVE/STOPPED文案 */
+export const STATUS_MAP: Record<string, { text: string; color: string }> = {
+  ACTIVE: { text: '有效', color: 'success' },
+  DRAFT: { text: '草稿', color: 'error' },
+};
+
+/** 搜索表单 */
+export function useGridFormSchema(): VbenFormSchema[] {
   return [
-    {
-      fieldName: 'id',
-      component: 'Input',
-      dependencies: {
-        triggerFields: [''],
-        show: () => false,
-      },
-    },
     {
       fieldName: 'planNo',
       label: '计划编号',
       component: 'Input',
       componentProps: {
         allowClear: true,
+        placeholder: '请输入计划编号',
+      },
+    },
+    {
+      fieldName: 'planName',
+      label: '计划名称',
+      component: 'Input',
+      componentProps: {
+        allowClear: true,
+        placeholder: '请输入计划名称',
+      },
+    },
+    {
+      fieldName: 'planType',
+      label: '触发类型：PERIODIC(周期)/EVENT(事件)',
+      component: 'Select',
+      componentProps: {
+        allowClear: true,
+        options: PLAN_TYPE_OPTIONS,
+        placeholder: '请选择',
+      },
+    },
+    {
+      fieldName: 'periodType',
+      label: '周期类型(周期型)：DAILY/WEEKLY/MONTHLY/QUARTERLY/YEARLY',
+      component: 'Select',
+      componentProps: {
+        allowClear: true,
+        options: PERIOD_TYPE_OPTIONS,
+        placeholder: '请选择',
+      },
+    },
+    {
+      fieldName: 'status',
+      label: '状态：DRAFT/ACTIVE/STOPPED',
+      component: 'Select',
+      componentProps: {
+        allowClear: true,
+        options: STATUS_OPTIONS,
+        placeholder: '请选择',
+      },
+    },
+  ];
+}
+
+/** 列表字段 */
+export function useGridColumns(): VxeTableGridOptions<MesSetPlanApi.Plan>['columns'] {
+  return [
+    { field: 'planNo', title: '计划编号', minWidth: 170, showOverflow: true },
+    { field: 'planName', title: '计划名称', minWidth: 170, showOverflow: true },
+    { field: 'planType', title: '触发类型：PERIODIC(周期)/EVENT(事件)', minWidth: 170, showOverflow: true, slots: { default: 'planType' } },
+    { field: 'periodType', title: '周期类型(周期型)：DAILY/WEEKLY/MONTHLY/QUARTERLY/YEARLY', minWidth: 170, showOverflow: true, slots: { default: 'periodType' } },
+    { field: 'startDate', title: '生效开始日期', width: 120 },
+    { field: 'endDate', title: '生效结束日期', width: 120 },
+    { field: 'assigneeId', title: '责任人/执行人编号', width: 120 },
+    { field: 'status', title: '状态：DRAFT/ACTIVE/STOPPED', minWidth: 170, showOverflow: true, slots: { default: 'status' } },
+    {
+      title: '操作',
+      width: 150,
+      fixed: 'right',
+      slots: {
+        default: 'actions',
+      },
+    },
+  ];
+}
+
+/** 新增/编辑表单 */
+export function useFormSchema(): VbenFormSchema[] {
+  return [
+    {
+      fieldName: 'planNo',
+      label: '计划编号',
+      component: 'Input',
+      componentProps: {
         placeholder: '请输入计划编号',
       },
       rules: 'required',
@@ -29,29 +133,26 @@ export function useFormSchema(): VbenFormSchema[] {
       label: '计划名称',
       component: 'Input',
       componentProps: {
-        allowClear: true,
         placeholder: '请输入计划名称',
       },
       rules: 'required',
     },
     {
       fieldName: 'planType',
-      label: '触发类型',
+      label: '触发类型：PERIODIC(周期)/EVENT(事件)',
       component: 'Select',
       componentProps: {
-        options: [{ label: "周期触发", value: "PERIODIC" }, { label: "事件触发", value: "EVENT" }],
-        placeholder: '请选择触发类型',
-        allowClear: true,
+        options: PLAN_TYPE_OPTIONS,
+        placeholder: '请选择',
       },
     },
     {
       fieldName: 'periodType',
-      label: '周期类型(周期型)',
+      label: '周期类型(周期型)：DAILY/WEEKLY/MONTHLY/QUARTERLY/YEARLY',
       component: 'Select',
       componentProps: {
-        options: [{ label: "每日", value: "DAILY" }, { label: "每周", value: "WEEKLY" }, { label: "每月", value: "MONTHLY" }, { label: "每季度", value: "QUARTERLY" }, { label: "每年", value: "YEARLY" }],
-        placeholder: '请选择周期类型(周期型)',
-        allowClear: true,
+        options: PERIOD_TYPE_OPTIONS,
+        placeholder: '请选择',
       },
     },
     {
@@ -59,9 +160,9 @@ export function useFormSchema(): VbenFormSchema[] {
       label: '生效开始日期',
       component: 'DatePicker',
       componentProps: {
-        format: 'YYYY-MM-DD',
-        placeholder: '请选择日期',
         valueFormat: 'YYYY-MM-DD',
+        format: 'YYYY-MM-DD',
+        placeholder: '选择日期',
       },
     },
     {
@@ -69,19 +170,50 @@ export function useFormSchema(): VbenFormSchema[] {
       label: '生效结束日期',
       component: 'DatePicker',
       componentProps: {
-        format: 'YYYY-MM-DD',
-        placeholder: '请选择日期',
         valueFormat: 'YYYY-MM-DD',
+        format: 'YYYY-MM-DD',
+        placeholder: '选择日期',
+      },
+    },
+    {
+      fieldName: 'machineryId',
+      label: '关联设备编号(事件/设备型)',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入关联设备编号(事件/设备型)',
+      },
+    },
+    {
+      fieldName: 'operationId',
+      label: '关联工序编号(事件/工单型)',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入关联工序编号(事件/工单型)',
+      },
+    },
+    {
+      fieldName: 'standardId',
+      label: '关联检测标准编号',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入关联检测标准编号',
+      },
+    },
+    {
+      fieldName: 'assigneeId',
+      label: '责任人/执行人编号',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入责任人/执行人编号',
       },
     },
     {
       fieldName: 'status',
-      label: '状态',
+      label: '状态：DRAFT/ACTIVE/STOPPED',
       component: 'Select',
       componentProps: {
-        options: [{ label: "草稿", value: "DRAFT" }, { label: "启用", value: "ACTIVE" }, { label: "已停用", value: "STOPPED" }],
-        placeholder: '请选择状态',
-        allowClear: true,
+        options: STATUS_OPTIONS,
+        placeholder: '请选择',
       },
     },
     {
@@ -89,65 +221,8 @@ export function useFormSchema(): VbenFormSchema[] {
       label: '备注',
       component: 'Textarea',
       componentProps: {
+        rows: 3,
         placeholder: '请输入备注',
-        rows: 2,
-      },
-      formItemClass: 'col-span-3',
-    },
-  ];
-}
-
-/** 列表的搜索表单 */
-export function useGridFormSchema(): VbenFormSchema[] {
-  return [
-    {
-      fieldName: 'planName',
-      label: '计划名称',
-      component: 'Input',
-      componentProps: {
-        allowClear: true,
-        placeholder: '请输入计划名称',
-      },
-    },
-    {
-      fieldName: 'planType',
-      label: '触发类型',
-      component: 'Select',
-      componentProps: {
-        allowClear: true,
-        options: [{ label: "周期触发", value: "PERIODIC" }, { label: "事件触发", value: "EVENT" }],
-        placeholder: '请选择触发类型',
-      },
-    },
-    {
-      fieldName: 'status',
-      label: '状态',
-      component: 'Select',
-      componentProps: {
-        allowClear: true,
-        options: [{ label: "草稿", value: "DRAFT" }, { label: "启用", value: "ACTIVE" }, { label: "已停用", value: "STOPPED" }],
-        placeholder: '请选择状态',
-      },
-    },
-  ];
-}
-
-/** 列表的字段 */
-export function useGridColumns(): VxeTableGridOptions<MesSetPlanApi.Plan>['columns'] {
-  return [
-    { field: 'planNo', title: '计划编号', minWidth: 150 },
-    { field: 'planName', title: '计划名称', minWidth: 150 },
-    { field: 'planType', title: '触发类型', minWidth: 150 },
-    { field: 'periodType', title: '周期类型(周期型)', minWidth: 150 },
-    { field: 'startDate', title: '生效开始日期', width: 130 },
-    { field: 'endDate', title: '生效结束日期', width: 130 },
-    { field: 'status', title: '状态', minWidth: 150 },
-    {
-      title: '操作',
-      width: 160,
-      fixed: 'right',
-      slots: {
-        default: 'actions',
       },
     },
   ];

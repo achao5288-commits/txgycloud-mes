@@ -194,6 +194,17 @@ export function useFormSchema(
       rules: z.boolean().default(true),
     },
     {
+      // 受控存储（需求 5.4）：受控库位只能存污染/危废品，普通品不得占用（复核时后端强制校验）
+      fieldName: 'pollutionControl',
+      label: '污染管控库位',
+      component: 'Switch',
+      componentProps: {
+        checkedChildren: '受控',
+        unCheckedChildren: '普通',
+      },
+      rules: z.boolean().default(false),
+    },
+    {
       fieldName: 'remark',
       label: '备注',
       component: 'Textarea',
@@ -316,6 +327,12 @@ export function useGridColumns(): VxeTableGridOptions<MesWmWarehouseAreaApi.Ware
         name: 'CellDict',
         props: { type: DICT_TYPE.INFRA_BOOLEAN_STRING },
       },
+    },
+    {
+      field: 'pollutionControl',
+      title: '污染管控',
+      width: 110,
+      slots: { default: 'pollutionControl' },
     },
     {
       field: 'remark',

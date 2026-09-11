@@ -57,6 +57,9 @@ public class MesWmWarehouseAreaSaveReqVO {
     @NotNull(message = "是否允许批次混放不能为空")
     private Boolean allowBatchMixing;
 
+    @Schema(description = "是否污染管控库位（受控/危废暂存，污染品只能入此处）", example = "false")
+    private Boolean pollutionControl;
+
     @Schema(description = "备注", example = "备注")
     private String remark;
 

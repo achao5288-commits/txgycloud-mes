@@ -19,53 +19,54 @@ import org.springframework.web.bind.annotation.*;
 
 import static cn.iocoder.txgy.framework.common.pojo.CommonResult.success;
 
-@Tag(name = "管理后台 - MES 安全环保检测-碳排放核算记录")
+@Tag(name = "管理后台 - MES 安全环保检测-碳排放核算")
 @RestController
 @RequestMapping("/mes/safety-env/carbon-emission")
 @Validated
 public class MesSetCarbonEmissionController {
 
     @Resource
-    private MesSetCarbonEmissionService carbonEmissionService;
+    private MesSetCarbonEmissionService carbonemissionService;
 
     @PostMapping("/create")
-    @Operation(summary = "创建碳排放核算记录")
+    @Operation(summary = "创建碳排放核算")
     @PreAuthorize("@ss.hasPermission('mes:set-carbon-emission:create')")
     public CommonResult<Long> createCarbonEmission(@Valid @RequestBody MesSetCarbonEmissionSaveReqVO createReqVO) {
-        return success(carbonEmissionService.createCarbonEmission(createReqVO));
+        return success(carbonemissionService.createCarbonEmission(createReqVO));
     }
 
     @PutMapping("/update")
-    @Operation(summary = "更新碳排放核算记录")
+    @Operation(summary = "更新碳排放核算")
     @PreAuthorize("@ss.hasPermission('mes:set-carbon-emission:update')")
     public CommonResult<Boolean> updateCarbonEmission(@Valid @RequestBody MesSetCarbonEmissionSaveReqVO updateReqVO) {
-        carbonEmissionService.updateCarbonEmission(updateReqVO);
+        carbonemissionService.updateCarbonEmission(updateReqVO);
         return success(true);
     }
 
     @DeleteMapping("/delete")
-    @Operation(summary = "删除碳排放核算记录")
+    @Operation(summary = "删除碳排放核算")
     @Parameter(name = "id", description = "编号", required = true)
     @PreAuthorize("@ss.hasPermission('mes:set-carbon-emission:delete')")
     public CommonResult<Boolean> deleteCarbonEmission(@RequestParam("id") Long id) {
-        carbonEmissionService.deleteCarbonEmission(id);
+        carbonemissionService.deleteCarbonEmission(id);
         return success(true);
     }
 
     @GetMapping("/get")
-    @Operation(summary = "获得碳排放核算记录")
-    @Parameter(name = "id", description = "编号", required = true, example = "1024")
+    @Operation(summary = "获得碳排放核算")
+    @Parameter(name = "id", description = "编号", required = true, example = "1")
     @PreAuthorize("@ss.hasPermission('mes:set-carbon-emission:query')")
     public CommonResult<MesSetCarbonEmissionRespVO> getCarbonEmission(@RequestParam("id") Long id) {
-        MesSetCarbonEmissionDO carbonEmission = carbonEmissionService.getCarbonEmission(id);
-        return success(BeanUtils.toBean(carbonEmission, MesSetCarbonEmissionRespVO.class));
+        MesSetCarbonEmissionDO obj = carbonemissionService.getCarbonEmission(id);
+        return success(BeanUtils.toBean(obj, MesSetCarbonEmissionRespVO.class));
     }
 
     @GetMapping("/page")
-    @Operation(summary = "获得碳排放核算记录分页")
+    @Operation(summary = "获得碳排放核算分页")
     @PreAuthorize("@ss.hasPermission('mes:set-carbon-emission:query')")
-    public CommonResult<PageResult<MesSetCarbonEmissionRespVO>> getCarbonEmissionPage(@Valid MesSetCarbonEmissionPageReqVO pageReqVO) {
-        PageResult<MesSetCarbonEmissionDO> pageResult = carbonEmissionService.getCarbonEmissionPage(pageReqVO);
+    public CommonResult<PageResult<MesSetCarbonEmissionRespVO>> getCarbonEmissionPage(
+            @Valid MesSetCarbonEmissionPageReqVO pageReqVO) {
+        PageResult<MesSetCarbonEmissionDO> pageResult = carbonemissionService.getCarbonEmissionPage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, MesSetCarbonEmissionRespVO.class));
     }
 

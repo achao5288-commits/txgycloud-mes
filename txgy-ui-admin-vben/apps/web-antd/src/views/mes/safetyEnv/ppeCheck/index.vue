@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
-import type { MesSetPpeCheckApi } from '#/api/mes/safetyEnv/ppeCheck';
+import type { MesSetPpeCheckApi } from '#/api/mes/safetyEnv/ppecheck';
 
 import { Page, useVbenModal } from '@vben/common-ui';
 
@@ -10,10 +10,10 @@ import { ACTION_ICON, TableAction, useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   deletePpeCheck,
   getPpeCheckPage,
-} from '#/api/mes/safetyEnv/ppeCheck';
+} from '#/api/mes/safetyEnv/ppecheck';
 import { $t } from '#/locales';
 
-import { useGridColumns, useGridFormSchema } from './data';
+import { CHECK_MODE_MAP, RESULT_MAP, useGridColumns, useGridFormSchema } from './data';
 import Form from './modules/form.vue';
 
 const [FormModal, formModalApi] = useVbenModal({
@@ -26,19 +26,19 @@ function handleRefresh() {
   gridApi.query();
 }
 
-/** 创建PPE防护检查 */
+/** 新建劳保用品检查 */
 function handleCreate() {
   formModalApi.setData({ formType: 'create' }).open();
 }
 
-/** 编辑PPE防护检查 */
+/** 编辑劳保用品检查 */
 function handleEdit(row: MesSetPpeCheckApi.PpeCheck) {
   formModalApi.setData({ id: row.id, formType: 'update' }).open();
 }
 
-/** 删除PPE防护检查 */
+/** 删除劳保用品检查 */
 async function handleDelete(row: MesSetPpeCheckApi.PpeCheck) {
-  const label = row.recordNo ?? '';
+  const label = row.ppeType ?? '';
   const hideLoading = message.loading({
     content: $t('ui.actionMessage.deleting', [label]),
     duration: 0,
@@ -84,12 +84,12 @@ const [Grid, gridApi] = useVbenVxeGrid({
 <template>
   <Page auto-content-height>
     <FormModal @success="handleRefresh" />
-    <Grid table-title="PPE防护检查列表">
+    <Grid table-title="劳保用品检查列表">
       <template #toolbar-tools>
         <TableAction
           :actions="[
             {
-              label: $t('ui.actionTitle.create', ['PPE防护检查']),
+              label: '新建劳保用品检查',
               type: 'primary',
               icon: ACTION_ICON.ADD,
               auth: ['mes:set-ppe-check:create'],
@@ -98,11 +98,15 @@ const [Grid, gridApi] = useVbenVxeGrid({
           ]"
         />
       </template>
-      <template #result="{ row }">
-        <Tag v-if="row.result" :color="row.result === 'PASS' ? 'success' : 'error'">
-          {{ row.result === 'PASS' ? '合格' : '不合格' }}
+      <template #checkMode="{ row }">
+        <Tag :color="CHECK_MODE_MAP[row.checkMode]?.color">
+          {{ CHECK_MODE_MAP[row.checkMode]?.text ?? row.checkMode }}
         </Tag>
-        <span v-else>-</span>
+      </template>
+      <template #result="{ row }">
+        <Tag :color="RESULT_MAP[row.result]?.color">
+          {{ RESULT_MAP[row.result]?.text ?? row.result }}
+        </Tag>
       </template>
       <template #actions="{ row }">
         <TableAction
@@ -121,7 +125,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
               icon: ACTION_ICON.DELETE,
               auth: ['mes:set-ppe-check:delete'],
               popConfirm: {
-                title: $t('ui.actionMessage.deleteConfirm', [row.recordNo]),
+                title: $t('ui.actionMessage.deleteConfirm', [row.ppeType]),
                 confirm: handleDelete.bind(null, row),
               },
             },

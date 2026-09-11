@@ -2,35 +2,93 @@ import type { VbenFormSchema } from '#/adapter/form';
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { MesSetPollutionPermitApi } from '#/api/mes/safetyEnv/pollutionPermit';
 
+/** 许可证状态选项 */
+export const PERMIT_STATUS_OPTIONS = [
+  { label: '有效', value: 'ACTIVE' },
+  { label: '已过期', value: 'EXPIRED' },
+  { label: '已注销', value: 'REVOKED' },
+];
 
-/** 新增/修改排污许可管理的表单 */
-export function useFormSchema(): VbenFormSchema[] {
+/** 许可证状态文案 */
+export const PERMIT_STATUS_MAP: Record<string, { text: string; color: string }> = {
+  ACTIVE: { text: '有效', color: 'success' },
+  EXPIRED: { text: '已过期', color: 'error' },
+  REVOKED: { text: '已注销', color: 'default' },
+};
+
+/** 搜索表单 */
+export function useGridFormSchema(): VbenFormSchema[] {
   return [
     {
-      fieldName: 'id',
-      component: 'Input',
-      dependencies: {
-        triggerFields: [''],
-        show: () => false,
-      },
-    },
-    {
       fieldName: 'permitNo',
-      label: '排污许可证编号',
+      label: '许可证编号',
       component: 'Input',
       componentProps: {
         allowClear: true,
-        placeholder: '请输入排污许可证编号',
+        placeholder: '如 P-110108',
+      },
+    },
+    {
+      fieldName: 'enterpriseName',
+      label: '持证单位',
+      component: 'Input',
+      componentProps: {
+        allowClear: true,
+        placeholder: '请输入持证单位名称',
+      },
+    },
+    {
+      fieldName: 'status',
+      label: '状态',
+      component: 'Select',
+      componentProps: {
+        allowClear: true,
+        options: PERMIT_STATUS_OPTIONS,
+        placeholder: '请选择',
+      },
+    },
+  ];
+}
+
+/** 列表字段 */
+export function useGridColumns(): VxeTableGridOptions<MesSetPollutionPermitApi.Permit>['columns'] {
+  return [
+    { field: 'permitNo', title: '许可证编号', minWidth: 170, showOverflow: true },
+    { field: 'enterpriseName', title: '持证单位', minWidth: 180, showOverflow: true },
+    { field: 'issuingAuthority', title: '发证机关', minWidth: 150, showOverflow: true },
+    { field: 'startDate', title: '有效期起始', width: 120 },
+    { field: 'endDate', title: '有效期止', width: 120 },
+    { field: 'outletCodes', title: '排放口', minWidth: 130, showOverflow: true },
+    { field: 'status', title: '状态', width: 90, slots: { default: 'status' } },
+    {
+      title: '操作',
+      width: 150,
+      fixed: 'right',
+      slots: {
+        default: 'actions',
+      },
+    },
+  ];
+}
+
+/** 新增/编辑表单 */
+export function useFormSchema(): VbenFormSchema[] {
+  return [
+    {
+      fieldName: 'permitNo',
+      label: '许可证编号',
+      component: 'Input',
+      componentProps: {
+        placeholder: '如 P-110108-2026-0001',
       },
       rules: 'required',
     },
     {
       fieldName: 'enterpriseName',
-      label: '企业名称',
+      label: '持证单位',
       component: 'Input',
       componentProps: {
-        allowClear: true,
-        placeholder: '请输入企业名称',
+        placeholder: '请输入持证单位名称',
       },
       rules: 'required',
     },
@@ -39,8 +97,7 @@ export function useFormSchema(): VbenFormSchema[] {
       label: '发证机关',
       component: 'Input',
       componentProps: {
-        allowClear: true,
-        placeholder: '请输入发证机关',
+        placeholder: '如 北京市生态环境局',
       },
     },
     {
@@ -48,124 +105,79 @@ export function useFormSchema(): VbenFormSchema[] {
       label: '发证日期',
       component: 'DatePicker',
       componentProps: {
-        format: 'YYYY-MM-DD',
-        placeholder: '请选择日期',
         valueFormat: 'YYYY-MM-DD',
+        format: 'YYYY-MM-DD',
+        placeholder: '选择发证日期',
       },
     },
     {
       fieldName: 'startDate',
-      label: '有效期开始日期',
+      label: '有效期起始',
       component: 'DatePicker',
       componentProps: {
-        format: 'YYYY-MM-DD',
-        placeholder: '请选择日期',
         valueFormat: 'YYYY-MM-DD',
+        format: 'YYYY-MM-DD',
+        placeholder: '选择起始日期',
       },
+      rules: 'required',
     },
     {
       fieldName: 'endDate',
-      label: '有效期截止日期',
+      label: '有效期止',
       component: 'DatePicker',
       componentProps: {
-        format: 'YYYY-MM-DD',
-        placeholder: '请选择日期',
         valueFormat: 'YYYY-MM-DD',
+        format: 'YYYY-MM-DD',
+        placeholder: '选择截止日期',
       },
+      rules: 'required',
     },
     {
       fieldName: 'outletCodes',
-      label: '排污口编码',
+      label: '排放口',
       component: 'Input',
       componentProps: {
-        allowClear: true,
-        placeholder: '请输入排污口编码',
+        placeholder: '逗号分隔，如 DA001,DA002',
       },
-    },
-    {
-      fieldName: 'annualLimits',
-      label: '年度许可排放量',
-      component: 'Textarea',
-      componentProps: {
-        placeholder: '请输入年度许可排放量',
-        rows: 2,
-      },
-      formItemClass: 'col-span-3',
-    },
-    {
-      fieldName: 'annualReports',
-      label: '年度执行报告记录',
-      component: 'Textarea',
-      componentProps: {
-        placeholder: '请输入年度执行报告记录',
-        rows: 2,
-      },
-      formItemClass: 'col-span-3',
+      rules: 'required',
     },
     {
       fieldName: 'status',
       label: '状态',
       component: 'Select',
       componentProps: {
-        options: [{ label: "有效", value: "VALID" }, { label: "即将到期", value: "EXPIRING" }, { label: "已失效", value: "EXPIRED" }, { label: "已注销", value: "REVOKED" }],
-        placeholder: '请选择状态',
-        allowClear: true,
+        options: PERMIT_STATUS_OPTIONS,
+        placeholder: '默认有效',
+      },
+    },
+    {
+      fieldName: 'annualLimits',
+      label: '许可年排放总量(JSON)',
+      component: 'Textarea',
+      formItemClass: 'col-span-2',
+      componentProps: {
+        rows: 3,
+        placeholder: '[{"pollutantCode":"VOCs","pollutantName":"挥发性有机物","annualLimitT":12,"annualUsedT":0}]',
+      },
+    },
+    {
+      fieldName: 'annualReports',
+      label: '执行报告配置(JSON)',
+      component: 'Textarea',
+      formItemClass: 'col-span-2',
+      componentProps: {
+        rows: 2,
+        placeholder: '[{"reportType":"QUARTERLY","periodStart":"Q1","periodEnd":"2026-03-31"}]',
       },
     },
     {
       fieldName: 'remark',
       label: '备注',
       component: 'Textarea',
+      formItemClass: 'col-span-2',
       componentProps: {
-        placeholder: '请输入备注',
         rows: 2,
-      },
-      formItemClass: 'col-span-3',
-    },
-  ];
-}
-
-/** 列表的搜索表单 */
-export function useGridFormSchema(): VbenFormSchema[] {
-  return [
-    {
-      fieldName: 'permitNo',
-      label: '排污许可证编号',
-      component: 'Input',
-      componentProps: {
-        allowClear: true,
-        placeholder: '请输入排污许可证编号',
-      },
-    },
-    {
-      fieldName: 'status',
-      label: '状态',
-      component: 'Select',
-      componentProps: {
-        allowClear: true,
-        options: [{ label: "有效", value: "VALID" }, { label: "即将到期", value: "EXPIRING" }, { label: "已失效", value: "EXPIRED" }, { label: "已注销", value: "REVOKED" }],
-        placeholder: '请选择状态',
-      },
-    },
-  ];
-}
-
-/** 列表的字段 */
-export function useGridColumns(): VxeTableGridOptions<MesSetPollutionPermitApi.PollutionPermit>['columns'] {
-  return [
-    { field: 'permitNo', title: '排污许可证编号', minWidth: 150 },
-    { field: 'enterpriseName', title: '企业名称', minWidth: 150 },
-    { field: 'issuingAuthority', title: '发证机关', minWidth: 150 },
-    { field: 'issueDate', title: '发证日期', width: 130 },
-    { field: 'startDate', title: '有效期开始日期', width: 130 },
-    { field: 'endDate', title: '有效期截止日期', width: 130 },
-    { field: 'status', title: '状态', minWidth: 150 },
-    {
-      title: '操作',
-      width: 160,
-      fixed: 'right',
-      slots: {
-        default: 'actions',
+        placeholder: '证载变更记录等',
       },
     },
   ];

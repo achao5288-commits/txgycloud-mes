@@ -19,53 +19,54 @@ import org.springframework.web.bind.annotation.*;
 
 import static cn.iocoder.txgy.framework.common.pojo.CommonResult.success;
 
-@Tag(name = "管理后台 - MES 安全环保检测-PPE防护检查记录")
+@Tag(name = "管理后台 - MES 安全环保检测-劳保用品检查")
 @RestController
 @RequestMapping("/mes/safety-env/ppe-check")
 @Validated
 public class MesSetPpeCheckController {
 
     @Resource
-    private MesSetPpeCheckService ppeCheckService;
+    private MesSetPpeCheckService ppecheckService;
 
     @PostMapping("/create")
-    @Operation(summary = "创建 PPE防护检查记录")
+    @Operation(summary = "创建劳保用品检查")
     @PreAuthorize("@ss.hasPermission('mes:set-ppe-check:create')")
     public CommonResult<Long> createPpeCheck(@Valid @RequestBody MesSetPpeCheckSaveReqVO createReqVO) {
-        return success(ppeCheckService.createPpeCheck(createReqVO));
+        return success(ppecheckService.createPpeCheck(createReqVO));
     }
 
     @PutMapping("/update")
-    @Operation(summary = "更新 PPE防护检查记录")
+    @Operation(summary = "更新劳保用品检查")
     @PreAuthorize("@ss.hasPermission('mes:set-ppe-check:update')")
     public CommonResult<Boolean> updatePpeCheck(@Valid @RequestBody MesSetPpeCheckSaveReqVO updateReqVO) {
-        ppeCheckService.updatePpeCheck(updateReqVO);
+        ppecheckService.updatePpeCheck(updateReqVO);
         return success(true);
     }
 
     @DeleteMapping("/delete")
-    @Operation(summary = "删除 PPE防护检查记录")
+    @Operation(summary = "删除劳保用品检查")
     @Parameter(name = "id", description = "编号", required = true)
     @PreAuthorize("@ss.hasPermission('mes:set-ppe-check:delete')")
     public CommonResult<Boolean> deletePpeCheck(@RequestParam("id") Long id) {
-        ppeCheckService.deletePpeCheck(id);
+        ppecheckService.deletePpeCheck(id);
         return success(true);
     }
 
     @GetMapping("/get")
-    @Operation(summary = "获得 PPE防护检查记录")
-    @Parameter(name = "id", description = "编号", required = true, example = "1024")
+    @Operation(summary = "获得劳保用品检查")
+    @Parameter(name = "id", description = "编号", required = true, example = "1")
     @PreAuthorize("@ss.hasPermission('mes:set-ppe-check:query')")
     public CommonResult<MesSetPpeCheckRespVO> getPpeCheck(@RequestParam("id") Long id) {
-        MesSetPpeCheckDO ppeCheck = ppeCheckService.getPpeCheck(id);
-        return success(BeanUtils.toBean(ppeCheck, MesSetPpeCheckRespVO.class));
+        MesSetPpeCheckDO obj = ppecheckService.getPpeCheck(id);
+        return success(BeanUtils.toBean(obj, MesSetPpeCheckRespVO.class));
     }
 
     @GetMapping("/page")
-    @Operation(summary = "获得 PPE防护检查记录分页")
+    @Operation(summary = "获得劳保用品检查分页")
     @PreAuthorize("@ss.hasPermission('mes:set-ppe-check:query')")
-    public CommonResult<PageResult<MesSetPpeCheckRespVO>> getPpeCheckPage(@Valid MesSetPpeCheckPageReqVO pageReqVO) {
-        PageResult<MesSetPpeCheckDO> pageResult = ppeCheckService.getPpeCheckPage(pageReqVO);
+    public CommonResult<PageResult<MesSetPpeCheckRespVO>> getPpeCheckPage(
+            @Valid MesSetPpeCheckPageReqVO pageReqVO) {
+        PageResult<MesSetPpeCheckDO> pageResult = ppecheckService.getPpeCheckPage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, MesSetPpeCheckRespVO.class));
     }
 

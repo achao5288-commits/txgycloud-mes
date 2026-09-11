@@ -1,6 +1,4 @@
 <script lang="ts" setup>
-import type { MesSetCarbonEmissionApi } from '#/api/mes/safetyEnv/carbonEmission';
-
 import { computed, ref } from 'vue';
 
 import { useVbenModal } from '@vben/common-ui';
@@ -18,16 +16,12 @@ import { $t } from '#/locales';
 import { useFormSchema } from '../data';
 
 const emit = defineEmits(['success']);
-const formType = ref<'create' | 'detail' | 'update'>('create');
-const isDetail = computed(() => formType.value === 'detail');
-const getTitle = computed(() => {
-  if (formType.value === 'detail') {
-    return '查看碳排放核算';
-  }
-  return formType.value === 'update'
+const formType = ref<'create' | 'update'>('create');
+const getTitle = computed(() =>
+  formType.value === 'update'
     ? $t('ui.actionTitle.edit', ['碳排放核算'])
-    : $t('ui.actionTitle.create', ['碳排放核算']);
-});
+    : $t('ui.actionTitle.create', ['碳排放核算']),
+);
 
 const [Form, formApi] = useVbenForm({
   commonConfig: {
@@ -45,22 +39,16 @@ const [Form, formApi] = useVbenForm({
 
 const [Modal, modalApi] = useVbenModal({
   async onConfirm() {
-    if (isDetail.value) {
-      await modalApi.close();
-      return;
-    }
     const { valid } = await formApi.validate();
     if (!valid) {
       return;
     }
     modalApi.lock();
-    // 提交表单
-    const data = (await formApi.getValues()) as MesSetCarbonEmissionApi.CarbonEmission;
+    const data = await formApi.getValues();
     try {
       await (formType.value === 'update'
         ? updateCarbonEmission(data)
         : createCarbonEmission(data));
-      // 关闭并提示
       await modalApi.close();
       emit('success');
       message.success($t('ui.actionMessage.operationSuccess'));
@@ -73,21 +61,14 @@ const [Modal, modalApi] = useVbenModal({
       formType.value = 'create';
       return;
     }
-    // 加载数据
-    const data = modalApi.getData<{
-      formType: 'create' | 'detail' | 'update';
-      id?: number;
-    }>();
+    const data = modalApi.getData<{ formType: 'create' | 'update'; id?: number }>();
     formType.value = data.formType;
-    formApi.setDisabled(isDetail.value);
-    modalApi.setState({ showConfirmButton: !isDetail.value });
     if (!data.id) {
       return;
     }
     modalApi.lock();
     try {
       const row = await getCarbonEmission(data.id);
-      // 设置到 values
       await formApi.setValues(row);
     } finally {
       modalApi.unlock();

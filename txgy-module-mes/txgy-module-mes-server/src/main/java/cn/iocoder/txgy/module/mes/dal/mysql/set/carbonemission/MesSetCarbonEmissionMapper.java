@@ -8,22 +8,25 @@ import cn.iocoder.txgy.module.mes.dal.dataobject.set.carbonemission.MesSetCarbon
 import org.apache.ibatis.annotations.Mapper;
 
 /**
- * MES 安全环保检测-碳排放核算记录 Mapper
+ * MES 安全环保检测-碳排放核算 Mapper
  *
  * @author OPENLAB BS
  */
 @Mapper
 public interface MesSetCarbonEmissionMapper extends BaseMapperX<MesSetCarbonEmissionDO> {
 
-    default PageResult<MesSetCarbonEmissionDO> selectPage(MesSetCarbonEmissionPageReqVO reqVO) {
-        return selectPage(reqVO, new LambdaQueryWrapperX<MesSetCarbonEmissionDO>()
-                .eqIfPresent(MesSetCarbonEmissionDO::getPeriodType, reqVO.getPeriodType())
-                .eqIfPresent(MesSetCarbonEmissionDO::getEnergyType, reqVO.getEnergyType())
-                .orderByDesc(MesSetCarbonEmissionDO::getId));
+    default MesSetCarbonEmissionDO selectByCalcNo(String calc_no) {
+        return selectOne(MesSetCarbonEmissionDO::getCalcNo, calc_no);
     }
 
-    default MesSetCarbonEmissionDO selectByCalcNo(String calcNo) {
-        return selectOne(MesSetCarbonEmissionDO::getCalcNo, calcNo);
+    default PageResult<MesSetCarbonEmissionDO> selectPage(MesSetCarbonEmissionPageReqVO reqVO) {
+        LambdaQueryWrapperX<MesSetCarbonEmissionDO> query = new LambdaQueryWrapperX<MesSetCarbonEmissionDO>()
+                .likeIfPresent(MesSetCarbonEmissionDO::getCalcNo, reqVO.getCalcNo())
+                .likeIfPresent(MesSetCarbonEmissionDO::getPeriodType, reqVO.getPeriodType())
+                .eqIfPresent(MesSetCarbonEmissionDO::getPeriodStart, reqVO.getPeriodStart())
+                .eqIfPresent(MesSetCarbonEmissionDO::getEnergyType, reqVO.getEnergyType())
+                .orderByDesc(MesSetCarbonEmissionDO::getId);
+        return selectPage(reqVO, query);
     }
 
 }

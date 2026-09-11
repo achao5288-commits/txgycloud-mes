@@ -3,18 +3,28 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { MesSetPollutionCheckApi } from '#/api/mes/safetyEnv/pollutionCheck';
 
 import { Page, useVbenDrawer, useVbenModal } from '@vben/common-ui';
+import { downloadFileFromBlobPart } from '@vben/utils';
 
 import { message, Tag } from 'ant-design-vue';
 
 import { ACTION_ICON, TableAction, useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   deletePollutionCheck,
+  exportPollutionCheck,
   getPollutionCheckPage,
 } from '#/api/mes/safetyEnv/pollutionCheck';
 import { $t } from '#/locales';
 
-import { AI_RESULT_MAP, REVIEW_RESULT_MAP, STAGE_MAP, useGridColumns, useGridFormSchema } from './data';
+import {
+  AI_RESULT_MAP,
+  FINISHED_RESULT_MAP,
+  REVIEW_RESULT_MAP,
+  STAGE_MAP,
+  useGridColumns,
+  useGridFormSchema,
+} from './data';
 import Form from './modules/form.vue';
+import TraceDrawer from '../pollutionTrace/modules/trace-drawer.vue';
 import HistoryDrawer from './modules/history-drawer.vue';
 import Review from './modules/review.vue';
 
@@ -33,9 +43,25 @@ const [HistoryDrawerComp, historyDrawerApi] = useVbenDrawer({
   destroyOnClose: true,
 });
 
+const [TraceDrawerComp, traceDrawerApi] = useVbenDrawer({
+  connectedComponent: TraceDrawer,
+  destroyOnClose: true,
+});
+
 /** 打开判定履历(全链追溯) */
 function handleHistory(row: MesSetPollutionCheckApi.PollutionCheck) {
   historyDrawerApi.setData({ row }).open();
+}
+
+/** 打开跨模块整链抽屉(本复核 + 随后每步台账处置流转) */
+function handleTrace(row: MesSetPollutionCheckApi.PollutionCheck) {
+  traceDrawerApi.setData({ row: { ...row, bizNo: row.recordNo, bizType: 'CHECK' } }).open();
+}
+
+/** 导出判定记录(导出当前搜索条件下的全量) */
+async function handleExport() {
+  const data = await exportPollutionCheck(await gridApi.formApi.getValues());
+  downloadFileFromBlobPart({ fileName: '污染判定记录.xls', source: data });
 }
 
 /** 刷新表格 */
@@ -108,6 +134,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
     <FormModal @success="handleRefresh" />
     <ReviewModal @success="handleRefresh" />
     <HistoryDrawerComp />
+    <TraceDrawerComp />
     <Grid table-title="污染判定列表">
       <template #toolbar-tools>
         <TableAction
@@ -118,6 +145,13 @@ const [Grid, gridApi] = useVbenVxeGrid({
               icon: ACTION_ICON.ADD,
               auth: ['mes:set-pollution-check:create'],
               onClick: handleCreate,
+            },
+            {
+              label: $t('ui.actionTitle.export'),
+              type: 'primary',
+              icon: ACTION_ICON.DOWNLOAD,
+              auth: ['mes:set-pollution-check:query'],
+              onClick: handleExport,
             },
           ]"
         />
@@ -140,6 +174,12 @@ const [Grid, gridApi] = useVbenVxeGrid({
         </Tag>
         <Tag v-else>待复核</Tag>
       </template>
+      <template #finishedResult="{ row }">
+        <Tag v-if="row.finishedResult" :color="FINISHED_RESULT_MAP[row.finishedResult]?.color">
+          {{ FINISHED_RESULT_MAP[row.finishedResult]?.text }}
+        </Tag>
+        <span v-else>-</span>
+      </template>
       <template #marked="{ row }">
         <Tag v-if="row.marked" color="orange">已标记</Tag>
         <span v-else>-</span>
@@ -161,6 +201,14 @@ const [Grid, gridApi] = useVbenVxeGrid({
               auth: ['mes:set-pollution-check:review'],
               ifShow: () => !row.reviewResult,
               onClick: handleReview.bind(null, row),
+            },
+            {
+              label: '追溯',
+              type: 'link',
+              icon: ACTION_ICON.VIEW,
+              auth: ['mes:set-pollution-trace:query'],
+              ifShow: () => !!row.reviewResult,
+              onClick: handleTrace.bind(null, row),
             },
             {
               label: $t('common.edit'),

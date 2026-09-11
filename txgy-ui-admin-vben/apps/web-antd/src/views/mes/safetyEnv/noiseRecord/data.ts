@@ -1,123 +1,245 @@
 import type { VbenFormSchema } from '#/adapter/form';
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
-import type { MesSetNoiseRecordApi } from '#/api/mes/safetyEnv/noiseRecord';
+import type { MesSetNoiseRecordApi } from '#/api/mes/safetyEnv/noiserecord';
 
-import { getRangePickerDefaultProps } from '#/utils';
-
-/** 检测结论 PASS/FAIL */
-const RESULT_OPTIONS = [
-  { label: '合格', value: 'PASS' },
-  { label: '不合格', value: 'FAIL' },
+/** 采集方式：IOT_AUTO/MANUAL选项 */
+export const COLLECTION_MODE_OPTIONS = [
+  { label: 'AUTO', value: 'AUTO' },
+  { label: '手工', value: 'MANUAL' },
 ];
 
-/** 新增/修改噪声检测记录的表单 */
-export function useFormSchema(): VbenFormSchema[] {
+/** 采集方式：IOT_AUTO/MANUAL文案 */
+export const COLLECTION_MODE_MAP: Record<string, { text: string; color: string }> = {
+  AUTO: { text: 'AUTO', color: 'success' },
+  MANUAL: { text: '手工', color: 'error' },
+};
+
+/** 结果：PASS/FAIL选项 */
+export const RESULT_OPTIONS = [
+  { label: '超标', value: 'FAIL' },
+  { label: '达标', value: 'PASS' },
+];
+
+/** 结果：PASS/FAIL文案 */
+export const RESULT_MAP: Record<string, { text: string; color: string }> = {
+  FAIL: { text: '超标', color: 'success' },
+  PASS: { text: '达标', color: 'error' },
+};
+
+/** 搜索表单 */
+export function useGridFormSchema(): VbenFormSchema[] {
   return [
     {
-      fieldName: 'id',
-      component: 'Input',
-      dependencies: {
-        triggerFields: [''],
-        show: () => false,
-      },
-    },
-    {
       fieldName: 'recordNo',
-      label: '记录编号',
+      label: '记录编号 NOISE-YYYYMMDD-NNN',
       component: 'Input',
       componentProps: {
         allowClear: true,
-        placeholder: '请输入记录编号',
+        placeholder: '请输入记录编号 NOISE-YYYYMMDD-NNN',
       },
-      rules: 'required',
     },
     {
       fieldName: 'sourceType',
-      label: '噪声源类型',
-      component: 'Select',
-      componentProps: {
-        options: [{ label: "固定声源", value: "固定声源" }, { label: "流动声源", value: "流动声源" }, { label: "冲击噪声", value: "冲击噪声" }, { label: "其他", value: "其他" }],
-        placeholder: '请选择噪声源类型',
-      },
-      rules: 'selectRequired',
-    },
-    {
-      fieldName: 'location',
-      label: '检测位置',
+      label: '监测类型：STATIONARY(固定式声级计)/PERSONAL(个体剂量计)',
       component: 'Input',
       componentProps: {
         allowClear: true,
-        placeholder: '请输入检测位置',
+        placeholder: '请输入监测类型：STATIONARY(固定式声级计)/PERSONAL(个体剂量计)',
+      },
+    },
+    {
+      fieldName: 'location',
+      label: '检测位置/区域',
+      component: 'Input',
+      componentProps: {
+        allowClear: true,
+        placeholder: '请输入检测位置/区域',
       },
     },
     {
       fieldName: 'collectionMode',
-      label: '采集方式',
+      label: '采集方式：IOT_AUTO/MANUAL',
       component: 'Select',
       componentProps: {
-        options: [{ label: "IOT自动采集", value: "IOT_AUTO" }, { label: "人工采集", value: "MANUAL" }],
-        placeholder: '请选择采集方式',
         allowClear: true,
+        options: COLLECTION_MODE_OPTIONS,
+        placeholder: '请选择',
+      },
+    },
+    {
+      fieldName: 'result',
+      label: '结果：PASS/FAIL',
+      component: 'Select',
+      componentProps: {
+        allowClear: true,
+        options: RESULT_OPTIONS,
+        placeholder: '请选择',
+      },
+    },
+  ];
+}
+
+/** 列表字段 */
+export function useGridColumns(): VxeTableGridOptions<MesSetNoiseRecordApi.NoiseRecord>['columns'] {
+  return [
+    { field: 'recordNo', title: '记录编号 NOISE-YYYYMMDD-NNN', minWidth: 170, showOverflow: true },
+    { field: 'sourceType', title: '监测类型：STATIONARY(固定式声级计)/PERSONAL(个体剂量计)', minWidth: 170, showOverflow: true },
+    { field: 'location', title: '检测位置/区域', minWidth: 170, showOverflow: true },
+    { field: 'collectionMode', title: '采集方式：IOT_AUTO/MANUAL', minWidth: 170, showOverflow: true, slots: { default: 'collectionMode' } },
+    { field: 'lex8h', title: '8小时等效声级 dB(A)', width: 120 },
+    { field: 'lpeak', title: '峰值声级 dB(C)', width: 120 },
+    { field: 'limitLex8h', title: '限值 dB(A)≤85', width: 120 },
+    { field: 'limitLpeak', title: '限值 dB(C)≤140', width: 120 },
+    { field: 'result', title: '结果：PASS/FAIL', minWidth: 170, showOverflow: true, slots: { default: 'result' } },
+    { field: 'inspectTime', title: '检测时间', width: 120 },
+    {
+      title: '操作',
+      width: 150,
+      fixed: 'right',
+      slots: {
+        default: 'actions',
+      },
+    },
+  ];
+}
+
+/** 新增/编辑表单 */
+export function useFormSchema(): VbenFormSchema[] {
+  return [
+    {
+      fieldName: 'recordNo',
+      label: '记录编号 NOISE-YYYYMMDD-NNN',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入记录编号 NOISE-YYYYMMDD-NNN',
+      },
+      rules: 'required',
+    },
+    {
+      fieldName: 'planId',
+      label: '关联检测计划编号',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入关联检测计划编号',
+      },
+    },
+    {
+      fieldName: 'woId',
+      label: '关联工单编号',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入关联工单编号',
+      },
+    },
+    {
+      fieldName: 'operationId',
+      label: '关联工序编号',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入关联工序编号',
+      },
+    },
+    {
+      fieldName: 'deviceId',
+      label: '关联设备编号',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入关联设备编号',
+      },
+    },
+    {
+      fieldName: 'empId',
+      label: '关联人员编号(个体剂量计佩戴人)',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入关联人员编号(个体剂量计佩戴人)',
+      },
+    },
+    {
+      fieldName: 'sourceType',
+      label: '监测类型：STATIONARY(固定式声级计)/PERSONAL(个体剂量计)',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入监测类型：STATIONARY(固定式声级计)/PERSONAL(个体剂量计)',
+      },
+      rules: 'required',
+    },
+    {
+      fieldName: 'location',
+      label: '检测位置/区域',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入检测位置/区域',
+      },
+    },
+    {
+      fieldName: 'collectionMode',
+      label: '采集方式：IOT_AUTO/MANUAL',
+      component: 'Select',
+      componentProps: {
+        options: COLLECTION_MODE_OPTIONS,
+        placeholder: '请选择',
       },
     },
     {
       fieldName: 'lex8h',
-      label: '8小时等效声级 Lex8h(dB(A))',
+      label: '8小时等效声级 dB(A)',
       component: 'InputNumber',
       componentProps: {
-        min: 0,
-        placeholder: '请输入',
-        precision: 2,
+        placeholder: '请输入8小时等效声级 dB(A)',
+        class: 'w-full',
       },
     },
     {
       fieldName: 'lpeak',
-      label: '峰值声级 Lpeak(dB(C))',
+      label: '峰值声级 dB(C)',
       component: 'InputNumber',
       componentProps: {
-        min: 0,
-        placeholder: '请输入',
-        precision: 2,
+        placeholder: '请输入峰值声级 dB(C)',
+        class: 'w-full',
       },
     },
     {
       fieldName: 'limitLex8h',
-      label: '8小时等效声级限值(dB(A))',
+      label: '限值 dB(A)≤85',
       component: 'InputNumber',
       componentProps: {
-        min: 0,
-        placeholder: '请输入',
-        precision: 2,
+        placeholder: '请输入限值 dB(A)≤85',
+        class: 'w-full',
       },
     },
     {
       fieldName: 'limitLpeak',
-      label: '峰值声级限值(dB(C))',
+      label: '限值 dB(C)≤140',
       component: 'InputNumber',
       componentProps: {
-        min: 0,
-        placeholder: '请输入',
-        precision: 2,
+        placeholder: '请输入限值 dB(C)≤140',
+        class: 'w-full',
       },
     },
     {
       fieldName: 'spectrum',
-      label: '频谱分析结果',
-      component: 'Textarea',
+      label: '频谱分析(倍频程，JSON文本)',
+      component: 'Input',
       componentProps: {
-        placeholder: '请输入频谱分析结果',
-        rows: 2,
+        placeholder: '请输入频谱分析(倍频程，JSON文本)',
       },
-      formItemClass: 'col-span-3',
+    },
+    {
+      fieldName: 'standardId',
+      label: '关联检测标准编号',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入关联检测标准编号',
+      },
     },
     {
       fieldName: 'result',
-      label: '综合结论',
+      label: '结果：PASS/FAIL',
       component: 'Select',
       componentProps: {
         options: RESULT_OPTIONS,
-        placeholder: '请选择综合结论',
-        allowClear: true,
+        placeholder: '请选择',
       },
     },
     {
@@ -125,7 +247,6 @@ export function useFormSchema(): VbenFormSchema[] {
       label: '检测仪器编号',
       component: 'Input',
       componentProps: {
-        allowClear: true,
         placeholder: '请输入检测仪器编号',
       },
     },
@@ -134,7 +255,6 @@ export function useFormSchema(): VbenFormSchema[] {
       label: '检测人',
       component: 'Input',
       componentProps: {
-        allowClear: true,
         placeholder: '请输入检测人',
       },
     },
@@ -143,87 +263,28 @@ export function useFormSchema(): VbenFormSchema[] {
       label: '检测时间',
       component: 'DatePicker',
       componentProps: {
-        format: 'YYYY-MM-DD HH:mm:ss',
-        placeholder: '请选择时间',
         showTime: true,
-        valueFormat: 'x',
+        valueFormat: 'YYYY-MM-DD HH:mm:ss',
+        format: 'YYYY-MM-DD HH:mm:ss',
+        placeholder: '选择时间',
       },
       rules: 'required',
     },
     {
       fieldName: 'photoUrls',
-      label: '检测照片 URL',
-      component: 'Textarea',
+      label: '检测照片URL(逗号分隔)',
+      component: 'Input',
       componentProps: {
-        placeholder: '请输入检测照片 URL',
-        rows: 2,
+        placeholder: '请输入检测照片URL(逗号分隔)',
       },
-      formItemClass: 'col-span-3',
     },
     {
       fieldName: 'remark',
       label: '备注',
       component: 'Textarea',
       componentProps: {
+        rows: 3,
         placeholder: '请输入备注',
-        rows: 2,
-      },
-      formItemClass: 'col-span-3',
-    },
-  ];
-}
-
-/** 列表的搜索表单 */
-export function useGridFormSchema(): VbenFormSchema[] {
-  return [
-    {
-      fieldName: 'sourceType',
-      label: '噪声源类型',
-      component: 'Select',
-      componentProps: {
-        allowClear: true,
-        options: [{ label: "固定声源", value: "固定声源" }, { label: "流动声源", value: "流动声源" }, { label: "冲击噪声", value: "冲击噪声" }, { label: "其他", value: "其他" }],
-        placeholder: '请选择噪声源类型',
-      },
-    },
-    {
-      fieldName: 'result',
-      label: '结果',
-      component: 'Select',
-      componentProps: {
-        allowClear: true,
-        options: RESULT_OPTIONS,
-        placeholder: '请选择结果',
-      },
-    },
-    {
-      fieldName: 'inspectTime',
-      label: '检测时间',
-      component: 'RangePicker',
-      componentProps: {
-        ...getRangePickerDefaultProps(),
-      },
-    },
-  ];
-}
-
-/** 列表的字段 */
-export function useGridColumns(): VxeTableGridOptions<MesSetNoiseRecordApi.NoiseRecord>['columns'] {
-  return [
-    { field: 'recordNo', title: '记录编号', minWidth: 150 },
-    { field: 'sourceType', title: '噪声源类型', minWidth: 150 },
-    { field: 'location', title: '检测位置', minWidth: 150 },
-    { field: 'lex8h', title: '8小时等效声级 Lex8h(dB(A))', width: 130 },
-    { field: 'lpeak', title: '峰值声级 Lpeak(dB(C))', width: 130 },
-    { field: 'result', title: '综合结论', width: 110, slots: { default: 'result' } },
-    { field: 'inspectTime', title: '检测时间', width: 180, formatter: 'formatDateTime' },
-    { field: 'inspector', title: '检测人', minWidth: 150 },
-    {
-      title: '操作',
-      width: 160,
-      fixed: 'right',
-      slots: {
-        default: 'actions',
       },
     },
   ];

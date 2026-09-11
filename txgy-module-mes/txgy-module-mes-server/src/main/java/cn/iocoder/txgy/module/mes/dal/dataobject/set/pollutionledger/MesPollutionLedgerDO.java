@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -84,6 +85,10 @@ public class MesPollutionLedgerDO extends BaseDO {
      */
     private String itemSpec;
     /**
+     * 重量(kg)——由源判定行带入，同一批废物只有一个重量来源
+     */
+    private BigDecimal weight;
+    /**
      * 处置方式
      */
     private String disposition;
@@ -95,6 +100,10 @@ public class MesPollutionLedgerDO extends BaseDO {
      * 去向/库位
      */
     private String location;
+    /**
+     * 受控库位编号（mes_wm_warehouse_area.id），污染管控门禁用；location 为其名称快照
+     */
+    private Long locationId;
     /**
      * 是否标记
      */

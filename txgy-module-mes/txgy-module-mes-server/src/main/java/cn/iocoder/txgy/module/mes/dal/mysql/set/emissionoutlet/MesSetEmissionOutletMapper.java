@@ -15,16 +15,19 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface MesSetEmissionOutletMapper extends BaseMapperX<MesSetEmissionOutletDO> {
 
-    default PageResult<MesSetEmissionOutletDO> selectPage(MesSetEmissionOutletPageReqVO reqVO) {
-        return selectPage(reqVO, new LambdaQueryWrapperX<MesSetEmissionOutletDO>()
-                .likeIfPresent(MesSetEmissionOutletDO::getOutletName, reqVO.getOutletName())
-                .eqIfPresent(MesSetEmissionOutletDO::getOutletType, reqVO.getOutletType())
-                .eqIfPresent(MesSetEmissionOutletDO::getStatus, reqVO.getStatus())
-                .orderByDesc(MesSetEmissionOutletDO::getId));
+    default MesSetEmissionOutletDO selectByOutletCode(String outlet_code) {
+        return selectOne(MesSetEmissionOutletDO::getOutletCode, outlet_code);
     }
 
-    default MesSetEmissionOutletDO selectByOutletCode(String outletCode) {
-        return selectOne(MesSetEmissionOutletDO::getOutletCode, outletCode);
+    default PageResult<MesSetEmissionOutletDO> selectPage(MesSetEmissionOutletPageReqVO reqVO) {
+        LambdaQueryWrapperX<MesSetEmissionOutletDO> query = new LambdaQueryWrapperX<MesSetEmissionOutletDO>()
+                .likeIfPresent(MesSetEmissionOutletDO::getOutletCode, reqVO.getOutletCode())
+                .likeIfPresent(MesSetEmissionOutletDO::getOutletName, reqVO.getOutletName())
+                .eqIfPresent(MesSetEmissionOutletDO::getOutletType, reqVO.getOutletType())
+                .eqIfPresent(MesSetEmissionOutletDO::getMonitorMethod, reqVO.getMonitorMethod())
+                .likeIfPresent(MesSetEmissionOutletDO::getStatus, reqVO.getStatus())
+                .orderByDesc(MesSetEmissionOutletDO::getId);
+        return selectPage(reqVO, query);
     }
 
 }

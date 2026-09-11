@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
-import type { MesSetOccupationalHazardApi } from '#/api/mes/safetyEnv/occupationalHazard';
+import type { MesSetOccupationalHazardApi } from '#/api/mes/safetyEnv/occupationalhazard';
 
 import { Page, useVbenModal } from '@vben/common-ui';
 
@@ -10,10 +10,10 @@ import { ACTION_ICON, TableAction, useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   deleteOccupationalHazard,
   getOccupationalHazardPage,
-} from '#/api/mes/safetyEnv/occupationalHazard';
+} from '#/api/mes/safetyEnv/occupationalhazard';
 import { $t } from '#/locales';
 
-import { useGridColumns, useGridFormSchema } from './data';
+import { FACTOR_CATEGORY_MAP, RESULT_MAP, useGridColumns, useGridFormSchema } from './data';
 import Form from './modules/form.vue';
 
 const [FormModal, formModalApi] = useVbenModal({
@@ -26,19 +26,19 @@ function handleRefresh() {
   gridApi.query();
 }
 
-/** 创建职业病危害检测 */
+/** 新建职业危害检测 */
 function handleCreate() {
   formModalApi.setData({ formType: 'create' }).open();
 }
 
-/** 编辑职业病危害检测 */
+/** 编辑职业危害检测 */
 function handleEdit(row: MesSetOccupationalHazardApi.OccupationalHazard) {
   formModalApi.setData({ id: row.id, formType: 'update' }).open();
 }
 
-/** 删除职业病危害检测 */
+/** 删除职业危害检测 */
 async function handleDelete(row: MesSetOccupationalHazardApi.OccupationalHazard) {
-  const label = row.recordNo ?? '';
+  const label = row.factorCode ?? '';
   const hideLoading = message.loading({
     content: $t('ui.actionMessage.deleting', [label]),
     duration: 0,
@@ -84,12 +84,12 @@ const [Grid, gridApi] = useVbenVxeGrid({
 <template>
   <Page auto-content-height>
     <FormModal @success="handleRefresh" />
-    <Grid table-title="职业病危害检测列表">
+    <Grid table-title="职业危害检测列表">
       <template #toolbar-tools>
         <TableAction
           :actions="[
             {
-              label: $t('ui.actionTitle.create', ['职业病危害检测']),
+              label: '新建职业危害检测',
               type: 'primary',
               icon: ACTION_ICON.ADD,
               auth: ['mes:set-occupational-hazard:create'],
@@ -98,11 +98,15 @@ const [Grid, gridApi] = useVbenVxeGrid({
           ]"
         />
       </template>
-      <template #result="{ row }">
-        <Tag v-if="row.result" :color="row.result === 'PASS' ? 'success' : 'error'">
-          {{ row.result === 'PASS' ? '合格' : '不合格' }}
+      <template #factorCategory="{ row }">
+        <Tag :color="FACTOR_CATEGORY_MAP[row.factorCategory]?.color">
+          {{ FACTOR_CATEGORY_MAP[row.factorCategory]?.text ?? row.factorCategory }}
         </Tag>
-        <span v-else>-</span>
+      </template>
+      <template #result="{ row }">
+        <Tag :color="RESULT_MAP[row.result]?.color">
+          {{ RESULT_MAP[row.result]?.text ?? row.result }}
+        </Tag>
       </template>
       <template #actions="{ row }">
         <TableAction
@@ -121,7 +125,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
               icon: ACTION_ICON.DELETE,
               auth: ['mes:set-occupational-hazard:delete'],
               popConfirm: {
-                title: $t('ui.actionMessage.deleteConfirm', [row.recordNo]),
+                title: $t('ui.actionMessage.deleteConfirm', [row.factorCode]),
                 confirm: handleDelete.bind(null, row),
               },
             },

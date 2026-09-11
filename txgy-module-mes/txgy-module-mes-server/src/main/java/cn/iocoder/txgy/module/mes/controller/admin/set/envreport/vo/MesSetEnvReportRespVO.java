@@ -2,7 +2,6 @@ package cn.iocoder.txgy.module.mes.controller.admin.set.envreport.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -10,49 +9,49 @@ import java.time.LocalDateTime;
 @Data
 public class MesSetEnvReportRespVO {
 
-    @Schema(description = "编号", example = "1")
+    @Schema(description = "编号")
     private Long id;
 
-    @Schema(description = "报告编号", example = "ENV-RPT-2026Q3-001")
+    @Schema(description = "报告编号 EP-YYYYMMDD-NNN")
     private String reportNo;
 
-    @Schema(description = "报告名称", example = "2026年第三季度自行监测报告")
+    @Schema(description = "报告名称")
     private String reportName;
 
-    @Schema(description = "报告类型：MONTHLY(月度)/QUARTERLY(季度)/ANNUAL(年度)/OTHER(其他)", example = "QUARTERLY")
+    @Schema(description = "报告来源：THIRD_PARTY/INTERNAL")
     private String reportType;
 
-    @Schema(description = "报告类别：SELF_MONITOR(自行监测)/COMPLIANCE(合规性)/OTHER(其他)", example = "SELF_MONITOR")
+    @Schema(description = "类别：EXHAUST_GAS/WASTEWATER/NOISE/SOLID_WASTE/AMBIENT/COMPREHENSIVE等")
     private String reportCategory;
 
-    @Schema(description = "关联报告模板编号", example = "1")
+    @Schema(description = "复用质检报告模板编号")
     private Long templateId;
 
-    @Schema(description = "报告周期开始日期")
+    @Schema(description = "报告统计期起")
     private LocalDate periodStart;
 
-    @Schema(description = "报告周期结束日期")
+    @Schema(description = "报告统计期止")
     private LocalDate periodEnd;
 
-    @Schema(description = "报告生成日期")
+    @Schema(description = "报告日期")
     private LocalDate reportDate;
 
-    @Schema(description = "数据汇总摘要", example = "废水总排口COD均值42mg/L，达标排放")
+    @Schema(description = "检测结果摘要JSON文本")
     private String dataSummary;
 
-    @Schema(description = "报告文件 URL", example = "/prod-api/1.pdf")
+    @Schema(description = "报告文件URL(第三方导入PDF)")
     private String fileUrl;
 
-    @Schema(description = "签章文件 URL", example = "/prod-api/sign/1.png")
+    @Schema(description = "电子签名文件URL")
     private String signUrl;
 
-    @Schema(description = "关联表单编号", example = "1")
+    @Schema(description = "自定义表单配置id")
     private Long formId;
 
-    @Schema(description = "状态：DRAFT(草稿)/SUBMITTED(已提交)/APPROVED(已审批)/REJECTED(已驳回)", example = "APPROVED")
+    @Schema(description = "状态：DRAFT/APPROVED/REJECTED/ARCHIVED")
     private String status;
 
-    @Schema(description = "审核人", example = "李四")
+    @Schema(description = "审核人(终审)")
     private String auditBy;
 
     @Schema(description = "审核时间")

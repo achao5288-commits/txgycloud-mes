@@ -47,11 +47,13 @@ const [Modal, modalApi] = useVbenModal({
     modalApi.lock();
     const values = (await formApi.getValues()) as MesPollutionLedgerApi.StatusPayload;
     try {
-      // 流转到处置中/已回用/已排放/已处置(终态自动清批次污染戳)
+      // 流转到处置中/已回用/已排放/已处置(终态自动清批次污染戳)；已排放随带 去向/标准 落排放流水
       await updatePollutionLedgerStatus({
         id: row.value.id!,
         status: values.status,
         remark: values.remark,
+        destination: values.destination,
+        standard: values.standard,
       });
       await modalApi.close();
       emit('success');
@@ -68,7 +70,7 @@ const [Modal, modalApi] = useVbenModal({
     }
     const data = modalApi.getData<{ row: MesPollutionLedgerApi.Ledger }>();
     row.value = data.row;
-    formApi.setValues({ status: undefined });
+    formApi.setValues({ status: undefined, destination: undefined, standard: undefined });
   },
 });
 </script>

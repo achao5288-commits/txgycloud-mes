@@ -30,4 +30,7 @@ public class MesPollutionLedgerPageReqVO extends PageParam {
     @Schema(description = "物料/产品名称(模糊)")
     private String itemName;
 
+    @Schema(description = "是否标记（被标记品清单：true=仅看已标记，false=仅看未标记，空=全部）", example = "true")
+    private Boolean marked;
+
 }

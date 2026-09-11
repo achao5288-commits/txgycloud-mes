@@ -19,53 +19,54 @@ import org.springframework.web.bind.annotation.*;
 
 import static cn.iocoder.txgy.framework.common.pojo.CommonResult.success;
 
-@Tag(name = "管理后台 - MES 安全环保检测-废气排放检测记录")
+@Tag(name = "管理后台 - MES 安全环保检测-废气监测记录")
 @RestController
 @RequestMapping("/mes/safety-env/exhaust-gas")
 @Validated
 public class MesSetExhaustGasController {
 
     @Resource
-    private MesSetExhaustGasService exhaustGasService;
+    private MesSetExhaustGasService exhaustgasService;
 
     @PostMapping("/create")
-    @Operation(summary = "创建废气排放检测记录")
+    @Operation(summary = "创建废气监测记录")
     @PreAuthorize("@ss.hasPermission('mes:set-exhaust-gas:create')")
     public CommonResult<Long> createExhaustGas(@Valid @RequestBody MesSetExhaustGasSaveReqVO createReqVO) {
-        return success(exhaustGasService.createExhaustGas(createReqVO));
+        return success(exhaustgasService.createExhaustGas(createReqVO));
     }
 
     @PutMapping("/update")
-    @Operation(summary = "更新废气排放检测记录")
+    @Operation(summary = "更新废气监测记录")
     @PreAuthorize("@ss.hasPermission('mes:set-exhaust-gas:update')")
     public CommonResult<Boolean> updateExhaustGas(@Valid @RequestBody MesSetExhaustGasSaveReqVO updateReqVO) {
-        exhaustGasService.updateExhaustGas(updateReqVO);
+        exhaustgasService.updateExhaustGas(updateReqVO);
         return success(true);
     }
 
     @DeleteMapping("/delete")
-    @Operation(summary = "删除废气排放检测记录")
+    @Operation(summary = "删除废气监测记录")
     @Parameter(name = "id", description = "编号", required = true)
     @PreAuthorize("@ss.hasPermission('mes:set-exhaust-gas:delete')")
     public CommonResult<Boolean> deleteExhaustGas(@RequestParam("id") Long id) {
-        exhaustGasService.deleteExhaustGas(id);
+        exhaustgasService.deleteExhaustGas(id);
         return success(true);
     }
 
     @GetMapping("/get")
-    @Operation(summary = "获得废气排放检测记录")
-    @Parameter(name = "id", description = "编号", required = true, example = "1024")
+    @Operation(summary = "获得废气监测记录")
+    @Parameter(name = "id", description = "编号", required = true, example = "1")
     @PreAuthorize("@ss.hasPermission('mes:set-exhaust-gas:query')")
     public CommonResult<MesSetExhaustGasRespVO> getExhaustGas(@RequestParam("id") Long id) {
-        MesSetExhaustGasDO exhaustGas = exhaustGasService.getExhaustGas(id);
-        return success(BeanUtils.toBean(exhaustGas, MesSetExhaustGasRespVO.class));
+        MesSetExhaustGasDO obj = exhaustgasService.getExhaustGas(id);
+        return success(BeanUtils.toBean(obj, MesSetExhaustGasRespVO.class));
     }
 
     @GetMapping("/page")
-    @Operation(summary = "获得废气排放检测记录分页")
+    @Operation(summary = "获得废气监测记录分页")
     @PreAuthorize("@ss.hasPermission('mes:set-exhaust-gas:query')")
-    public CommonResult<PageResult<MesSetExhaustGasRespVO>> getExhaustGasPage(@Valid MesSetExhaustGasPageReqVO pageReqVO) {
-        PageResult<MesSetExhaustGasDO> pageResult = exhaustGasService.getExhaustGasPage(pageReqVO);
+    public CommonResult<PageResult<MesSetExhaustGasRespVO>> getExhaustGasPage(
+            @Valid MesSetExhaustGasPageReqVO pageReqVO) {
+        PageResult<MesSetExhaustGasDO> pageResult = exhaustgasService.getExhaustGasPage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, MesSetExhaustGasRespVO.class));
     }
 

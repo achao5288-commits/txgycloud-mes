@@ -2,46 +2,112 @@ import type { VbenFormSchema } from '#/adapter/form';
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { MesSetCarbonEmissionApi } from '#/api/mes/safetyEnv/carbonEmission';
 
+/** 能源类型：ELECTRICITY/NATURAL_GAS/DIESEL/STEAM选项 */
+export const ENERGY_TYPE_OPTIONS = [
+  { label: 'COAL', value: 'COAL' },
+  { label: '电', value: 'ELECTRICITY' },
+];
 
-/** 新增/修改碳排放核算的表单 */
-export function useFormSchema(): VbenFormSchema[] {
+/** 能源类型：ELECTRICITY/NATURAL_GAS/DIESEL/STEAM文案 */
+export const ENERGY_TYPE_MAP: Record<string, { text: string; color: string }> = {
+  COAL: { text: 'COAL', color: 'success' },
+  ELECTRICITY: { text: '电', color: 'error' },
+};
+
+/** 搜索表单 */
+export function useGridFormSchema(): VbenFormSchema[] {
   return [
     {
-      fieldName: 'id',
-      component: 'Input',
-      dependencies: {
-        triggerFields: [''],
-        show: () => false,
-      },
-    },
-    {
       fieldName: 'calcNo',
-      label: '核算批次号',
+      label: '核算批次号 CARBON-YYYYMM',
       component: 'Input',
       componentProps: {
         allowClear: true,
-        placeholder: '请输入核算批次号',
+        placeholder: '请输入核算批次号 CARBON-YYYYMM',
+      },
+    },
+    {
+      fieldName: 'periodType',
+      label: '核算周期：DAILY/MONTHLY/YEARLY',
+      component: 'Input',
+      componentProps: {
+        allowClear: true,
+        placeholder: '请输入核算周期：DAILY/MONTHLY/YEARLY',
+      },
+    },
+    {
+      fieldName: 'periodStart',
+      label: '周期开始日期',
+      component: 'Input',
+      componentProps: {
+        allowClear: true,
+        placeholder: '请输入周期开始日期',
+      },
+    },
+    {
+      fieldName: 'energyType',
+      label: '能源类型：ELECTRICITY/NATURAL_GAS/DIESEL/STEAM',
+      component: 'Select',
+      componentProps: {
+        allowClear: true,
+        options: ENERGY_TYPE_OPTIONS,
+        placeholder: '请选择',
+      },
+    },
+  ];
+}
+
+/** 列表字段 */
+export function useGridColumns(): VxeTableGridOptions<MesSetCarbonEmissionApi.CarbonEmission>['columns'] {
+  return [
+    { field: 'calcNo', title: '核算批次号 CARBON-YYYYMM', minWidth: 170, showOverflow: true },
+    { field: 'periodType', title: '核算周期：DAILY/MONTHLY/YEARLY', minWidth: 170, showOverflow: true },
+    { field: 'energyType', title: '能源类型：ELECTRICITY/NATURAL_GAS/DIESEL/STEAM', minWidth: 170, showOverflow: true, slots: { default: 'energyType' } },
+    { field: 'consumption', title: '能源消耗量', width: 120 },
+    { field: 'emissionFactor', title: '排放因子', width: 120 },
+    { field: 'carbonEmission', title: '碳排放量=consumption*factor', width: 120 },
+    { field: 'unit', title: '单位 tCO2', minWidth: 170, showOverflow: true },
+    { field: 'totalEmission', title: '合计', width: 120 },
+    {
+      title: '操作',
+      width: 150,
+      fixed: 'right',
+      slots: {
+        default: 'actions',
+      },
+    },
+  ];
+}
+
+/** 新增/编辑表单 */
+export function useFormSchema(): VbenFormSchema[] {
+  return [
+    {
+      fieldName: 'calcNo',
+      label: '核算批次号 CARBON-YYYYMM',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入核算批次号 CARBON-YYYYMM',
       },
       rules: 'required',
     },
     {
       fieldName: 'periodType',
-      label: '核算周期',
-      component: 'Select',
+      label: '核算周期：DAILY/MONTHLY/YEARLY',
+      component: 'Input',
       componentProps: {
-        options: [{ label: "日核算", value: "DAILY" }, { label: "月核算", value: "MONTHLY" }, { label: "年核算", value: "YEARLY" }],
-        placeholder: '请选择核算周期',
+        placeholder: '请输入核算周期：DAILY/MONTHLY/YEARLY',
       },
-      rules: 'selectRequired',
+      rules: 'required',
     },
     {
       fieldName: 'periodStart',
       label: '周期开始日期',
       component: 'DatePicker',
       componentProps: {
-        format: 'YYYY-MM-DD',
-        placeholder: '请选择日期',
         valueFormat: 'YYYY-MM-DD',
+        format: 'YYYY-MM-DD',
+        placeholder: '选择日期',
       },
       rules: 'required',
     },
@@ -50,19 +116,35 @@ export function useFormSchema(): VbenFormSchema[] {
       label: '周期结束日期',
       component: 'DatePicker',
       componentProps: {
-        format: 'YYYY-MM-DD',
-        placeholder: '请选择日期',
         valueFormat: 'YYYY-MM-DD',
+        format: 'YYYY-MM-DD',
+        placeholder: '选择日期',
       },
       rules: 'required',
     },
     {
+      fieldName: 'woId',
+      label: '关联工单编号(工单级碳足迹可空)',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入关联工单编号(工单级碳足迹可空)',
+      },
+    },
+    {
+      fieldName: 'sourceRecordId',
+      label: '关联能耗记录编号(能源台账)',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入关联能耗记录编号(能源台账)',
+      },
+    },
+    {
       fieldName: 'energyType',
-      label: '能源类型',
+      label: '能源类型：ELECTRICITY/NATURAL_GAS/DIESEL/STEAM',
       component: 'Select',
       componentProps: {
-        options: [{ label: "电力", value: "ELECTRICITY" }, { label: "原煤", value: "COAL" }, { label: "天然气", value: "NATURAL_GAS" }, { label: "柴油", value: "DIESEL" }, { label: "汽油", value: "GASOLINE" }, { label: "蒸汽", value: "STEAM" }, { label: "其他", value: "OTHER" }],
-        placeholder: '请选择能源类型',
+        options: ENERGY_TYPE_OPTIONS,
+        placeholder: '请选择',
       },
       rules: 'selectRequired',
     },
@@ -71,9 +153,8 @@ export function useFormSchema(): VbenFormSchema[] {
       label: '能源消耗量',
       component: 'InputNumber',
       componentProps: {
-        min: 0,
-        placeholder: '请输入',
-        precision: 2,
+        placeholder: '请输入能源消耗量',
+        class: 'w-full',
       },
     },
     {
@@ -81,9 +162,8 @@ export function useFormSchema(): VbenFormSchema[] {
       label: '排放因子',
       component: 'InputNumber',
       componentProps: {
-        min: 0,
-        placeholder: '请输入',
-        precision: 2,
+        placeholder: '请输入排放因子',
+        class: 'w-full',
       },
     },
     {
@@ -91,9 +171,8 @@ export function useFormSchema(): VbenFormSchema[] {
       label: '碳排放量=consumption*factor',
       component: 'InputNumber',
       componentProps: {
-        min: 0,
-        placeholder: '请输入',
-        precision: 2,
+        placeholder: '请输入碳排放量=consumption*factor',
+        class: 'w-full',
       },
     },
     {
@@ -101,7 +180,6 @@ export function useFormSchema(): VbenFormSchema[] {
       label: '单位 tCO2',
       component: 'Input',
       componentProps: {
-        allowClear: true,
         placeholder: '请输入单位 tCO2',
       },
     },
@@ -110,9 +188,8 @@ export function useFormSchema(): VbenFormSchema[] {
       label: '工艺排放',
       component: 'InputNumber',
       componentProps: {
-        min: 0,
-        placeholder: '请输入',
-        precision: 2,
+        placeholder: '请输入工艺排放',
+        class: 'w-full',
       },
     },
     {
@@ -120,57 +197,8 @@ export function useFormSchema(): VbenFormSchema[] {
       label: '合计',
       component: 'InputNumber',
       componentProps: {
-        min: 0,
-        placeholder: '请输入',
-        precision: 2,
-      },
-    },
-  ];
-}
-
-/** 列表的搜索表单 */
-export function useGridFormSchema(): VbenFormSchema[] {
-  return [
-    {
-      fieldName: 'periodType',
-      label: '核算周期',
-      component: 'Select',
-      componentProps: {
-        allowClear: true,
-        options: [{ label: "日核算", value: "DAILY" }, { label: "月核算", value: "MONTHLY" }, { label: "年核算", value: "YEARLY" }],
-        placeholder: '请选择核算周期',
-      },
-    },
-    {
-      fieldName: 'energyType',
-      label: '能源类型',
-      component: 'Select',
-      componentProps: {
-        allowClear: true,
-        options: [{ label: "电力", value: "ELECTRICITY" }, { label: "原煤", value: "COAL" }, { label: "天然气", value: "NATURAL_GAS" }, { label: "柴油", value: "DIESEL" }, { label: "汽油", value: "GASOLINE" }, { label: "蒸汽", value: "STEAM" }, { label: "其他", value: "OTHER" }],
-        placeholder: '请选择能源类型',
-      },
-    },
-  ];
-}
-
-/** 列表的字段 */
-export function useGridColumns(): VxeTableGridOptions<MesSetCarbonEmissionApi.CarbonEmission>['columns'] {
-  return [
-    { field: 'calcNo', title: '核算批次号', minWidth: 150 },
-    { field: 'periodType', title: '核算周期', minWidth: 150 },
-    { field: 'periodStart', title: '周期开始日期', width: 130 },
-    { field: 'periodEnd', title: '周期结束日期', width: 130 },
-    { field: 'energyType', title: '能源类型', minWidth: 150 },
-    { field: 'consumption', title: '能源消耗量', width: 130 },
-    { field: 'carbonEmission', title: '碳排放量=consumption*factor', width: 130 },
-    { field: 'totalEmission', title: '合计', width: 130 },
-    {
-      title: '操作',
-      width: 160,
-      fixed: 'right',
-      slots: {
-        default: 'actions',
+        placeholder: '请输入合计',
+        class: 'w-full',
       },
     },
   ];

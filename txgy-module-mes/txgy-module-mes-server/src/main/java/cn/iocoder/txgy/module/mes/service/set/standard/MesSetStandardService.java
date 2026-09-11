@@ -4,10 +4,7 @@ import cn.iocoder.txgy.framework.common.pojo.PageResult;
 import cn.iocoder.txgy.module.mes.controller.admin.set.standard.vo.MesSetStandardPageReqVO;
 import cn.iocoder.txgy.module.mes.controller.admin.set.standard.vo.MesSetStandardSaveReqVO;
 import cn.iocoder.txgy.module.mes.dal.dataobject.set.standard.MesSetStandardDO;
-
 import jakarta.validation.Valid;
-
-import java.util.List;
 
 /**
  * MES 安全环保检测-检测标准 Service 接口
@@ -39,13 +36,6 @@ public interface MesSetStandardService {
     void deleteStandard(Long id);
 
     /**
-     * 校验检测标准存在
-     *
-     * @param id 编号
-     */
-    void validateStandardExists(Long id);
-
-    /**
      * 获得检测标准
      *
      * @param id 编号
@@ -60,12 +50,5 @@ public interface MesSetStandardService {
      * @return 检测标准分页
      */
     PageResult<MesSetStandardDO> getStandardPage(MesSetStandardPageReqVO pageReqVO);
-
-    /**
-     * 获得启用状态的检测标准列表（标准下拉）
-     *
-     * @return 检测标准列表
-     */
-    List<MesSetStandardDO> getStandardList();
 
 }

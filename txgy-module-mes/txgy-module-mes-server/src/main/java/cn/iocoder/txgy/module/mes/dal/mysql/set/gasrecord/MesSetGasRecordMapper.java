@@ -8,23 +8,26 @@ import cn.iocoder.txgy.module.mes.dal.dataobject.set.gasrecord.MesSetGasRecordDO
 import org.apache.ibatis.annotations.Mapper;
 
 /**
- * MES 安全环保检测-作业环境气体检测记录 Mapper
+ * MES 安全环保检测-气体检测记录 Mapper
  *
  * @author OPENLAB BS
  */
 @Mapper
 public interface MesSetGasRecordMapper extends BaseMapperX<MesSetGasRecordDO> {
 
-    default PageResult<MesSetGasRecordDO> selectPage(MesSetGasRecordPageReqVO reqVO) {
-        return selectPage(reqVO, new LambdaQueryWrapperX<MesSetGasRecordDO>()
-                .eqIfPresent(MesSetGasRecordDO::getGasType, reqVO.getGasType())
-                .eqIfPresent(MesSetGasRecordDO::getResult, reqVO.getResult())
-                .betweenIfPresent(MesSetGasRecordDO::getInspectTime, reqVO.getInspectTime())
-                .orderByDesc(MesSetGasRecordDO::getId));
+    default MesSetGasRecordDO selectByRecordNo(String record_no) {
+        return selectOne(MesSetGasRecordDO::getRecordNo, record_no);
     }
 
-    default MesSetGasRecordDO selectByRecordNo(String recordNo) {
-        return selectOne(MesSetGasRecordDO::getRecordNo, recordNo);
+    default PageResult<MesSetGasRecordDO> selectPage(MesSetGasRecordPageReqVO reqVO) {
+        LambdaQueryWrapperX<MesSetGasRecordDO> query = new LambdaQueryWrapperX<MesSetGasRecordDO>()
+                .likeIfPresent(MesSetGasRecordDO::getRecordNo, reqVO.getRecordNo())
+                .likeIfPresent(MesSetGasRecordDO::getLocation, reqVO.getLocation())
+                .eqIfPresent(MesSetGasRecordDO::getGasType, reqVO.getGasType())
+                .likeIfPresent(MesSetGasRecordDO::getResult, reqVO.getResult())
+                .likeIfPresent(MesSetGasRecordDO::getCollectionMode, reqVO.getCollectionMode())
+                .orderByDesc(MesSetGasRecordDO::getId);
+        return selectPage(reqVO, query);
     }
 
 }

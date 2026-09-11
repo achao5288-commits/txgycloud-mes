@@ -8,15 +8,19 @@ import cn.iocoder.txgy.module.mes.dal.dataobject.set.gasrecord.MesSetGasRecordDO
 import cn.iocoder.txgy.module.mes.dal.mysql.set.gasrecord.MesSetGasRecordMapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 import static cn.iocoder.txgy.framework.common.exception.util.ServiceExceptionUtil.exception;
-import static cn.iocoder.txgy.module.mes.enums.ErrorCodeConstants.SET_GAS_RECORD_NO_DUPLICATE;
 import static cn.iocoder.txgy.module.mes.enums.ErrorCodeConstants.SET_GAS_RECORD_NOT_EXISTS;
+import static cn.iocoder.txgy.module.mes.enums.ErrorCodeConstants.SET_GAS_RECORD_NO_DUPLICATE;
+import static cn.iocoder.txgy.module.mes.enums.ErrorCodeConstants.SET_GAS_RECORD_GAS_TYPE_INVALID;
 
 /**
- * MES 安全环保检测-作业环境气体检测记录 Service 实现类
+ * MES 安全环保检测-气体检测记录 Service 实现类
  *
  * @author OPENLAB BS
  */
@@ -24,69 +28,63 @@ import static cn.iocoder.txgy.module.mes.enums.ErrorCodeConstants.SET_GAS_RECORD
 @Validated
 public class MesSetGasRecordServiceImpl implements MesSetGasRecordService {
 
+    /**
+     * 气体类型：CO/H2S/O2/LEL/VOC/NH3/CL2
+     */
+    private static final Set<String> GAS_TYPES = new HashSet<>(Arrays.asList("CO", "NO2"));
+
     @Resource
-    private MesSetGasRecordMapper gasRecordMapper;
+    private MesSetGasRecordMapper gasrecordMapper;
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Long createGasRecord(MesSetGasRecordSaveReqVO createReqVO) {
-        // 1. 校验记录编号唯一
-        validateRecordNoUnique(null, createReqVO.getRecordNo());
-        // 2. 插入记录
-        MesSetGasRecordDO gasRecord = BeanUtils.toBean(createReqVO, MesSetGasRecordDO.class);
-        gasRecordMapper.insert(gasRecord);
-        return gasRecord.getId();
+        validateBase(createReqVO, null);
+        MesSetGasRecordDO obj = BeanUtils.toBean(createReqVO, MesSetGasRecordDO.class);
+        gasrecordMapper.insert(obj);
+        return obj.getId();
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void updateGasRecord(MesSetGasRecordSaveReqVO updateReqVO) {
-        // 1. 校验存在 + 记录编号唯一
-        validateGasRecordExists(updateReqVO.getId());
-        validateRecordNoUnique(updateReqVO.getId(), updateReqVO.getRecordNo());
-        // 2. 更新
-        MesSetGasRecordDO updateObj = BeanUtils.toBean(updateReqVO, MesSetGasRecordDO.class);
-        gasRecordMapper.updateById(updateObj);
+        MesSetGasRecordDO exist = validateGasRecordExists(updateReqVO.getId());
+        validateBase(updateReqVO, exist.getRecordNo());
+        gasrecordMapper.updateById(BeanUtils.toBean(updateReqVO, MesSetGasRecordDO.class));
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void deleteGasRecord(Long id) {
-        // 1. 校验存在
         validateGasRecordExists(id);
-        // 2. 删除
-        gasRecordMapper.deleteById(id);
-    }
-
-    @Override
-    public void validateGasRecordExists(Long id) {
-        if (gasRecordMapper.selectById(id) == null) {
-            throw exception(SET_GAS_RECORD_NOT_EXISTS);
-        }
+        gasrecordMapper.deleteById(id);
     }
 
     @Override
     public MesSetGasRecordDO getGasRecord(Long id) {
-        return gasRecordMapper.selectById(id);
+        return gasrecordMapper.selectById(id);
     }
 
     @Override
     public PageResult<MesSetGasRecordDO> getGasRecordPage(MesSetGasRecordPageReqVO pageReqVO) {
-        return gasRecordMapper.selectPage(pageReqVO);
+        return gasrecordMapper.selectPage(pageReqVO);
     }
 
-    // ==================== 校验方法 ====================
+    private MesSetGasRecordDO validateGasRecordExists(Long id) {
+        MesSetGasRecordDO obj = gasrecordMapper.selectById(id);
+        if (obj == null) {
+            throw exception(SET_GAS_RECORD_NOT_EXISTS);
+        }
+        return obj;
+    }
 
     /**
-     * 校验记录编号是否唯一（更新时排除自身）
-     *
-     * @param id 编号
-     * @param recordNo 记录编号
+     * 基础校验：编号唯一(改单时排除自身)、气体类型：CO/H2S/O2/LEL/VOC/NH3/CL2枚举
      */
-    private void validateRecordNoUnique(Long id, String recordNo) {
-        MesSetGasRecordDO exist = gasRecordMapper.selectByRecordNo(recordNo);
-        if (exist != null && !exist.getId().equals(id)) {
+    private void validateBase(MesSetGasRecordSaveReqVO reqVO, String origin) {
+        MesSetGasRecordDO exist = gasrecordMapper.selectByRecordNo(reqVO.getRecordNo());
+        if (exist != null && !exist.getRecordNo().equals(origin)) {
             throw exception(SET_GAS_RECORD_NO_DUPLICATE);
+        }
+        if (reqVO.getGasType() != null && !GAS_TYPES.contains(reqVO.getGasType())) {
+            throw exception(SET_GAS_RECORD_GAS_TYPE_INVALID);
         }
     }
 

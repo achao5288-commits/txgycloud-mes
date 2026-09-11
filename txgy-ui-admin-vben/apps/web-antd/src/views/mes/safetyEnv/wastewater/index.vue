@@ -13,7 +13,7 @@ import {
 } from '#/api/mes/safetyEnv/wastewater';
 import { $t } from '#/locales';
 
-import { useGridColumns, useGridFormSchema } from './data';
+import { COLLECTION_MODE_MAP, useGridColumns, useGridFormSchema } from './data';
 import Form from './modules/form.vue';
 
 const [FormModal, formModalApi] = useVbenModal({
@@ -26,19 +26,19 @@ function handleRefresh() {
   gridApi.query();
 }
 
-/** 创建废水排放检测 */
+/** 新建废水监测记录 */
 function handleCreate() {
   formModalApi.setData({ formType: 'create' }).open();
 }
 
-/** 编辑废水排放检测 */
+/** 编辑废水监测记录 */
 function handleEdit(row: MesSetWastewaterApi.Wastewater) {
   formModalApi.setData({ id: row.id, formType: 'update' }).open();
 }
 
-/** 删除废水排放检测 */
+/** 删除废水监测记录 */
 async function handleDelete(row: MesSetWastewaterApi.Wastewater) {
-  const label = row.recordNo ?? '';
+  const label = row.pollutantCode ?? '';
   const hideLoading = message.loading({
     content: $t('ui.actionMessage.deleting', [label]),
     duration: 0,
@@ -84,12 +84,12 @@ const [Grid, gridApi] = useVbenVxeGrid({
 <template>
   <Page auto-content-height>
     <FormModal @success="handleRefresh" />
-    <Grid table-title="废水排放检测列表">
+    <Grid table-title="废水监测记录列表">
       <template #toolbar-tools>
         <TableAction
           :actions="[
             {
-              label: $t('ui.actionTitle.create', ['废水排放检测']),
+              label: '新建废水监测记录',
               type: 'primary',
               icon: ACTION_ICON.ADD,
               auth: ['mes:set-wastewater:create'],
@@ -98,11 +98,10 @@ const [Grid, gridApi] = useVbenVxeGrid({
           ]"
         />
       </template>
-      <template #result="{ row }">
-        <Tag v-if="row.result" :color="row.result === 'PASS' ? 'success' : 'error'">
-          {{ row.result === 'PASS' ? '合格' : '不合格' }}
+      <template #collectionMode="{ row }">
+        <Tag :color="COLLECTION_MODE_MAP[row.collectionMode]?.color">
+          {{ COLLECTION_MODE_MAP[row.collectionMode]?.text ?? row.collectionMode }}
         </Tag>
-        <span v-else>-</span>
       </template>
       <template #actions="{ row }">
         <TableAction
@@ -121,7 +120,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
               icon: ACTION_ICON.DELETE,
               auth: ['mes:set-wastewater:delete'],
               popConfirm: {
-                title: $t('ui.actionMessage.deleteConfirm', [row.recordNo]),
+                title: $t('ui.actionMessage.deleteConfirm', [row.pollutantCode]),
                 confirm: handleDelete.bind(null, row),
               },
             },

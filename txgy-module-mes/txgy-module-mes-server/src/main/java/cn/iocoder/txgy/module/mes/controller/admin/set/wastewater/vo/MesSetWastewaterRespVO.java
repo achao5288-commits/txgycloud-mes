@@ -2,30 +2,29 @@ package cn.iocoder.txgy.module.mes.controller.admin.set.wastewater.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Schema(description = "管理后台 - MES 安全环保检测-废水排放检测记录 Response VO")
+@Schema(description = "管理后台 - MES 安全环保检测-废水监测记录 Response VO")
 @Data
 public class MesSetWastewaterRespVO {
 
-    @Schema(description = "编号", example = "1")
+    @Schema(description = "编号")
     private Long id;
 
-    @Schema(description = "记录编号")
+    @Schema(description = "记录编号 WW-YYYYMMDD-NNN")
     private String recordNo;
 
-    @Schema(description = "关联排放口编号", example = "1")
+    @Schema(description = "关联排放口编号")
     private Long outletId;
 
-    @Schema(description = "关联工单编号", example = "1")
+    @Schema(description = "关联工单编号")
     private Long woId;
 
     @Schema(description = "实验室样品编号(手工检测时)")
     private String sampleNo;
 
-    @Schema(description = "污染物")
+    @Schema(description = "污染物：PH/COD/BOD5/NH3_N/TP/PETROLEUM/SS/HEAVY_METAL等")
     private String pollutantCode;
 
     @Schema(description = "检测浓度 mg/L(pH无量纲)")

@@ -7,14 +7,14 @@ import cn.iocoder.txgy.module.mes.dal.dataobject.set.pressurevessel.MesSetPressu
 import jakarta.validation.Valid;
 
 /**
- * MES 安全环保检测-压力容器检测记录 Service 接口
+ * MES 安全环保检测-压力容器检查 Service 接口
  *
  * @author OPENLAB BS
  */
 public interface MesSetPressureVesselService {
 
     /**
-     * 创建压力容器检测记录
+     * 创建压力容器检查
      *
      * @param createReqVO 创建信息
      * @return 编号
@@ -22,39 +22,32 @@ public interface MesSetPressureVesselService {
     Long createPressureVessel(@Valid MesSetPressureVesselSaveReqVO createReqVO);
 
     /**
-     * 更新压力容器检测记录
+     * 更新压力容器检查
      *
      * @param updateReqVO 更新信息
      */
     void updatePressureVessel(@Valid MesSetPressureVesselSaveReqVO updateReqVO);
 
     /**
-     * 删除压力容器检测记录
+     * 删除压力容器检查
      *
      * @param id 编号
      */
     void deletePressureVessel(Long id);
 
     /**
-     * 校验压力容器检测记录存在
+     * 获得压力容器检查
      *
      * @param id 编号
-     */
-    void validatePressureVesselExists(Long id);
-
-    /**
-     * 获得压力容器检测记录
-     *
-     * @param id 编号
-     * @return 压力容器检测记录
+     * @return 压力容器检查
      */
     MesSetPressureVesselDO getPressureVessel(Long id);
 
     /**
-     * 获得压力容器检测记录分页
+     * 获得压力容器检查分页
      *
      * @param pageReqVO 分页查询
-     * @return 压力容器检测记录分页
+     * @return 压力容器检查分页
      */
     PageResult<MesSetPressureVesselDO> getPressureVesselPage(MesSetPressureVesselPageReqVO pageReqVO);
 

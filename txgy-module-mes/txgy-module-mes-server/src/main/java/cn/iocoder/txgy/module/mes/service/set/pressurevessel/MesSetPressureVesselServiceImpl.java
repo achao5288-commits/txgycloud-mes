@@ -8,15 +8,15 @@ import cn.iocoder.txgy.module.mes.dal.dataobject.set.pressurevessel.MesSetPressu
 import cn.iocoder.txgy.module.mes.dal.mysql.set.pressurevessel.MesSetPressureVesselMapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
+
 import static cn.iocoder.txgy.framework.common.exception.util.ServiceExceptionUtil.exception;
-import static cn.iocoder.txgy.module.mes.enums.ErrorCodeConstants.SET_PRESSURE_VESSEL_NO_DUPLICATE;
 import static cn.iocoder.txgy.module.mes.enums.ErrorCodeConstants.SET_PRESSURE_VESSEL_NOT_EXISTS;
+import static cn.iocoder.txgy.module.mes.enums.ErrorCodeConstants.SET_PRESSURE_VESSEL_NO_DUPLICATE;
 
 /**
- * MES 安全环保检测-压力容器检测记录 Service 实现类
+ * MES 安全环保检测-压力容器检查 Service 实现类
  *
  * @author OPENLAB BS
  */
@@ -25,67 +25,53 @@ import static cn.iocoder.txgy.module.mes.enums.ErrorCodeConstants.SET_PRESSURE_V
 public class MesSetPressureVesselServiceImpl implements MesSetPressureVesselService {
 
     @Resource
-    private MesSetPressureVesselMapper pressureVesselMapper;
+    private MesSetPressureVesselMapper pressurevesselMapper;
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Long createPressureVessel(MesSetPressureVesselSaveReqVO createReqVO) {
-        // 1. 校验记录编号唯一
-        validateRecordNoUnique(null, createReqVO.getRecordNo());
-        // 2. 插入记录
-        MesSetPressureVesselDO pressureVessel = BeanUtils.toBean(createReqVO, MesSetPressureVesselDO.class);
-        pressureVesselMapper.insert(pressureVessel);
-        return pressureVessel.getId();
+        validateBase(createReqVO, null);
+        MesSetPressureVesselDO obj = BeanUtils.toBean(createReqVO, MesSetPressureVesselDO.class);
+        pressurevesselMapper.insert(obj);
+        return obj.getId();
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void updatePressureVessel(MesSetPressureVesselSaveReqVO updateReqVO) {
-        // 1. 校验存在 + 记录编号唯一
-        validatePressureVesselExists(updateReqVO.getId());
-        validateRecordNoUnique(updateReqVO.getId(), updateReqVO.getRecordNo());
-        // 2. 更新
-        MesSetPressureVesselDO updateObj = BeanUtils.toBean(updateReqVO, MesSetPressureVesselDO.class);
-        pressureVesselMapper.updateById(updateObj);
+        MesSetPressureVesselDO exist = validatePressureVesselExists(updateReqVO.getId());
+        validateBase(updateReqVO, exist.getRecordNo());
+        pressurevesselMapper.updateById(BeanUtils.toBean(updateReqVO, MesSetPressureVesselDO.class));
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void deletePressureVessel(Long id) {
-        // 1. 校验存在
         validatePressureVesselExists(id);
-        // 2. 删除
-        pressureVesselMapper.deleteById(id);
-    }
-
-    @Override
-    public void validatePressureVesselExists(Long id) {
-        if (pressureVesselMapper.selectById(id) == null) {
-            throw exception(SET_PRESSURE_VESSEL_NOT_EXISTS);
-        }
+        pressurevesselMapper.deleteById(id);
     }
 
     @Override
     public MesSetPressureVesselDO getPressureVessel(Long id) {
-        return pressureVesselMapper.selectById(id);
+        return pressurevesselMapper.selectById(id);
     }
 
     @Override
     public PageResult<MesSetPressureVesselDO> getPressureVesselPage(MesSetPressureVesselPageReqVO pageReqVO) {
-        return pressureVesselMapper.selectPage(pageReqVO);
+        return pressurevesselMapper.selectPage(pageReqVO);
     }
 
-    // ==================== 校验方法 ====================
+    private MesSetPressureVesselDO validatePressureVesselExists(Long id) {
+        MesSetPressureVesselDO obj = pressurevesselMapper.selectById(id);
+        if (obj == null) {
+            throw exception(SET_PRESSURE_VESSEL_NOT_EXISTS);
+        }
+        return obj;
+    }
 
     /**
-     * 校验记录编号是否唯一（更新时排除自身）
-     *
-     * @param id 编号
-     * @param recordNo 记录编号
+     * 基础校验：编号唯一(改单时排除自身)
      */
-    private void validateRecordNoUnique(Long id, String recordNo) {
-        MesSetPressureVesselDO exist = pressureVesselMapper.selectByRecordNo(recordNo);
-        if (exist != null && !exist.getId().equals(id)) {
+    private void validateBase(MesSetPressureVesselSaveReqVO reqVO, String origin) {
+        MesSetPressureVesselDO exist = pressurevesselMapper.selectByRecordNo(reqVO.getRecordNo());
+        if (exist != null && !exist.getRecordNo().equals(origin)) {
             throw exception(SET_PRESSURE_VESSEL_NO_DUPLICATE);
         }
     }

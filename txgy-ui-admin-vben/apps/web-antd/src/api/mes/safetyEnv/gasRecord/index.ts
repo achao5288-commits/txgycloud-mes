@@ -8,20 +8,20 @@ export namespace MesSetGasRecordApi {
     id?: number; // 编号
     recordNo?: string; // 记录编号
     planId?: number; // 关联检测计划编号
-    woId?: number; // 关联工单编号
+    woId?: number; // 关联工单编号（事件触发型）
     operationId?: number; // 关联工序编号
     permitId?: number; // 关联作业许可编号
     location?: string; // 检测位置
-    gasType?: string; // 气体类型
+    gasType?: string; // 气体类型：CO/H2S/O2/LEL/VOC/NH3/CL2
     concentration?: number; // 检测浓度值
-    unit?: string; // 单位
+    unit?: string; // 单位：mg/m3 / % / %LEL
     limitValue?: number; // 限值
-    result?: string; // 结果
-    collectionMode?: string; // 采集方式
+    result?: string; // 结果：PASS/FAIL
+    collectionMode?: string; // 采集方式：IOT_AUTO/MANUAL
     instrumentNo?: string; // 检测仪器编号
     inspector?: string; // 检测人
-    inspectTime?: Date | number; // 检测时间
-    photoUrls?: string; // 检测照片 URL
+    inspectTime?: string; // 检测时间
+    photoUrls?: string; // 检测照片URL(逗号分隔)
     remark?: string; // 备注
     createTime?: number; // 创建时间
   }

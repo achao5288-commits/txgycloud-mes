@@ -2,19 +2,18 @@ package cn.iocoder.txgy.module.mes.controller.admin.set.carbonemission.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-@Schema(description = "管理后台 - MES 安全环保检测-碳排放核算记录 Response VO")
+@Schema(description = "管理后台 - MES 安全环保检测-碳排放核算 Response VO")
 @Data
 public class MesSetCarbonEmissionRespVO {
 
-    @Schema(description = "编号", example = "1")
+    @Schema(description = "编号")
     private Long id;
 
-    @Schema(description = "核算批次号")
+    @Schema(description = "核算批次号 CARBON-YYYYMM")
     private String calcNo;
 
     @Schema(description = "核算周期：DAILY/MONTHLY/YEARLY")
@@ -26,13 +25,13 @@ public class MesSetCarbonEmissionRespVO {
     @Schema(description = "周期结束日期")
     private LocalDate periodEnd;
 
-    @Schema(description = "关联工单编号", example = "1")
+    @Schema(description = "关联工单编号(工单级碳足迹可空)")
     private Long woId;
 
-    @Schema(description = "关联能耗记录编号", example = "1")
+    @Schema(description = "关联能耗记录编号(能源台账)")
     private Long sourceRecordId;
 
-    @Schema(description = "能源类型")
+    @Schema(description = "能源类型：ELECTRICITY/NATURAL_GAS/DIESEL/STEAM")
     private String energyType;
 
     @Schema(description = "能源消耗量")

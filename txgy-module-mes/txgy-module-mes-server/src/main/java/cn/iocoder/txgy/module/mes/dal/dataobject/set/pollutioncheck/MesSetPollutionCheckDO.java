@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -61,6 +62,10 @@ public class MesSetPollutionCheckDO extends BaseDO {
      */
     private String itemSpec;
     /**
+     * 重量(kg)
+     */
+    private BigDecimal weight;
+    /**
      * AI 初筛结果：CLEAN(无污染)/POLLUTED(有污染)/UNCERTAIN(不确定)
      */
     private String aiResult;
@@ -81,6 +86,10 @@ public class MesSetPollutionCheckDO extends BaseDO {
      */
     private String reviewResult;
     /**
+     * 成品达标分支（仅环节 FINISHED_PRODUCT）：QUALIFIED(达标)/REWORK(局部缺陷返工)/SCRAPPED(整体报废)
+     */
+    private String finishedResult;
+    /**
      * 最终存储方法（复核确认）
      */
     private String storageMethod;
@@ -89,9 +98,13 @@ public class MesSetPollutionCheckDO extends BaseDO {
      */
     private String disposition;
     /**
-     * 去向/库位
+     * 去向/库位（库位名称快照）
      */
     private String location;
+    /**
+     * 受控库位编号（mes_wm_warehouse_area.id），污染管控门禁用；location 为其名称快照
+     */
+    private Long locationId;
     /**
      * 是否标记（有污染/不达标需管控的标记），0 否 1 是
      */

@@ -1,8 +1,11 @@
 package cn.iocoder.txgy.module.mes.controller.admin.set.pollutioncheck;
 
+import cn.iocoder.txgy.framework.apilog.core.annotation.ApiAccessLog;
 import cn.iocoder.txgy.framework.common.pojo.CommonResult;
+import cn.iocoder.txgy.framework.common.pojo.PageParam;
 import cn.iocoder.txgy.framework.common.pojo.PageResult;
 import cn.iocoder.txgy.framework.common.util.object.BeanUtils;
+import cn.iocoder.txgy.framework.excel.core.util.ExcelUtils;
 import cn.iocoder.txgy.module.mes.controller.admin.set.pollutioncheck.vo.MesSetPollutionCheckAiRespVO;
 import cn.iocoder.txgy.module.mes.controller.admin.set.pollutioncheck.vo.MesSetPollutionCheckPageReqVO;
 import cn.iocoder.txgy.module.mes.controller.admin.set.pollutioncheck.vo.MesSetPollutionCheckRespVO;
@@ -14,14 +17,17 @@ import cn.iocoder.txgy.module.mes.service.set.pollutioncheck.MesSetPollutionChec
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
+import static cn.iocoder.txgy.framework.apilog.core.enums.OperateTypeEnum.EXPORT;
 import static cn.iocoder.txgy.framework.common.pojo.CommonResult.success;
 
 @Tag(name = "管理后台 - MES 安全环保检测-污染判定记录")
@@ -89,6 +95,18 @@ public class MesSetPollutionCheckController {
             @Valid MesSetPollutionCheckPageReqVO pageReqVO) {
         PageResult<MesSetPollutionCheckDO> pageResult = pollutionCheckService.getPollutionCheckPage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, MesSetPollutionCheckRespVO.class));
+    }
+
+    @GetMapping("/export-excel")
+    @Operation(summary = "导出污染判定记录 Excel(供环保检查/追溯)")
+    @PreAuthorize("@ss.hasPermission('mes:set-pollution-check:query')")
+    @ApiAccessLog(operateType = EXPORT)
+    public void exportPollutionCheckExcel(@Valid MesSetPollutionCheckPageReqVO pageReqVO,
+                                         HttpServletResponse response) throws IOException {
+        pageReqVO.setPageSize(PageParam.PAGE_SIZE_NONE);
+        List<MesSetPollutionCheckDO> list = pollutionCheckService.getPollutionCheckPage(pageReqVO).getList();
+        ExcelUtils.write(response, "污染判定记录.xls", "数据", MesSetPollutionCheckRespVO.class,
+                BeanUtils.toBean(list, MesSetPollutionCheckRespVO.class));
     }
 
     @GetMapping("/history")

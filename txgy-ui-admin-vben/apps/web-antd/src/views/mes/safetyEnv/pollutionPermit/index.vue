@@ -4,7 +4,7 @@ import type { MesSetPollutionPermitApi } from '#/api/mes/safetyEnv/pollutionPerm
 
 import { Page, useVbenModal } from '@vben/common-ui';
 
-import { message } from 'ant-design-vue';
+import { message, Tag } from 'ant-design-vue';
 
 import { ACTION_ICON, TableAction, useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
@@ -13,7 +13,7 @@ import {
 } from '#/api/mes/safetyEnv/pollutionPermit';
 import { $t } from '#/locales';
 
-import { useGridColumns, useGridFormSchema } from './data';
+import { PERMIT_STATUS_MAP, useGridColumns, useGridFormSchema } from './data';
 import Form from './modules/form.vue';
 
 const [FormModal, formModalApi] = useVbenModal({
@@ -26,18 +26,18 @@ function handleRefresh() {
   gridApi.query();
 }
 
-/** 创建排污许可管理 */
+/** 新建排污许可证 */
 function handleCreate() {
   formModalApi.setData({ formType: 'create' }).open();
 }
 
-/** 编辑排污许可管理 */
-function handleEdit(row: MesSetPollutionPermitApi.PollutionPermit) {
+/** 编辑排污许可证 */
+function handleEdit(row: MesSetPollutionPermitApi.Permit) {
   formModalApi.setData({ id: row.id, formType: 'update' }).open();
 }
 
-/** 删除排污许可管理 */
-async function handleDelete(row: MesSetPollutionPermitApi.PollutionPermit) {
+/** 删除排污许可证 */
+async function handleDelete(row: MesSetPollutionPermitApi.Permit) {
   const label = row.permitNo ?? '';
   const hideLoading = message.loading({
     content: $t('ui.actionMessage.deleting', [label]),
@@ -78,18 +78,18 @@ const [Grid, gridApi] = useVbenVxeGrid({
       refresh: true,
       search: true,
     },
-  } as VxeTableGridOptions<MesSetPollutionPermitApi.PollutionPermit>,
+  } as VxeTableGridOptions<MesSetPollutionPermitApi.Permit>,
 });
 </script>
 <template>
   <Page auto-content-height>
     <FormModal @success="handleRefresh" />
-    <Grid table-title="排污许可管理列表">
+    <Grid table-title="排污许可证列表">
       <template #toolbar-tools>
         <TableAction
           :actions="[
             {
-              label: $t('ui.actionTitle.create', ['排污许可管理']),
+              label: '新建排污许可证',
               type: 'primary',
               icon: ACTION_ICON.ADD,
               auth: ['mes:set-pollution-permit:create'],
@@ -97,6 +97,11 @@ const [Grid, gridApi] = useVbenVxeGrid({
             },
           ]"
         />
+      </template>
+      <template #status="{ row }">
+        <Tag :color="PERMIT_STATUS_MAP[row.status]?.color">
+          {{ PERMIT_STATUS_MAP[row.status]?.text ?? row.status }}
+        </Tag>
       </template>
       <template #actions="{ row }">
         <TableAction

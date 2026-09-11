@@ -8,7 +8,7 @@ import { useRoute } from 'vue-router';
 import { DocAlert, Page, useVbenModal } from '@vben/common-ui';
 import { BarcodeBizTypeEnum } from '@vben/constants';
 
-import { Alert, Button, message } from 'ant-design-vue';
+import { Alert, Button, message, Tag } from 'ant-design-vue';
 
 import { ACTION_ICON, TableAction, useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
@@ -183,6 +183,10 @@ const [Grid, gridApi] = useVbenVxeGrid({
         <Button type="link" @click="handleDetail(row)">
           {{ row.code }}
         </Button>
+      </template>
+      <template #pollutionControl="{ row }">
+        <Tag v-if="row.pollutionControl" color="orange">受控库位</Tag>
+        <span v-else>-</span>
       </template>
       <template #actions="{ row }">
         <TableAction

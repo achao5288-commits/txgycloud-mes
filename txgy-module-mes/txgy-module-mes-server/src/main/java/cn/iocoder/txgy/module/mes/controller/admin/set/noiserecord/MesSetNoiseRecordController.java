@@ -26,20 +26,20 @@ import static cn.iocoder.txgy.framework.common.pojo.CommonResult.success;
 public class MesSetNoiseRecordController {
 
     @Resource
-    private MesSetNoiseRecordService noiseRecordService;
+    private MesSetNoiseRecordService noiserecordService;
 
     @PostMapping("/create")
     @Operation(summary = "创建噪声检测记录")
     @PreAuthorize("@ss.hasPermission('mes:set-noise-record:create')")
     public CommonResult<Long> createNoiseRecord(@Valid @RequestBody MesSetNoiseRecordSaveReqVO createReqVO) {
-        return success(noiseRecordService.createNoiseRecord(createReqVO));
+        return success(noiserecordService.createNoiseRecord(createReqVO));
     }
 
     @PutMapping("/update")
     @Operation(summary = "更新噪声检测记录")
     @PreAuthorize("@ss.hasPermission('mes:set-noise-record:update')")
     public CommonResult<Boolean> updateNoiseRecord(@Valid @RequestBody MesSetNoiseRecordSaveReqVO updateReqVO) {
-        noiseRecordService.updateNoiseRecord(updateReqVO);
+        noiserecordService.updateNoiseRecord(updateReqVO);
         return success(true);
     }
 
@@ -48,24 +48,25 @@ public class MesSetNoiseRecordController {
     @Parameter(name = "id", description = "编号", required = true)
     @PreAuthorize("@ss.hasPermission('mes:set-noise-record:delete')")
     public CommonResult<Boolean> deleteNoiseRecord(@RequestParam("id") Long id) {
-        noiseRecordService.deleteNoiseRecord(id);
+        noiserecordService.deleteNoiseRecord(id);
         return success(true);
     }
 
     @GetMapping("/get")
     @Operation(summary = "获得噪声检测记录")
-    @Parameter(name = "id", description = "编号", required = true, example = "1024")
+    @Parameter(name = "id", description = "编号", required = true, example = "1")
     @PreAuthorize("@ss.hasPermission('mes:set-noise-record:query')")
     public CommonResult<MesSetNoiseRecordRespVO> getNoiseRecord(@RequestParam("id") Long id) {
-        MesSetNoiseRecordDO noiseRecord = noiseRecordService.getNoiseRecord(id);
-        return success(BeanUtils.toBean(noiseRecord, MesSetNoiseRecordRespVO.class));
+        MesSetNoiseRecordDO obj = noiserecordService.getNoiseRecord(id);
+        return success(BeanUtils.toBean(obj, MesSetNoiseRecordRespVO.class));
     }
 
     @GetMapping("/page")
     @Operation(summary = "获得噪声检测记录分页")
     @PreAuthorize("@ss.hasPermission('mes:set-noise-record:query')")
-    public CommonResult<PageResult<MesSetNoiseRecordRespVO>> getNoiseRecordPage(@Valid MesSetNoiseRecordPageReqVO pageReqVO) {
-        PageResult<MesSetNoiseRecordDO> pageResult = noiseRecordService.getNoiseRecordPage(pageReqVO);
+    public CommonResult<PageResult<MesSetNoiseRecordRespVO>> getNoiseRecordPage(
+            @Valid MesSetNoiseRecordPageReqVO pageReqVO) {
+        PageResult<MesSetNoiseRecordDO> pageResult = noiserecordService.getNoiseRecordPage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, MesSetNoiseRecordRespVO.class));
     }
 

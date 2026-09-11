@@ -5,26 +5,23 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-import org.springframework.format.annotation.DateTimeFormat;
 
-import java.time.LocalDateTime;
-
-import static cn.iocoder.txgy.framework.common.util.date.DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND;
-
-@Schema(description = "管理后台 - MES 安全环保检测-电气安全检测记录 分页 Request VO")
+@Schema(description = "管理后台 - MES 安全环保检测-电气安全检查 分页 Request VO")
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 public class MesSetElectricalRecordPageReqVO extends PageParam {
 
-    @Schema(description = "检测项目", example = "GROUND_RESISTANCE")
+    @Schema(description = "记录编号 ELEC-YYYYMMDD-NNN")
+    private String recordNo;
+
+    @Schema(description = "检测位置(配电柜/线路区域)")
+    private String location;
+
+    @Schema(description = "检测项目：INSULATION_RESISTANCE/GROUND_RESISTANCE/LEAKAGE_ACTION_CURRENT/LEAKAGE_ACTION_TIME/WITHSTAND_VOLTAGE")
     private String checkItem;
 
-    @Schema(description = "结果：PASS/FAIL", example = "PASS")
+    @Schema(description = "结果：PASS/FAIL")
     private String result;
-
-    @Schema(description = "检测时间")
-    @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
-    private LocalDateTime[] inspectTime;
 
 }

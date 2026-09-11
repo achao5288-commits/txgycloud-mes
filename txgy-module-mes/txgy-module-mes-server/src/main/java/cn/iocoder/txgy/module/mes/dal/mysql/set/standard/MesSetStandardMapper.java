@@ -7,8 +7,6 @@ import cn.iocoder.txgy.module.mes.controller.admin.set.standard.vo.MesSetStandar
 import cn.iocoder.txgy.module.mes.dal.dataobject.set.standard.MesSetStandardDO;
 import org.apache.ibatis.annotations.Mapper;
 
-import java.util.List;
-
 /**
  * MES 安全环保检测-检测标准 Mapper
  *
@@ -17,23 +15,20 @@ import java.util.List;
 @Mapper
 public interface MesSetStandardMapper extends BaseMapperX<MesSetStandardDO> {
 
+    default MesSetStandardDO selectByStandardNo(String standard_no) {
+        return selectOne(MesSetStandardDO::getStandardNo, standard_no);
+    }
+
     default PageResult<MesSetStandardDO> selectPage(MesSetStandardPageReqVO reqVO) {
-        return selectPage(reqVO, new LambdaQueryWrapperX<MesSetStandardDO>()
+        LambdaQueryWrapperX<MesSetStandardDO> query = new LambdaQueryWrapperX<MesSetStandardDO>()
+                .likeIfPresent(MesSetStandardDO::getStandardNo, reqVO.getStandardNo())
                 .likeIfPresent(MesSetStandardDO::getStandardName, reqVO.getStandardName())
                 .eqIfPresent(MesSetStandardDO::getDomain, reqVO.getDomain())
-                .eqIfPresent(MesSetStandardDO::getTestType, reqVO.getTestType())
-                .eqIfPresent(MesSetStandardDO::getStatus, reqVO.getStatus())
-                .orderByDesc(MesSetStandardDO::getId));
-    }
-
-    default Long selectCountByStandardNo(String standardNo) {
-        return selectCount(MesSetStandardDO::getStandardNo, standardNo);
-    }
-
-    default List<MesSetStandardDO> selectListByStatus(String status) {
-        return selectList(new LambdaQueryWrapperX<MesSetStandardDO>()
-                .eq(MesSetStandardDO::getStatus, status)
-                .orderByAsc(MesSetStandardDO::getStandardName));
+                .likeIfPresent(MesSetStandardDO::getTestType, reqVO.getTestType())
+                .eqIfPresent(MesSetStandardDO::getPeriodType, reqVO.getPeriodType())
+                .likeIfPresent(MesSetStandardDO::getStatus, reqVO.getStatus())
+                .orderByDesc(MesSetStandardDO::getId);
+        return selectPage(reqVO, query);
     }
 
 }

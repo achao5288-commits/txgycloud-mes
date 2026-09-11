@@ -4,7 +4,7 @@ import type { MesSetCarbonEmissionApi } from '#/api/mes/safetyEnv/carbonEmission
 
 import { Page, useVbenModal } from '@vben/common-ui';
 
-import { message } from 'ant-design-vue';
+import { message, Tag } from 'ant-design-vue';
 
 import { ACTION_ICON, TableAction, useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
@@ -13,7 +13,7 @@ import {
 } from '#/api/mes/safetyEnv/carbonEmission';
 import { $t } from '#/locales';
 
-import { useGridColumns, useGridFormSchema } from './data';
+import { ENERGY_TYPE_MAP, useGridColumns, useGridFormSchema } from './data';
 import Form from './modules/form.vue';
 
 const [FormModal, formModalApi] = useVbenModal({
@@ -26,7 +26,7 @@ function handleRefresh() {
   gridApi.query();
 }
 
-/** 创建碳排放核算 */
+/** 新建碳排放核算 */
 function handleCreate() {
   formModalApi.setData({ formType: 'create' }).open();
 }
@@ -38,7 +38,7 @@ function handleEdit(row: MesSetCarbonEmissionApi.CarbonEmission) {
 
 /** 删除碳排放核算 */
 async function handleDelete(row: MesSetCarbonEmissionApi.CarbonEmission) {
-  const label = row.calcNo ?? '';
+  const label = row.energyType ?? '';
   const hideLoading = message.loading({
     content: $t('ui.actionMessage.deleting', [label]),
     duration: 0,
@@ -89,7 +89,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
         <TableAction
           :actions="[
             {
-              label: $t('ui.actionTitle.create', ['碳排放核算']),
+              label: '新建碳排放核算',
               type: 'primary',
               icon: ACTION_ICON.ADD,
               auth: ['mes:set-carbon-emission:create'],
@@ -97,6 +97,11 @@ const [Grid, gridApi] = useVbenVxeGrid({
             },
           ]"
         />
+      </template>
+      <template #energyType="{ row }">
+        <Tag :color="ENERGY_TYPE_MAP[row.energyType]?.color">
+          {{ ENERGY_TYPE_MAP[row.energyType]?.text ?? row.energyType }}
+        </Tag>
       </template>
       <template #actions="{ row }">
         <TableAction
@@ -115,7 +120,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
               icon: ACTION_ICON.DELETE,
               auth: ['mes:set-carbon-emission:delete'],
               popConfirm: {
-                title: $t('ui.actionMessage.deleteConfirm', [row.calcNo]),
+                title: $t('ui.actionMessage.deleteConfirm', [row.energyType]),
                 confirm: handleDelete.bind(null, row),
               },
             },

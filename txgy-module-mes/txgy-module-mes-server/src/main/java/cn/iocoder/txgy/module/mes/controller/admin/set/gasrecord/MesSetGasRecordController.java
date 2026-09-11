@@ -19,27 +19,27 @@ import org.springframework.web.bind.annotation.*;
 
 import static cn.iocoder.txgy.framework.common.pojo.CommonResult.success;
 
-@Tag(name = "管理后台 - MES 安全环保检测-作业环境气体检测记录")
+@Tag(name = "管理后台 - MES 安全环保检测-气体检测记录")
 @RestController
 @RequestMapping("/mes/safety-env/gas-record")
 @Validated
 public class MesSetGasRecordController {
 
     @Resource
-    private MesSetGasRecordService gasRecordService;
+    private MesSetGasRecordService gasrecordService;
 
     @PostMapping("/create")
     @Operation(summary = "创建气体检测记录")
     @PreAuthorize("@ss.hasPermission('mes:set-gas-record:create')")
     public CommonResult<Long> createGasRecord(@Valid @RequestBody MesSetGasRecordSaveReqVO createReqVO) {
-        return success(gasRecordService.createGasRecord(createReqVO));
+        return success(gasrecordService.createGasRecord(createReqVO));
     }
 
     @PutMapping("/update")
     @Operation(summary = "更新气体检测记录")
     @PreAuthorize("@ss.hasPermission('mes:set-gas-record:update')")
     public CommonResult<Boolean> updateGasRecord(@Valid @RequestBody MesSetGasRecordSaveReqVO updateReqVO) {
-        gasRecordService.updateGasRecord(updateReqVO);
+        gasrecordService.updateGasRecord(updateReqVO);
         return success(true);
     }
 
@@ -48,24 +48,25 @@ public class MesSetGasRecordController {
     @Parameter(name = "id", description = "编号", required = true)
     @PreAuthorize("@ss.hasPermission('mes:set-gas-record:delete')")
     public CommonResult<Boolean> deleteGasRecord(@RequestParam("id") Long id) {
-        gasRecordService.deleteGasRecord(id);
+        gasrecordService.deleteGasRecord(id);
         return success(true);
     }
 
     @GetMapping("/get")
     @Operation(summary = "获得气体检测记录")
-    @Parameter(name = "id", description = "编号", required = true, example = "1024")
+    @Parameter(name = "id", description = "编号", required = true, example = "1")
     @PreAuthorize("@ss.hasPermission('mes:set-gas-record:query')")
     public CommonResult<MesSetGasRecordRespVO> getGasRecord(@RequestParam("id") Long id) {
-        MesSetGasRecordDO gasRecord = gasRecordService.getGasRecord(id);
-        return success(BeanUtils.toBean(gasRecord, MesSetGasRecordRespVO.class));
+        MesSetGasRecordDO obj = gasrecordService.getGasRecord(id);
+        return success(BeanUtils.toBean(obj, MesSetGasRecordRespVO.class));
     }
 
     @GetMapping("/page")
     @Operation(summary = "获得气体检测记录分页")
     @PreAuthorize("@ss.hasPermission('mes:set-gas-record:query')")
-    public CommonResult<PageResult<MesSetGasRecordRespVO>> getGasRecordPage(@Valid MesSetGasRecordPageReqVO pageReqVO) {
-        PageResult<MesSetGasRecordDO> pageResult = gasRecordService.getGasRecordPage(pageReqVO);
+    public CommonResult<PageResult<MesSetGasRecordRespVO>> getGasRecordPage(
+            @Valid MesSetGasRecordPageReqVO pageReqVO) {
+        PageResult<MesSetGasRecordDO> pageResult = gasrecordService.getGasRecordPage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, MesSetGasRecordRespVO.class));
     }
 

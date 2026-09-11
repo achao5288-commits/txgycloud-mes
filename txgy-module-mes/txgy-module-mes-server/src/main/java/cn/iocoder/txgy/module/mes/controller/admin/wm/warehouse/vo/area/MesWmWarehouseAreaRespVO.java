@@ -75,6 +75,10 @@ public class MesWmWarehouseAreaRespVO {
     @ExcelProperty("允许批次混放")
     private Boolean allowBatchMixing;
 
+    @Schema(description = "是否污染管控库位（污染品只能入此处）", example = "false")
+    @ExcelProperty("污染管控库位")
+    private Boolean pollutionControl;
+
     @Schema(description = "备注", example = "备注")
     @ExcelProperty("备注")
     private String remark;

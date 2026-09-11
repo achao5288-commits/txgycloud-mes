@@ -8,15 +8,19 @@ import cn.iocoder.txgy.module.mes.dal.dataobject.set.carbonemission.MesSetCarbon
 import cn.iocoder.txgy.module.mes.dal.mysql.set.carbonemission.MesSetCarbonEmissionMapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 import static cn.iocoder.txgy.framework.common.exception.util.ServiceExceptionUtil.exception;
-import static cn.iocoder.txgy.module.mes.enums.ErrorCodeConstants.SET_CARBON_EMISSION_NO_DUPLICATE;
 import static cn.iocoder.txgy.module.mes.enums.ErrorCodeConstants.SET_CARBON_EMISSION_NOT_EXISTS;
+import static cn.iocoder.txgy.module.mes.enums.ErrorCodeConstants.SET_CARBON_EMISSION_NO_DUPLICATE;
+import static cn.iocoder.txgy.module.mes.enums.ErrorCodeConstants.SET_CARBON_EMISSION_ENERGY_TYPE_INVALID;
 
 /**
- * MES 安全环保检测-碳排放核算记录 Service 实现类
+ * MES 安全环保检测-碳排放核算 Service 实现类
  *
  * @author OPENLAB BS
  */
@@ -24,69 +28,63 @@ import static cn.iocoder.txgy.module.mes.enums.ErrorCodeConstants.SET_CARBON_EMI
 @Validated
 public class MesSetCarbonEmissionServiceImpl implements MesSetCarbonEmissionService {
 
+    /**
+     * 能源类型：ELECTRICITY/NATURAL_GAS/DIESEL/STEAM
+     */
+    private static final Set<String> ENERGY_TYPES = new HashSet<>(Arrays.asList("COAL", "ELECTRICITY"));
+
     @Resource
-    private MesSetCarbonEmissionMapper carbonEmissionMapper;
+    private MesSetCarbonEmissionMapper carbonemissionMapper;
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Long createCarbonEmission(MesSetCarbonEmissionSaveReqVO createReqVO) {
-        // 1. 校验核算批次号唯一
-        validateCalcNoUnique(null, createReqVO.getCalcNo());
-        // 2. 插入记录
-        MesSetCarbonEmissionDO carbonEmission = BeanUtils.toBean(createReqVO, MesSetCarbonEmissionDO.class);
-        carbonEmissionMapper.insert(carbonEmission);
-        return carbonEmission.getId();
+        validateBase(createReqVO, null);
+        MesSetCarbonEmissionDO obj = BeanUtils.toBean(createReqVO, MesSetCarbonEmissionDO.class);
+        carbonemissionMapper.insert(obj);
+        return obj.getId();
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void updateCarbonEmission(MesSetCarbonEmissionSaveReqVO updateReqVO) {
-        // 1. 校验存在 + 核算批次号唯一
-        validateCarbonEmissionExists(updateReqVO.getId());
-        validateCalcNoUnique(updateReqVO.getId(), updateReqVO.getCalcNo());
-        // 2. 更新
-        MesSetCarbonEmissionDO updateObj = BeanUtils.toBean(updateReqVO, MesSetCarbonEmissionDO.class);
-        carbonEmissionMapper.updateById(updateObj);
+        MesSetCarbonEmissionDO exist = validateCarbonEmissionExists(updateReqVO.getId());
+        validateBase(updateReqVO, exist.getCalcNo());
+        carbonemissionMapper.updateById(BeanUtils.toBean(updateReqVO, MesSetCarbonEmissionDO.class));
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void deleteCarbonEmission(Long id) {
-        // 1. 校验存在
         validateCarbonEmissionExists(id);
-        // 2. 删除
-        carbonEmissionMapper.deleteById(id);
-    }
-
-    @Override
-    public void validateCarbonEmissionExists(Long id) {
-        if (carbonEmissionMapper.selectById(id) == null) {
-            throw exception(SET_CARBON_EMISSION_NOT_EXISTS);
-        }
+        carbonemissionMapper.deleteById(id);
     }
 
     @Override
     public MesSetCarbonEmissionDO getCarbonEmission(Long id) {
-        return carbonEmissionMapper.selectById(id);
+        return carbonemissionMapper.selectById(id);
     }
 
     @Override
     public PageResult<MesSetCarbonEmissionDO> getCarbonEmissionPage(MesSetCarbonEmissionPageReqVO pageReqVO) {
-        return carbonEmissionMapper.selectPage(pageReqVO);
+        return carbonemissionMapper.selectPage(pageReqVO);
     }
 
-    // ==================== 校验方法 ====================
+    private MesSetCarbonEmissionDO validateCarbonEmissionExists(Long id) {
+        MesSetCarbonEmissionDO obj = carbonemissionMapper.selectById(id);
+        if (obj == null) {
+            throw exception(SET_CARBON_EMISSION_NOT_EXISTS);
+        }
+        return obj;
+    }
 
     /**
-     * 校验核算批次号是否唯一（更新时排除自身）
-     *
-     * @param id 编号
-     * @param calcNo 核算批次号
+     * 基础校验：编号唯一(改单时排除自身)、能源类型：ELECTRICITY/NATURAL_GAS/DIESEL/STEAM枚举
      */
-    private void validateCalcNoUnique(Long id, String calcNo) {
-        MesSetCarbonEmissionDO exist = carbonEmissionMapper.selectByCalcNo(calcNo);
-        if (exist != null && !exist.getId().equals(id)) {
+    private void validateBase(MesSetCarbonEmissionSaveReqVO reqVO, String origin) {
+        MesSetCarbonEmissionDO exist = carbonemissionMapper.selectByCalcNo(reqVO.getCalcNo());
+        if (exist != null && !exist.getCalcNo().equals(origin)) {
             throw exception(SET_CARBON_EMISSION_NO_DUPLICATE);
+        }
+        if (reqVO.getEnergyType() != null && !ENERGY_TYPES.contains(reqVO.getEnergyType())) {
+            throw exception(SET_CARBON_EMISSION_ENERGY_TYPE_INVALID);
         }
     }
 

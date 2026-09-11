@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
-import type { MesSetNoiseRecordApi } from '#/api/mes/safetyEnv/noiseRecord';
+import type { MesSetNoiseRecordApi } from '#/api/mes/safetyEnv/noiserecord';
 
 import { Page, useVbenModal } from '@vben/common-ui';
 
@@ -10,10 +10,10 @@ import { ACTION_ICON, TableAction, useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   deleteNoiseRecord,
   getNoiseRecordPage,
-} from '#/api/mes/safetyEnv/noiseRecord';
+} from '#/api/mes/safetyEnv/noiserecord';
 import { $t } from '#/locales';
 
-import { useGridColumns, useGridFormSchema } from './data';
+import { COLLECTION_MODE_MAP, RESULT_MAP, useGridColumns, useGridFormSchema } from './data';
 import Form from './modules/form.vue';
 
 const [FormModal, formModalApi] = useVbenModal({
@@ -26,7 +26,7 @@ function handleRefresh() {
   gridApi.query();
 }
 
-/** 创建噪声检测记录 */
+/** 新建噪声检测记录 */
 function handleCreate() {
   formModalApi.setData({ formType: 'create' }).open();
 }
@@ -38,7 +38,7 @@ function handleEdit(row: MesSetNoiseRecordApi.NoiseRecord) {
 
 /** 删除噪声检测记录 */
 async function handleDelete(row: MesSetNoiseRecordApi.NoiseRecord) {
-  const label = row.recordNo ?? '';
+  const label = row.location ?? '';
   const hideLoading = message.loading({
     content: $t('ui.actionMessage.deleting', [label]),
     duration: 0,
@@ -89,7 +89,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
         <TableAction
           :actions="[
             {
-              label: $t('ui.actionTitle.create', ['噪声检测记录']),
+              label: '新建噪声检测记录',
               type: 'primary',
               icon: ACTION_ICON.ADD,
               auth: ['mes:set-noise-record:create'],
@@ -98,11 +98,15 @@ const [Grid, gridApi] = useVbenVxeGrid({
           ]"
         />
       </template>
-      <template #result="{ row }">
-        <Tag v-if="row.result" :color="row.result === 'PASS' ? 'success' : 'error'">
-          {{ row.result === 'PASS' ? '合格' : '不合格' }}
+      <template #collectionMode="{ row }">
+        <Tag :color="COLLECTION_MODE_MAP[row.collectionMode]?.color">
+          {{ COLLECTION_MODE_MAP[row.collectionMode]?.text ?? row.collectionMode }}
         </Tag>
-        <span v-else>-</span>
+      </template>
+      <template #result="{ row }">
+        <Tag :color="RESULT_MAP[row.result]?.color">
+          {{ RESULT_MAP[row.result]?.text ?? row.result }}
+        </Tag>
       </template>
       <template #actions="{ row }">
         <TableAction
@@ -121,7 +125,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
               icon: ACTION_ICON.DELETE,
               auth: ['mes:set-noise-record:delete'],
               popConfirm: {
-                title: $t('ui.actionMessage.deleteConfirm', [row.recordNo]),
+                title: $t('ui.actionMessage.deleteConfirm', [row.location]),
                 confirm: handleDelete.bind(null, row),
               },
             },

@@ -4,6 +4,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 @Schema(description = "管理后台 - MES 安全环保检测-污染判定记录 新增/修改 Request VO")
 @Data
 public class MesSetPollutionCheckSaveReqVO {
@@ -31,6 +33,9 @@ public class MesSetPollutionCheckSaveReqVO {
 
     @Schema(description = "规格")
     private String itemSpec;
+
+    @Schema(description = "重量(kg)", example = "12.500")
+    private BigDecimal weight;
 
     @Schema(description = "备注")
     private String remark;

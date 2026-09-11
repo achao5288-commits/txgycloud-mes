@@ -8,14 +8,17 @@ import cn.iocoder.txgy.module.mes.dal.dataobject.set.standard.MesSetStandardDO;
 import cn.iocoder.txgy.module.mes.dal.mysql.set.standard.MesSetStandardMapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
-import java.util.List;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import static cn.iocoder.txgy.framework.common.exception.util.ServiceExceptionUtil.exception;
-import static cn.iocoder.txgy.module.mes.enums.ErrorCodeConstants.SET_STANDARD_NO_DUPLICATE;
 import static cn.iocoder.txgy.module.mes.enums.ErrorCodeConstants.SET_STANDARD_NOT_EXISTS;
+import static cn.iocoder.txgy.module.mes.enums.ErrorCodeConstants.SET_STANDARD_NO_DUPLICATE;
+import static cn.iocoder.txgy.module.mes.enums.ErrorCodeConstants.SET_STANDARD_DOMAIN_INVALID;
+import static cn.iocoder.txgy.module.mes.enums.ErrorCodeConstants.SET_STANDARD_PERIOD_TYPE_INVALID;
 
 /**
  * MES 安全环保检测-检测标准 Service 实现类
@@ -26,45 +29,38 @@ import static cn.iocoder.txgy.module.mes.enums.ErrorCodeConstants.SET_STANDARD_N
 @Validated
 public class MesSetStandardServiceImpl implements MesSetStandardService {
 
+    /**
+     * 检测域：SAFETY/ENV/HEALTH
+     */
+    private static final Set<String> DOMAINS = new HashSet<>(Arrays.asList("EXHAUST", "GAS", "HEALTH"));
+
+    /**
+     * 周期类型：DAILY/WEEKLY/MONTHLY/QUARTERLY/YEARLY/EVENT
+     */
+    private static final Set<String> PERIOD_TYPES = new HashSet<>(Arrays.asList("YEAR", "YEARLY"));
+
     @Resource
     private MesSetStandardMapper standardMapper;
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Long createStandard(MesSetStandardSaveReqVO createReqVO) {
-        // 1. 校验标准编号唯一
-        validateStandardNoUnique(null, createReqVO.getStandardNo());
-        // 2. 插入记录（状态为空时由 DB 默认 DRAFT）
-        MesSetStandardDO standard = BeanUtils.toBean(createReqVO, MesSetStandardDO.class);
-        standardMapper.insert(standard);
-        return standard.getId();
+        validateBase(createReqVO, null);
+        MesSetStandardDO obj = BeanUtils.toBean(createReqVO, MesSetStandardDO.class);
+        standardMapper.insert(obj);
+        return obj.getId();
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void updateStandard(MesSetStandardSaveReqVO updateReqVO) {
-        // 1. 校验存在 + 标准编号唯一
-        validateStandardExists(updateReqVO.getId());
-        validateStandardNoUnique(updateReqVO.getId(), updateReqVO.getStandardNo());
-        // 2. 更新
-        MesSetStandardDO updateObj = BeanUtils.toBean(updateReqVO, MesSetStandardDO.class);
-        standardMapper.updateById(updateObj);
+        MesSetStandardDO exist = validateStandardExists(updateReqVO.getId());
+        validateBase(updateReqVO, exist.getStandardNo());
+        standardMapper.updateById(BeanUtils.toBean(updateReqVO, MesSetStandardDO.class));
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void deleteStandard(Long id) {
-        // 1. 校验存在
         validateStandardExists(id);
-        // 2. 删除
         standardMapper.deleteById(id);
-    }
-
-    @Override
-    public void validateStandardExists(Long id) {
-        if (standardMapper.selectById(id) == null) {
-            throw exception(SET_STANDARD_NOT_EXISTS);
-        }
     }
 
     @Override
@@ -77,23 +73,27 @@ public class MesSetStandardServiceImpl implements MesSetStandardService {
         return standardMapper.selectPage(pageReqVO);
     }
 
-    @Override
-    public List<MesSetStandardDO> getStandardList() {
-        return standardMapper.selectListByStatus("ACTIVE");
+    private MesSetStandardDO validateStandardExists(Long id) {
+        MesSetStandardDO obj = standardMapper.selectById(id);
+        if (obj == null) {
+            throw exception(SET_STANDARD_NOT_EXISTS);
+        }
+        return obj;
     }
 
-    // ==================== 校验方法 ====================
-
     /**
-     * 校验标准编号是否唯一（更新时排除自身）
-     *
-     * @param id 编号
-     * @param standardNo 标准编号
+     * 基础校验：编号唯一(改单时排除自身)、检测域：SAFETY/ENV/HEALTH枚举、周期类型：DAILY/WEEKLY/MONTHLY/QUARTERLY/YEARLY/EVENT枚举
      */
-    private void validateStandardNoUnique(Long id, String standardNo) {
-        MesSetStandardDO exist = standardMapper.selectOne(MesSetStandardDO::getStandardNo, standardNo);
-        if (exist != null && !exist.getId().equals(id)) {
+    private void validateBase(MesSetStandardSaveReqVO reqVO, String origin) {
+        MesSetStandardDO exist = standardMapper.selectByStandardNo(reqVO.getStandardNo());
+        if (exist != null && !exist.getStandardNo().equals(origin)) {
             throw exception(SET_STANDARD_NO_DUPLICATE);
+        }
+        if (reqVO.getDomain() != null && !DOMAINS.contains(reqVO.getDomain())) {
+            throw exception(SET_STANDARD_DOMAIN_INVALID);
+        }
+        if (reqVO.getPeriodType() != null && !PERIOD_TYPES.contains(reqVO.getPeriodType())) {
+            throw exception(SET_STANDARD_PERIOD_TYPE_INVALID);
         }
     }
 

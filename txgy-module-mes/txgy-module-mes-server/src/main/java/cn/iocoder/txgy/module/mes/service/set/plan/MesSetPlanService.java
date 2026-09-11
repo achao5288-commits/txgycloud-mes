@@ -4,7 +4,6 @@ import cn.iocoder.txgy.framework.common.pojo.PageResult;
 import cn.iocoder.txgy.module.mes.controller.admin.set.plan.vo.MesSetPlanPageReqVO;
 import cn.iocoder.txgy.module.mes.controller.admin.set.plan.vo.MesSetPlanSaveReqVO;
 import cn.iocoder.txgy.module.mes.dal.dataobject.set.plan.MesSetPlanDO;
-
 import jakarta.validation.Valid;
 
 /**
@@ -35,13 +34,6 @@ public interface MesSetPlanService {
      * @param id 编号
      */
     void deletePlan(Long id);
-
-    /**
-     * 校验检测计划存在
-     *
-     * @param id 编号
-     */
-    void validatePlanExists(Long id);
 
     /**
      * 获得检测计划

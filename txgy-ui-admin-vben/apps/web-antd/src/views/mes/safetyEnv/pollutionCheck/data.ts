@@ -2,6 +2,9 @@ import type { VbenFormSchema } from '#/adapter/form';
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { MesSetPollutionCheckApi } from '#/api/mes/safetyEnv/pollutionCheck';
 
+import { getRangePickerDefaultProps } from '#/utils';
+import WmWarehouseAreaSelect from '#/views/mes/wm/warehouse/components/area-select.vue';
+
 /** 环节选项 */
 export const STAGE_OPTIONS = [
   { label: '采购入库', value: 'PURCHASE_INBOUND' },
@@ -41,6 +44,20 @@ export const REVIEW_RESULT_MAP: Record<string, { text: string; color: string }> 
   POLLUTED: { text: '有污染', color: 'error' },
 };
 
+/** 成品达标分支（需求 §11 用例5 / 设计 §环节5；仅成品环节） */
+export const FINISHED_RESULT_OPTIONS = [
+  { label: '达标（入库出厂）', value: 'QUALIFIED' },
+  { label: '局部缺陷（返工为主）', value: 'REWORK' },
+  { label: '整体报废（整批锁定）', value: 'SCRAPPED' },
+];
+
+/** 达标分支展示(色值用于 tag) */
+export const FINISHED_RESULT_MAP: Record<string, { text: string; color: string }> = {
+  QUALIFIED: { text: '达标', color: 'success' },
+  REWORK: { text: '局部缺陷·返工', color: 'warning' },
+  SCRAPPED: { text: '整体报废', color: 'error' },
+};
+
 /** 处置方式选项 */
 export const DISPOSITION_OPTIONS = [
   { label: '正常入库/直接存储', value: 'NORMAL_INBOUND' },
@@ -58,16 +75,10 @@ export const DISPOSITION_MAP: Record<string, string> = Object.fromEntries(
   DISPOSITION_OPTIONS.map((item) => [item.value, item.label]),
 );
 
-/** 去向/库位选项(隔离暂存区/受控区/处置区/回用区/排放口) */
-export const LOCATION_OPTIONS = [
-  { label: '危废暂存间A-01', value: '危废暂存间A-01' },
-  { label: '危废暂存间A-06', value: '危废暂存间A-06' },
-  { label: '危废暂存间B-05', value: '危废暂存间B-05' },
-  { label: '危废暂存间C-03', value: '危废暂存间C-03' },
-  { label: '成品受控区C-02', value: '成品受控区C-02' },
-  { label: '处置作业区D-02', value: '处置作业区D-02' },
-  { label: '回用暂存区E-01', value: '回用暂存区E-01' },
-  { label: '合规排放口F-02', value: '合规排放口F-02' },
+/** 判定状态筛选（对应后端 reviewed：true=已复核，false=待复核；不选=全部） */
+export const REVIEWED_OPTIONS = [
+  { label: '待复核', value: false },
+  { label: '已复核', value: true },
 ];
 
 /** 新增/修改污染判定的表单（AI 初筛字段由后端回填，无需录入） */
@@ -121,6 +132,18 @@ export function useFormSchema(): VbenFormSchema[] {
       },
     },
     {
+      // 全链重量的源头：判定时确认一次，台账/联单/衡算都从这里取，避免多处录入对不上账
+      fieldName: 'weight',
+      label: '重量(kg)',
+      component: 'InputNumber',
+      componentProps: {
+        allowClear: true,
+        min: 0,
+        placeholder: '请输入重量(kg)',
+        precision: 3,
+      },
+    },
+    {
       fieldName: 'bizNo',
       label: '关联单号',
       component: 'Input',
@@ -155,6 +178,32 @@ export function useFormSchema(): VbenFormSchema[] {
 export function useReviewFormSchema(): VbenFormSchema[] {
   return [
     {
+      // 只用于驱动成品达标分支的显隐/必填，不提交
+      fieldName: 'stage',
+      component: 'Input',
+      dependencies: {
+        triggerFields: [''],
+        show: () => false,
+      },
+    },
+    {
+      // 成品环节必填：达标 / 局部缺陷返工 / 整体报废（后端硬校验，非成品环节拒绝传值）
+      fieldName: 'finishedResult',
+      label: '成品达标分支',
+      component: 'RadioGroup',
+      componentProps: {
+        options: FINISHED_RESULT_OPTIONS,
+      },
+      dependencies: {
+        triggerFields: ['stage'],
+        show: (values) => values.stage === 'FINISHED_PRODUCT',
+        // 显隐只是 v-show，字段仍在校验树里：非成品环节必须把必填规则摘掉
+        rules: (values) =>
+          values.stage === 'FINISHED_PRODUCT' ? 'selectRequired' : null,
+        required: (values) => values.stage === 'FINISHED_PRODUCT',
+      },
+    },
+    {
       fieldName: 'reviewResult',
       label: '人工复核结论',
       component: 'RadioGroup',
@@ -183,13 +232,14 @@ export function useReviewFormSchema(): VbenFormSchema[] {
       },
     },
     {
-      fieldName: 'location',
+      // 受控存储门禁（需求 5.4）：库位取自主数据，有污染只能选污染管控库位，无污染不得占用受控库位。
+      // 值 = 库位编号，库位名称由后端按编号回写快照。
+      fieldName: 'locationId',
       label: '去向/库位',
-      component: 'Select',
+      component: WmWarehouseAreaSelect,
       componentProps: {
-        options: LOCATION_OPTIONS,
         allowClear: true,
-        placeholder: '请选择去向/库位',
+        placeholder: '请选择库位（有污染必须选受控/危废库位）',
       },
     },
     {
@@ -208,6 +258,16 @@ export function useReviewFormSchema(): VbenFormSchema[] {
 /** 列表的搜索表单 */
 export function useGridFormSchema(): VbenFormSchema[] {
   return [
+    {
+      fieldName: 'reviewed',
+      label: '判定状态',
+      component: 'Select',
+      componentProps: {
+        allowClear: true,
+        options: REVIEWED_OPTIONS,
+        placeholder: '待复核队列：选「待复核」',
+      },
+    },
     {
       fieldName: 'stage',
       label: '环节',
@@ -256,16 +316,40 @@ export function useGridFormSchema(): VbenFormSchema[] {
       },
     },
     {
-      fieldName: 'reviewed',
-      label: '判定状态',
+      fieldName: 'reviewResult',
+      label: '复核分类',
       component: 'Select',
       componentProps: {
         allowClear: true,
-        options: [
-          { label: '待复核', value: false },
-          { label: '已复核', value: true },
-        ],
-        placeholder: '全部',
+        options: REVIEW_RESULT_OPTIONS,
+        placeholder: '请选择',
+      },
+    },
+    {
+      fieldName: 'finishedResult',
+      label: '达标分支',
+      component: 'Select',
+      componentProps: {
+        allowClear: true,
+        options: FINISHED_RESULT_OPTIONS,
+        placeholder: '仅成品环节有值',
+      },
+    },
+    {
+      fieldName: 'reviewBy',
+      label: '复核人',
+      component: 'Input',
+      componentProps: {
+        allowClear: true,
+        placeholder: '复核人昵称(精确)',
+      },
+    },
+    {
+      fieldName: 'createTime',
+      label: '判定时间',
+      component: 'RangePicker',
+      componentProps: {
+        ...getRangePickerDefaultProps(),
       },
     },
   ];
@@ -279,10 +363,12 @@ export function useGridColumns(): VxeTableGridOptions<MesSetPollutionCheckApi.Po
     { field: 'stage', title: '环节', width: 110, slots: { default: 'stage' } },
     { field: 'batchNo', title: '批次号', minWidth: 150 },
     { field: 'itemName', title: '物料/产品名称', minWidth: 160 },
+    { field: 'weight', title: '重量(kg)', width: 110, formatter: ({ cellValue }) => (cellValue != null ? `${cellValue}` : '-') },
     { field: 'aiResult', title: 'AI 初筛', width: 110, slots: { default: 'aiResult' } },
     { field: 'aiConfidence', title: '置信度', width: 90, formatter: ({ cellValue }) => (cellValue != null ? `${cellValue}%` : '-') },
     { field: 'suggestedStorage', title: 'AI 推荐存储方法', minWidth: 200, showOverflow: true },
     { field: 'reviewResult', title: '人工复核', width: 110, slots: { default: 'reviewResult' } },
+    { field: 'finishedResult', title: '达标分支', width: 130, slots: { default: 'finishedResult' } },
     { field: 'disposition', title: '处置方式', width: 140, formatter: ({ cellValue }) => (cellValue ? (DISPOSITION_MAP[cellValue] ?? cellValue) : '-') },
     { field: 'storageMethod', title: '最终存储方法', minWidth: 150, showOverflow: true },
     { field: 'location', title: '去向/库位', minWidth: 130 },

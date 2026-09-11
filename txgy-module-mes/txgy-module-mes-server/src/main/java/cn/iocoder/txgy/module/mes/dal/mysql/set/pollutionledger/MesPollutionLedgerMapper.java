@@ -39,6 +39,7 @@ public interface MesPollutionLedgerMapper extends BaseMapperX<MesPollutionLedger
                 .likeIfPresent(MesPollutionLedgerDO::getSourceRecordNo, reqVO.getSourceRecordNo())
                 .likeIfPresent(MesPollutionLedgerDO::getBizNo, reqVO.getBizNo())
                 .likeIfPresent(MesPollutionLedgerDO::getItemName, reqVO.getItemName())
+                .eqIfPresent(MesPollutionLedgerDO::getMarked, reqVO.getMarked())
                 .orderByDesc(MesPollutionLedgerDO::getId);
         return selectPage(reqVO, query);
     }

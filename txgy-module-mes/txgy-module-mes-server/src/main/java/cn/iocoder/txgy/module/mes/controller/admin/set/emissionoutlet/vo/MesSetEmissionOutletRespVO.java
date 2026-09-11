@@ -2,7 +2,6 @@ package cn.iocoder.txgy.module.mes.controller.admin.set.emissionoutlet.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -10,10 +9,10 @@ import java.time.LocalDateTime;
 @Data
 public class MesSetEmissionOutletRespVO {
 
-    @Schema(description = "编号", example = "1")
+    @Schema(description = "编号")
     private Long id;
 
-    @Schema(description = "排放口编号")
+    @Schema(description = "排放口编号(如 DA001/DW001)")
     private String outletCode;
 
     @Schema(description = "排放口名称")
@@ -47,7 +46,7 @@ public class MesSetEmissionOutletRespVO {
     private String permitLimits;
 
     @Schema(description = "是否重点/国控排放口：1是/0否")
-    private Integer isKeyOutlet;
+    private Boolean isKeyOutlet;
 
     @Schema(description = "状态：ACTIVE/INACTIVE")
     private String status;

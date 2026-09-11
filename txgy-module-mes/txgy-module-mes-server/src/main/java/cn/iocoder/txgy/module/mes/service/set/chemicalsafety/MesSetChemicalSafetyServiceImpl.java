@@ -8,15 +8,19 @@ import cn.iocoder.txgy.module.mes.dal.dataobject.set.chemicalsafety.MesSetChemic
 import cn.iocoder.txgy.module.mes.dal.mysql.set.chemicalsafety.MesSetChemicalSafetyMapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 import static cn.iocoder.txgy.framework.common.exception.util.ServiceExceptionUtil.exception;
-import static cn.iocoder.txgy.module.mes.enums.ErrorCodeConstants.SET_CHEMICAL_SAFETY_NO_DUPLICATE;
 import static cn.iocoder.txgy.module.mes.enums.ErrorCodeConstants.SET_CHEMICAL_SAFETY_NOT_EXISTS;
+import static cn.iocoder.txgy.module.mes.enums.ErrorCodeConstants.SET_CHEMICAL_SAFETY_NO_DUPLICATE;
+import static cn.iocoder.txgy.module.mes.enums.ErrorCodeConstants.SET_CHEMICAL_SAFETY_RESULT_INVALID;
 
 /**
- * MES 安全环保检测-危化品安全巡查记录 Service 实现类
+ * MES 安全环保检测-危化品安全检查 Service 实现类
  *
  * @author OPENLAB BS
  */
@@ -24,69 +28,63 @@ import static cn.iocoder.txgy.module.mes.enums.ErrorCodeConstants.SET_CHEMICAL_S
 @Validated
 public class MesSetChemicalSafetyServiceImpl implements MesSetChemicalSafetyService {
 
+    /**
+     * 结果：PASS/FAIL
+     */
+    private static final Set<String> RESULTS = new HashSet<>(Arrays.asList("FAIL", "PASS"));
+
     @Resource
-    private MesSetChemicalSafetyMapper chemicalSafetyMapper;
+    private MesSetChemicalSafetyMapper chemicalsafetyMapper;
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Long createChemicalSafety(MesSetChemicalSafetySaveReqVO createReqVO) {
-        // 1. 校验记录编号唯一
-        validateRecordNoUnique(null, createReqVO.getRecordNo());
-        // 2. 插入记录
-        MesSetChemicalSafetyDO chemicalSafety = BeanUtils.toBean(createReqVO, MesSetChemicalSafetyDO.class);
-        chemicalSafetyMapper.insert(chemicalSafety);
-        return chemicalSafety.getId();
+        validateBase(createReqVO, null);
+        MesSetChemicalSafetyDO obj = BeanUtils.toBean(createReqVO, MesSetChemicalSafetyDO.class);
+        chemicalsafetyMapper.insert(obj);
+        return obj.getId();
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void updateChemicalSafety(MesSetChemicalSafetySaveReqVO updateReqVO) {
-        // 1. 校验存在 + 记录编号唯一
-        validateChemicalSafetyExists(updateReqVO.getId());
-        validateRecordNoUnique(updateReqVO.getId(), updateReqVO.getRecordNo());
-        // 2. 更新
-        MesSetChemicalSafetyDO updateObj = BeanUtils.toBean(updateReqVO, MesSetChemicalSafetyDO.class);
-        chemicalSafetyMapper.updateById(updateObj);
+        MesSetChemicalSafetyDO exist = validateChemicalSafetyExists(updateReqVO.getId());
+        validateBase(updateReqVO, exist.getRecordNo());
+        chemicalsafetyMapper.updateById(BeanUtils.toBean(updateReqVO, MesSetChemicalSafetyDO.class));
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void deleteChemicalSafety(Long id) {
-        // 1. 校验存在
         validateChemicalSafetyExists(id);
-        // 2. 删除
-        chemicalSafetyMapper.deleteById(id);
-    }
-
-    @Override
-    public void validateChemicalSafetyExists(Long id) {
-        if (chemicalSafetyMapper.selectById(id) == null) {
-            throw exception(SET_CHEMICAL_SAFETY_NOT_EXISTS);
-        }
+        chemicalsafetyMapper.deleteById(id);
     }
 
     @Override
     public MesSetChemicalSafetyDO getChemicalSafety(Long id) {
-        return chemicalSafetyMapper.selectById(id);
+        return chemicalsafetyMapper.selectById(id);
     }
 
     @Override
     public PageResult<MesSetChemicalSafetyDO> getChemicalSafetyPage(MesSetChemicalSafetyPageReqVO pageReqVO) {
-        return chemicalSafetyMapper.selectPage(pageReqVO);
+        return chemicalsafetyMapper.selectPage(pageReqVO);
     }
 
-    // ==================== 校验方法 ====================
+    private MesSetChemicalSafetyDO validateChemicalSafetyExists(Long id) {
+        MesSetChemicalSafetyDO obj = chemicalsafetyMapper.selectById(id);
+        if (obj == null) {
+            throw exception(SET_CHEMICAL_SAFETY_NOT_EXISTS);
+        }
+        return obj;
+    }
 
     /**
-     * 校验记录编号是否唯一（更新时排除自身）
-     *
-     * @param id 编号
-     * @param recordNo 记录编号
+     * 基础校验：编号唯一(改单时排除自身)、结果：PASS/FAIL枚举
      */
-    private void validateRecordNoUnique(Long id, String recordNo) {
-        MesSetChemicalSafetyDO exist = chemicalSafetyMapper.selectByRecordNo(recordNo);
-        if (exist != null && !exist.getId().equals(id)) {
+    private void validateBase(MesSetChemicalSafetySaveReqVO reqVO, String origin) {
+        MesSetChemicalSafetyDO exist = chemicalsafetyMapper.selectByRecordNo(reqVO.getRecordNo());
+        if (exist != null && !exist.getRecordNo().equals(origin)) {
             throw exception(SET_CHEMICAL_SAFETY_NO_DUPLICATE);
+        }
+        if (reqVO.getResult() != null && !RESULTS.contains(reqVO.getResult())) {
+            throw exception(SET_CHEMICAL_SAFETY_RESULT_INVALID);
         }
     }
 

@@ -106,6 +106,7 @@ watchEffect(async () => {
       <SelectOption v-for="item in allList" :key="item.id" :value="item.id">
         <div class="flex items-center gap-2">
           <span>{{ item.name }}</span>
+          <Tag v-if="item.pollutionControl" color="orange">受控库位</Tag>
           <Tag v-if="item.code" color="blue">编号: {{ item.code }}</Tag>
         </div>
       </SelectOption>

@@ -1,121 +1,200 @@
 import type { VbenFormSchema } from '#/adapter/form';
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
-import type { MesSetDustRecordApi } from '#/api/mes/safetyEnv/dustRecord';
+import type { MesSetDustRecordApi } from '#/api/mes/safetyEnv/dustrecord';
 
-import { getRangePickerDefaultProps } from '#/utils';
-
-/** 检测结论 PASS/FAIL */
-const RESULT_OPTIONS = [
-  { label: '合格', value: 'PASS' },
-  { label: '不合格', value: 'FAIL' },
-];
-
-/** 新增/修改粉尘浓度检测的表单 */
-export function useFormSchema(): VbenFormSchema[] {
+/** 搜索表单 */
+export function useGridFormSchema(): VbenFormSchema[] {
   return [
     {
-      fieldName: 'id',
-      component: 'Input',
-      dependencies: {
-        triggerFields: [''],
-        show: () => false,
-      },
-    },
-    {
       fieldName: 'recordNo',
-      label: '记录编号',
+      label: '记录编号 DUST-YYYYMMDD-NNN',
       component: 'Input',
       componentProps: {
         allowClear: true,
-        placeholder: '请输入记录编号',
+        placeholder: '请输入记录编号 DUST-YYYYMMDD-NNN',
       },
-      rules: 'required',
     },
     {
       fieldName: 'location',
-      label: '检测位置',
+      label: '检测位置/作业区域',
       component: 'Input',
       componentProps: {
         allowClear: true,
-        placeholder: '请输入检测位置',
+        placeholder: '请输入检测位置/作业区域',
       },
     },
     {
       fieldName: 'dustType',
-      label: '粉尘类型',
-      component: 'Select',
-      componentProps: {
-        options: [{ label: "煤尘", value: "煤尘" }, { label: "矽尘", value: "矽尘" }, { label: "水泥尘", value: "水泥尘" }, { label: "木尘", value: "木尘" }, { label: "其他", value: "其他" }],
-        placeholder: '请选择粉尘类型',
-      },
-      rules: 'selectRequired',
-    },
-    {
-      fieldName: 'concentration',
-      label: '粉尘浓度值',
-      component: 'InputNumber',
-      componentProps: {
-        min: 0,
-        placeholder: '请输入',
-        precision: 2,
-      },
-    },
-    {
-      fieldName: 'sio2Content',
-      label: '游离二氧化硅含量(%)',
-      component: 'InputNumber',
-      componentProps: {
-        min: 0,
-        placeholder: '请输入',
-        precision: 2,
-      },
-    },
-    {
-      fieldName: 'unit',
-      label: '单位',
+      label: '检测参数：TOTAL_DUST/RESPIRABLE_DUST/SIO2',
       component: 'Input',
       componentProps: {
         allowClear: true,
-        placeholder: '请输入单位',
-      },
-    },
-    {
-      fieldName: 'limitValue',
-      label: '限值(mg/m3)',
-      component: 'InputNumber',
-      componentProps: {
-        min: 0,
-        placeholder: '请输入',
-        precision: 2,
-      },
-    },
-    {
-      fieldName: 'refStandard',
-      label: '执行标准',
-      component: 'Input',
-      componentProps: {
-        allowClear: true,
-        placeholder: '请输入执行标准',
+        placeholder: '请输入检测参数：TOTAL_DUST/RESPIRABLE_DUST/SIO2',
       },
     },
     {
       fieldName: 'result',
-      label: '综合结论',
-      component: 'Select',
+      label: '结果：PASS/FAIL',
+      component: 'Input',
       componentProps: {
-        options: RESULT_OPTIONS,
-        placeholder: '请选择综合结论',
         allowClear: true,
+        placeholder: '请输入结果：PASS/FAIL',
       },
     },
     {
       fieldName: 'collectionMode',
-      label: '采集方式',
-      component: 'Select',
+      label: '采集方式：IOT_AUTO/MANUAL',
+      component: 'Input',
       componentProps: {
-        options: [{ label: "IOT自动采集", value: "IOT_AUTO" }, { label: "人工采集", value: "MANUAL" }],
-        placeholder: '请选择采集方式',
         allowClear: true,
+        placeholder: '请输入采集方式：IOT_AUTO/MANUAL',
+      },
+    },
+  ];
+}
+
+/** 列表字段 */
+export function useGridColumns(): VxeTableGridOptions<MesSetDustRecordApi.DustRecord>['columns'] {
+  return [
+    { field: 'recordNo', title: '记录编号 DUST-YYYYMMDD-NNN', minWidth: 170, showOverflow: true },
+    { field: 'location', title: '检测位置/作业区域', minWidth: 170, showOverflow: true },
+    { field: 'dustType', title: '检测参数：TOTAL_DUST/RESPIRABLE_DUST/SIO2', minWidth: 170, showOverflow: true },
+    { field: 'concentration', title: '检测浓度/含量', width: 120 },
+    { field: 'sio2Content', title: '游离SiO2含量%(总尘且需矽尘分级时)', width: 120 },
+    { field: 'unit', title: '单位 mg/m3/%', minWidth: 170, showOverflow: true },
+    { field: 'limitValue', title: '限值', width: 120 },
+    { field: 'result', title: '结果：PASS/FAIL', minWidth: 170, showOverflow: true },
+    { field: 'collectionMode', title: '采集方式：IOT_AUTO/MANUAL', minWidth: 170, showOverflow: true },
+    { field: 'inspectTime', title: '检测时间', width: 120 },
+    {
+      title: '操作',
+      width: 150,
+      fixed: 'right',
+      slots: {
+        default: 'actions',
+      },
+    },
+  ];
+}
+
+/** 新增/编辑表单 */
+export function useFormSchema(): VbenFormSchema[] {
+  return [
+    {
+      fieldName: 'recordNo',
+      label: '记录编号 DUST-YYYYMMDD-NNN',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入记录编号 DUST-YYYYMMDD-NNN',
+      },
+      rules: 'required',
+    },
+    {
+      fieldName: 'planId',
+      label: '关联检测计划编号',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入关联检测计划编号',
+      },
+    },
+    {
+      fieldName: 'woId',
+      label: '关联工单编号',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入关联工单编号',
+      },
+    },
+    {
+      fieldName: 'operationId',
+      label: '关联工序编号',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入关联工序编号',
+      },
+    },
+    {
+      fieldName: 'deviceId',
+      label: '关联设备编号(除尘/产尘设备)',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入关联设备编号(除尘/产尘设备)',
+      },
+    },
+    {
+      fieldName: 'location',
+      label: '检测位置/作业区域',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入检测位置/作业区域',
+      },
+    },
+    {
+      fieldName: 'dustType',
+      label: '检测参数：TOTAL_DUST/RESPIRABLE_DUST/SIO2',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入检测参数：TOTAL_DUST/RESPIRABLE_DUST/SIO2',
+      },
+      rules: 'required',
+    },
+    {
+      fieldName: 'concentration',
+      label: '检测浓度/含量',
+      component: 'InputNumber',
+      componentProps: {
+        placeholder: '请输入检测浓度/含量',
+        class: 'w-full',
+      },
+    },
+    {
+      fieldName: 'sio2Content',
+      label: '游离SiO2含量%(总尘且需矽尘分级时)',
+      component: 'InputNumber',
+      componentProps: {
+        placeholder: '请输入游离SiO2含量%(总尘且需矽尘分级时)',
+        class: 'w-full',
+      },
+    },
+    {
+      fieldName: 'unit',
+      label: '单位 mg/m3/%',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入单位 mg/m3/%',
+      },
+    },
+    {
+      fieldName: 'limitValue',
+      label: '限值',
+      component: 'InputNumber',
+      componentProps: {
+        placeholder: '请输入限值',
+        class: 'w-full',
+      },
+    },
+    {
+      fieldName: 'refStandard',
+      label: '引用国标',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入引用国标',
+      },
+    },
+    {
+      fieldName: 'result',
+      label: '结果：PASS/FAIL',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入结果：PASS/FAIL',
+      },
+    },
+    {
+      fieldName: 'collectionMode',
+      label: '采集方式：IOT_AUTO/MANUAL',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入采集方式：IOT_AUTO/MANUAL',
       },
     },
     {
@@ -123,7 +202,6 @@ export function useFormSchema(): VbenFormSchema[] {
       label: '检测仪器编号',
       component: 'Input',
       componentProps: {
-        allowClear: true,
         placeholder: '请输入检测仪器编号',
       },
     },
@@ -132,7 +210,6 @@ export function useFormSchema(): VbenFormSchema[] {
       label: '检测人',
       component: 'Input',
       componentProps: {
-        allowClear: true,
         placeholder: '请输入检测人',
       },
     },
@@ -141,87 +218,28 @@ export function useFormSchema(): VbenFormSchema[] {
       label: '检测时间',
       component: 'DatePicker',
       componentProps: {
-        format: 'YYYY-MM-DD HH:mm:ss',
-        placeholder: '请选择时间',
         showTime: true,
-        valueFormat: 'x',
+        valueFormat: 'YYYY-MM-DD HH:mm:ss',
+        format: 'YYYY-MM-DD HH:mm:ss',
+        placeholder: '选择时间',
       },
       rules: 'required',
     },
     {
       fieldName: 'photoUrls',
-      label: '检测照片 URL',
-      component: 'Textarea',
+      label: '检测照片URL(逗号分隔)',
+      component: 'Input',
       componentProps: {
-        placeholder: '请输入检测照片 URL',
-        rows: 2,
+        placeholder: '请输入检测照片URL(逗号分隔)',
       },
-      formItemClass: 'col-span-3',
     },
     {
       fieldName: 'remark',
       label: '备注',
       component: 'Textarea',
       componentProps: {
+        rows: 3,
         placeholder: '请输入备注',
-        rows: 2,
-      },
-      formItemClass: 'col-span-3',
-    },
-  ];
-}
-
-/** 列表的搜索表单 */
-export function useGridFormSchema(): VbenFormSchema[] {
-  return [
-    {
-      fieldName: 'dustType',
-      label: '粉尘类型',
-      component: 'Select',
-      componentProps: {
-        allowClear: true,
-        options: [{ label: "煤尘", value: "煤尘" }, { label: "矽尘", value: "矽尘" }, { label: "水泥尘", value: "水泥尘" }, { label: "木尘", value: "木尘" }, { label: "其他", value: "其他" }],
-        placeholder: '请选择粉尘类型',
-      },
-    },
-    {
-      fieldName: 'result',
-      label: '结果',
-      component: 'Select',
-      componentProps: {
-        allowClear: true,
-        options: RESULT_OPTIONS,
-        placeholder: '请选择结果',
-      },
-    },
-    {
-      fieldName: 'inspectTime',
-      label: '检测时间',
-      component: 'RangePicker',
-      componentProps: {
-        ...getRangePickerDefaultProps(),
-      },
-    },
-  ];
-}
-
-/** 列表的字段 */
-export function useGridColumns(): VxeTableGridOptions<MesSetDustRecordApi.DustRecord>['columns'] {
-  return [
-    { field: 'recordNo', title: '记录编号', minWidth: 150 },
-    { field: 'dustType', title: '粉尘类型', minWidth: 150 },
-    { field: 'location', title: '检测位置', minWidth: 150 },
-    { field: 'concentration', title: '粉尘浓度值', width: 130 },
-    { field: 'unit', title: '单位', minWidth: 150 },
-    { field: 'limitValue', title: '限值(mg/m3)', width: 130 },
-    { field: 'result', title: '综合结论', width: 110, slots: { default: 'result' } },
-    { field: 'inspectTime', title: '检测时间', width: 180, formatter: 'formatDateTime' },
-    {
-      title: '操作',
-      width: 160,
-      fixed: 'right',
-      slots: {
-        default: 'actions',
       },
     },
   ];

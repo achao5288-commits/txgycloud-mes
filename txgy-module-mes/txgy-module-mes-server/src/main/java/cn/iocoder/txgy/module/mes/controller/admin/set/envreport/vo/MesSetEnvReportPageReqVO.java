@@ -12,10 +12,19 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class MesSetEnvReportPageReqVO extends PageParam {
 
-    @Schema(description = "报告类型：MONTHLY(月度)/QUARTERLY(季度)/ANNUAL(年度)/OTHER(其他)", example = "QUARTERLY")
+    @Schema(description = "报告编号 EP-YYYYMMDD-NNN")
+    private String reportNo;
+
+    @Schema(description = "报告名称")
+    private String reportName;
+
+    @Schema(description = "报告来源：THIRD_PARTY/INTERNAL")
     private String reportType;
 
-    @Schema(description = "状态：DRAFT(草稿)/SUBMITTED(已提交)/APPROVED(已审批)/REJECTED(已驳回)", example = "APPROVED")
+    @Schema(description = "类别：EXHAUST_GAS/WASTEWATER/NOISE/SOLID_WASTE/AMBIENT/COMPREHENSIVE等")
+    private String reportCategory;
+
+    @Schema(description = "状态：DRAFT/APPROVED/REJECTED/ARCHIVED")
     private String status;
 
 }

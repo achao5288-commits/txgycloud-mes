@@ -3,6 +3,7 @@ package cn.iocoder.txgy.module.mes.controller.admin.set.pollutionledger.vo;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Schema(description = "管理后台 - MES 安全环保检测-污染/危废暂存台账 Response VO")
@@ -35,6 +36,9 @@ public class MesPollutionLedgerRespVO {
 
     @Schema(description = "规格")
     private String itemSpec;
+
+    @Schema(description = "重量(kg)", example = "12.500")
+    private BigDecimal weight;
 
     @Schema(description = "处置方式")
     private String disposition;

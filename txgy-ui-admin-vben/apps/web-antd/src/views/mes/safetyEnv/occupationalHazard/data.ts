@@ -1,55 +1,61 @@
 import type { VbenFormSchema } from '#/adapter/form';
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
-import type { MesSetOccupationalHazardApi } from '#/api/mes/safetyEnv/occupationalHazard';
+import type { MesSetOccupationalHazardApi } from '#/api/mes/safetyEnv/occupationalhazard';
 
-import { getRangePickerDefaultProps } from '#/utils';
-
-/** 检测结论 PASS/FAIL */
-const RESULT_OPTIONS = [
-  { label: '合格', value: 'PASS' },
-  { label: '不合格', value: 'FAIL' },
+/** 因素类别：CHEMICAL/PHYSICAL/BIOLOGICAL选项 */
+export const FACTOR_CATEGORY_OPTIONS = [
+  { label: 'CHEMICAL', value: 'CHEMICAL' },
+  { label: 'PHYSICAL', value: 'PHYSICAL' },
 ];
 
-/** 新增/修改职业病危害检测的表单 */
-export function useFormSchema(): VbenFormSchema[] {
+/** 因素类别：CHEMICAL/PHYSICAL/BIOLOGICAL文案 */
+export const FACTOR_CATEGORY_MAP: Record<string, { text: string; color: string }> = {
+  CHEMICAL: { text: 'CHEMICAL', color: 'success' },
+  PHYSICAL: { text: 'PHYSICAL', color: 'error' },
+};
+
+/** 结果：PASS/FAIL选项 */
+export const RESULT_OPTIONS = [
+  { label: '超标', value: 'FAIL' },
+  { label: '达标', value: 'PASS' },
+];
+
+/** 结果：PASS/FAIL文案 */
+export const RESULT_MAP: Record<string, { text: string; color: string }> = {
+  FAIL: { text: '超标', color: 'success' },
+  PASS: { text: '达标', color: 'error' },
+};
+
+/** 搜索表单 */
+export function useGridFormSchema(): VbenFormSchema[] {
   return [
     {
-      fieldName: 'id',
-      component: 'Input',
-      dependencies: {
-        triggerFields: [''],
-        show: () => false,
-      },
-    },
-    {
       fieldName: 'recordNo',
-      label: '记录编号',
+      label: '记录编号 OH-YYYYMMDD-NNN',
       component: 'Input',
       componentProps: {
         allowClear: true,
-        placeholder: '请输入记录编号',
+        placeholder: '请输入记录编号 OH-YYYYMMDD-NNN',
       },
-      rules: 'required',
     },
     {
       fieldName: 'factorCategory',
-      label: '危害因素类别',
+      label: '因素类别：CHEMICAL/PHYSICAL/BIOLOGICAL',
       component: 'Select',
       componentProps: {
-        options: [{ label: "化学因素", value: "CHEMICAL" }, { label: "粉尘", value: "DUST" }, { label: "物理因素", value: "PHYSICAL" }, { label: "生物因素", value: "BIOLOGICAL" }, { label: "其他", value: "OTHER" }],
-        placeholder: '请选择危害因素类别',
+        allowClear: true,
+        options: FACTOR_CATEGORY_OPTIONS,
+        placeholder: '请选择',
       },
-      rules: 'selectRequired',
     },
     {
       fieldName: 'factorCode',
-      label: '危害因素编码',
+      label: '具体因素：TOXIC/DUST/NOISE/RADIATION/HEAT/VIBRATION/BIOAGENT',
       component: 'Input',
       componentProps: {
         allowClear: true,
-        placeholder: '请输入危害因素编码',
+        placeholder: '请输入具体因素：TOXIC/DUST/NOISE/RADIATION/HEAT/VIBRATION/BIOAGENT',
       },
-      rules: 'required',
     },
     {
       fieldName: 'workplace',
@@ -59,74 +65,166 @@ export function useFormSchema(): VbenFormSchema[] {
         allowClear: true,
         placeholder: '请输入检测岗位/工作场所',
       },
+    },
+    {
+      fieldName: 'result',
+      label: '结果：PASS/FAIL',
+      component: 'Select',
+      componentProps: {
+        allowClear: true,
+        options: RESULT_OPTIONS,
+        placeholder: '请选择',
+      },
+    },
+  ];
+}
+
+/** 列表字段 */
+export function useGridColumns(): VxeTableGridOptions<MesSetOccupationalHazardApi.OccupationalHazard>['columns'] {
+  return [
+    { field: 'recordNo', title: '记录编号 OH-YYYYMMDD-NNN', minWidth: 170, showOverflow: true },
+    { field: 'factorCategory', title: '因素类别：CHEMICAL/PHYSICAL/BIOLOGICAL', minWidth: 170, showOverflow: true, slots: { default: 'factorCategory' } },
+    { field: 'factorCode', title: '具体因素：TOXIC/DUST/NOISE/RADIATION/HEAT/VIBRATION/BIOAGENT', minWidth: 170, showOverflow: true },
+    { field: 'workplace', title: '检测岗位/工作场所', minWidth: 170, showOverflow: true },
+    { field: 'measuredValue', title: '实测浓度/强度', width: 120 },
+    { field: 'unit', title: '单位 mg/m3/dB(A)/mSv/C/m-s2等', minWidth: 170, showOverflow: true },
+    { field: 'limitType', title: '接触限值类型：MAC/PC-TWA/PC-STEL', minWidth: 170, showOverflow: true },
+    { field: 'oelValue', title: '职业接触限值', width: 120 },
+    { field: 'refStandard', title: '引用国标', minWidth: 170, showOverflow: true },
+    { field: 'result', title: '结果：PASS/FAIL', minWidth: 170, showOverflow: true, slots: { default: 'result' } },
+    { field: 'inspectTime', title: '检测时间', width: 120 },
+    {
+      title: '操作',
+      width: 150,
+      fixed: 'right',
+      slots: {
+        default: 'actions',
+      },
+    },
+  ];
+}
+
+/** 新增/编辑表单 */
+export function useFormSchema(): VbenFormSchema[] {
+  return [
+    {
+      fieldName: 'recordNo',
+      label: '记录编号 OH-YYYYMMDD-NNN',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入记录编号 OH-YYYYMMDD-NNN',
+      },
+      rules: 'required',
+    },
+    {
+      fieldName: 'planId',
+      label: '关联检测计划编号',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入关联检测计划编号',
+      },
+    },
+    {
+      fieldName: 'empId',
+      label: '关联人员编号(个体暴露监测时；岗位检测可空)',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入关联人员编号(个体暴露监测时；岗位检测可空)',
+      },
+    },
+    {
+      fieldName: 'factorCategory',
+      label: '因素类别：CHEMICAL/PHYSICAL/BIOLOGICAL',
+      component: 'Select',
+      componentProps: {
+        options: FACTOR_CATEGORY_OPTIONS,
+        placeholder: '请选择',
+      },
+      rules: 'selectRequired',
+    },
+    {
+      fieldName: 'factorCode',
+      label: '具体因素：TOXIC/DUST/NOISE/RADIATION/HEAT/VIBRATION/BIOAGENT',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入具体因素：TOXIC/DUST/NOISE/RADIATION/HEAT/VIBRATION/BIOAGENT',
+      },
+      rules: 'required',
+    },
+    {
+      fieldName: 'workplace',
+      label: '检测岗位/工作场所',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入检测岗位/工作场所',
+      },
       rules: 'required',
     },
     {
       fieldName: 'sourceRefType',
-      label: '来源关联类型',
-      component: 'Select',
+      label: '数据来源：REUSE/ORIGINAL',
+      component: 'Input',
       componentProps: {
-        options: [{ label: "检测计划", value: "PLAN" }, { label: "检测任务", value: "TASK" }],
-        placeholder: '请选择来源关联类型',
-        allowClear: true,
+        placeholder: '请输入数据来源：REUSE/ORIGINAL',
+      },
+    },
+    {
+      fieldName: 'sourceRecordId',
+      label: '来源安全检测记录id(复用气体/噪声/粉尘)',
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入来源安全检测记录id(复用气体/噪声/粉尘)',
       },
     },
     {
       fieldName: 'measuredValue',
-      label: '测量值',
+      label: '实测浓度/强度',
       component: 'InputNumber',
       componentProps: {
-        min: 0,
-        placeholder: '请输入',
-        precision: 2,
+        placeholder: '请输入实测浓度/强度',
+        class: 'w-full',
       },
     },
     {
       fieldName: 'unit',
-      label: '单位',
+      label: '单位 mg/m3/dB(A)/mSv/C/m-s2等',
       component: 'Input',
       componentProps: {
-        allowClear: true,
-        placeholder: '请输入单位',
+        placeholder: '请输入单位 mg/m3/dB(A)/mSv/C/m-s2等',
       },
     },
     {
       fieldName: 'limitType',
-      label: '限值类型',
-      component: 'Select',
+      label: '接触限值类型：MAC/PC-TWA/PC-STEL',
+      component: 'Input',
       componentProps: {
-        options: [{ label: "MAC(最高容许浓度)", value: "MAC" }, { label: "PC-TWA(时间加权平均)", value: "PC-TWA" }, { label: "PC-STEL(短时间接触)", value: "PC-STEL" }, { label: "噪声限值", value: "NOISE" }],
-        placeholder: '请选择限值类型',
-        allowClear: true,
+        placeholder: '请输入接触限值类型：MAC/PC-TWA/PC-STEL',
       },
     },
     {
       fieldName: 'oelValue',
-      label: '职业接触限值(OEL)',
+      label: '职业接触限值',
       component: 'InputNumber',
       componentProps: {
-        min: 0,
-        placeholder: '请输入',
-        precision: 2,
+        placeholder: '请输入职业接触限值',
+        class: 'w-full',
       },
     },
     {
       fieldName: 'refStandard',
-      label: '参考标准',
+      label: '引用国标',
       component: 'Input',
       componentProps: {
-        allowClear: true,
-        placeholder: '请输入参考标准',
+        placeholder: '请输入引用国标',
       },
     },
     {
       fieldName: 'result',
-      label: '综合结论',
+      label: '结果：PASS/FAIL',
       component: 'Select',
       componentProps: {
         options: RESULT_OPTIONS,
-        placeholder: '请选择综合结论',
-        allowClear: true,
+        placeholder: '请选择',
       },
     },
     {
@@ -134,7 +232,6 @@ export function useFormSchema(): VbenFormSchema[] {
       label: '检测人',
       component: 'Input',
       componentProps: {
-        allowClear: true,
         placeholder: '请输入检测人',
       },
     },
@@ -143,10 +240,10 @@ export function useFormSchema(): VbenFormSchema[] {
       label: '检测时间',
       component: 'DatePicker',
       componentProps: {
-        format: 'YYYY-MM-DD HH:mm:ss',
-        placeholder: '请选择时间',
         showTime: true,
-        valueFormat: 'x',
+        valueFormat: 'YYYY-MM-DD HH:mm:ss',
+        format: 'YYYY-MM-DD HH:mm:ss',
+        placeholder: '选择时间',
       },
       rules: 'required',
     },
@@ -155,66 +252,8 @@ export function useFormSchema(): VbenFormSchema[] {
       label: '备注',
       component: 'Textarea',
       componentProps: {
+        rows: 3,
         placeholder: '请输入备注',
-        rows: 2,
-      },
-      formItemClass: 'col-span-3',
-    },
-  ];
-}
-
-/** 列表的搜索表单 */
-export function useGridFormSchema(): VbenFormSchema[] {
-  return [
-    {
-      fieldName: 'factorCode',
-      label: '危害因素编码',
-      component: 'Input',
-      componentProps: {
-        allowClear: true,
-        placeholder: '请输入危害因素编码',
-      },
-    },
-    {
-      fieldName: 'result',
-      label: '结果',
-      component: 'Select',
-      componentProps: {
-        allowClear: true,
-        options: RESULT_OPTIONS,
-        placeholder: '请选择结果',
-      },
-    },
-    {
-      fieldName: 'inspectTime',
-      label: '检测时间',
-      component: 'RangePicker',
-      componentProps: {
-        ...getRangePickerDefaultProps(),
-      },
-    },
-  ];
-}
-
-/** 列表的字段 */
-export function useGridColumns(): VxeTableGridOptions<MesSetOccupationalHazardApi.OccupationalHazard>['columns'] {
-  return [
-    { field: 'recordNo', title: '记录编号', minWidth: 150 },
-    { field: 'factorCategory', title: '危害因素类别', minWidth: 150 },
-    { field: 'factorCode', title: '危害因素编码', minWidth: 150 },
-    { field: 'workplace', title: '检测岗位/工作场所', minWidth: 150 },
-    { field: 'measuredValue', title: '测量值', width: 130 },
-    { field: 'unit', title: '单位', minWidth: 150 },
-    { field: 'limitType', title: '限值类型', minWidth: 150 },
-    { field: 'oelValue', title: '职业接触限值(OEL)', width: 130 },
-    { field: 'result', title: '综合结论', width: 110, slots: { default: 'result' } },
-    { field: 'inspectTime', title: '检测时间', width: 180, formatter: 'formatDateTime' },
-    {
-      title: '操作',
-      width: 160,
-      fixed: 'right',
-      slots: {
-        default: 'actions',
       },
     },
   ];

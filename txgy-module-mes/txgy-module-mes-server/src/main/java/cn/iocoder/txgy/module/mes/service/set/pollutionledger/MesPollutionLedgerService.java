@@ -1,6 +1,7 @@
 package cn.iocoder.txgy.module.mes.service.set.pollutionledger;
 
 import cn.iocoder.txgy.framework.common.pojo.PageResult;
+import cn.iocoder.txgy.module.mes.controller.admin.set.pollutionledger.vo.MesPollutionLedgerMarkReqVO;
 import cn.iocoder.txgy.module.mes.controller.admin.set.pollutionledger.vo.MesPollutionLedgerPageReqVO;
 import cn.iocoder.txgy.module.mes.controller.admin.set.pollutionledger.vo.MesPollutionLedgerStatusReqVO;
 import cn.iocoder.txgy.module.mes.dal.dataobject.set.pollutionledger.MesPollutionLedgerDO;
@@ -28,6 +29,13 @@ public interface MesPollutionLedgerService {
      * @param reqVO 流转信息
      */
     void updateLedgerStatus(@Valid MesPollutionLedgerStatusReqVO reqVO);
+
+    /**
+     * 标记品终审：标记/解除标记（环保专员专属权限），结果重投影到批次污染戳
+     *
+     * @param reqVO 终审请求（台账编号 + 终审结论）
+     */
+    void updateLedgerMark(@Valid MesPollutionLedgerMarkReqVO reqVO);
 
     /**
      * 获得污染/危废暂存台账

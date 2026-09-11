@@ -13,7 +13,7 @@ import {
 } from '#/api/mes/safetyEnv/chemicalSafety';
 import { $t } from '#/locales';
 
-import { useGridColumns, useGridFormSchema } from './data';
+import { RESULT_MAP, useGridColumns, useGridFormSchema } from './data';
 import Form from './modules/form.vue';
 
 const [FormModal, formModalApi] = useVbenModal({
@@ -26,19 +26,19 @@ function handleRefresh() {
   gridApi.query();
 }
 
-/** 创建危化品安全管理 */
+/** 新建危化品安全检查 */
 function handleCreate() {
   formModalApi.setData({ formType: 'create' }).open();
 }
 
-/** 编辑危化品安全管理 */
+/** 编辑危化品安全检查 */
 function handleEdit(row: MesSetChemicalSafetyApi.ChemicalSafety) {
   formModalApi.setData({ id: row.id, formType: 'update' }).open();
 }
 
-/** 删除危化品安全管理 */
+/** 删除危化品安全检查 */
 async function handleDelete(row: MesSetChemicalSafetyApi.ChemicalSafety) {
-  const label = row.recordNo ?? '';
+  const label = row.chemicalName ?? '';
   const hideLoading = message.loading({
     content: $t('ui.actionMessage.deleting', [label]),
     duration: 0,
@@ -84,12 +84,12 @@ const [Grid, gridApi] = useVbenVxeGrid({
 <template>
   <Page auto-content-height>
     <FormModal @success="handleRefresh" />
-    <Grid table-title="危化品安全管理列表">
+    <Grid table-title="危化品安全检查列表">
       <template #toolbar-tools>
         <TableAction
           :actions="[
             {
-              label: $t('ui.actionTitle.create', ['危化品安全管理']),
+              label: '新建危化品安全检查',
               type: 'primary',
               icon: ACTION_ICON.ADD,
               auth: ['mes:set-chemical-safety:create'],
@@ -99,10 +99,9 @@ const [Grid, gridApi] = useVbenVxeGrid({
         />
       </template>
       <template #result="{ row }">
-        <Tag v-if="row.result" :color="row.result === 'PASS' ? 'success' : 'error'">
-          {{ row.result === 'PASS' ? '合格' : '不合格' }}
+        <Tag :color="RESULT_MAP[row.result]?.color">
+          {{ RESULT_MAP[row.result]?.text ?? row.result }}
         </Tag>
-        <span v-else>-</span>
       </template>
       <template #actions="{ row }">
         <TableAction
@@ -121,7 +120,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
               icon: ACTION_ICON.DELETE,
               auth: ['mes:set-chemical-safety:delete'],
               popConfirm: {
-                title: $t('ui.actionMessage.deleteConfirm', [row.recordNo]),
+                title: $t('ui.actionMessage.deleteConfirm', [row.chemicalName]),
                 confirm: handleDelete.bind(null, row),
               },
             },

@@ -70,6 +70,28 @@ public interface MesPollutionControlService {
     void refreshBatchStamp(String batchNo);
 
     /**
+     * 库存冻结投影（B1「入库待检冻结」）：把某批次的在库行 `material_stock.frozen` 重算成**唯一权威**结论。
+     *
+     * 与批次污染戳同源同点——都从"批次 + 判定"推导，只是在库行多认一条**过期**：
+     *  1) 批次戳 POLLUTED 或 marked（含成品整体报废锁批）→ 冻结；
+     *  2) 该批仍存在"待复核"(reviewResult IS NULL)判定行 → 冻结（**待检期冻结，判 CLEAN 才解冻**）；
+     *  3) 批次已过期(expireDate < now) → 冻结（FEFO/过期冻结，不因后续无污染复核被解冻）。
+     * 三条件取或，**幂等**：重复调用结果一致，故建单/复核/定时任务三处都能无条件调。
+     *
+     * @param batchNo 批次号（空/无主数据 → 安全跳过）
+     * @return 被更新的在库行数
+     */
+    int syncStockFrozenByBatch(String batchNo);
+
+    /**
+     * 过期冻结扫描（B2，由定时任务驱动）：把所有已过期批次的在库行按 {@link #syncStockFrozenByBatch} 重算冻结态。
+     * 判定为过期是**只冻结、不污染**——过期不等于有害，不写批次污染戳、不登台账。
+     *
+     * @return 被更新的在库行数
+     */
+    int freezeExpiredBatchStock();
+
+    /**
      * A4 级联清理：删除某单据(stage+bizNo)下仍"待复核"(reviewResult IS NULL)的判定记录。
      *
      * @return 清理条数

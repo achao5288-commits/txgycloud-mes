@@ -12,13 +12,19 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class MesSetEmissionOutletPageReqVO extends PageParam {
 
-    @Schema(description = "排放口名称", example = "废气排放口1")
+    @Schema(description = "排放口编号(如 DA001/DW001)")
+    private String outletCode;
+
+    @Schema(description = "排放口名称")
     private String outletName;
 
-    @Schema(description = "排放类型：GAS/WASTEWATER/NOISE", example = "GAS")
+    @Schema(description = "排放类型：GAS/WASTEWATER/NOISE")
     private String outletType;
 
-    @Schema(description = "状态：ACTIVE/INACTIVE", example = "ACTIVE")
+    @Schema(description = "在线监测方式：CEMS/MANUAL/NONE")
+    private String monitorMethod;
+
+    @Schema(description = "状态：ACTIVE/INACTIVE")
     private String status;
 
 }

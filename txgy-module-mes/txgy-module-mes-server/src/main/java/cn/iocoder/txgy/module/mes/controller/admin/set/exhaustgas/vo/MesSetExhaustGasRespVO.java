@@ -2,27 +2,26 @@ package cn.iocoder.txgy.module.mes.controller.admin.set.exhaustgas.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Schema(description = "管理后台 - MES 安全环保检测-废气排放检测记录 Response VO")
+@Schema(description = "管理后台 - MES 安全环保检测-废气监测记录 Response VO")
 @Data
 public class MesSetExhaustGasRespVO {
 
-    @Schema(description = "编号", example = "1")
+    @Schema(description = "编号")
     private Long id;
 
-    @Schema(description = "记录编号")
+    @Schema(description = "记录编号 EXGAS-YYYYMMDD-NNN")
     private String recordNo;
 
-    @Schema(description = "关联排放口编号", example = "1")
+    @Schema(description = "关联排放口编号")
     private Long outletId;
 
-    @Schema(description = "关联工单编号", example = "1")
+    @Schema(description = "关联工单编号")
     private Long woId;
 
-    @Schema(description = "污染物")
+    @Schema(description = "污染物：SO2/NOX/PM/VOCs/HCL/HF等")
     private String pollutantCode;
 
     @Schema(description = "排放浓度 mg/m3")

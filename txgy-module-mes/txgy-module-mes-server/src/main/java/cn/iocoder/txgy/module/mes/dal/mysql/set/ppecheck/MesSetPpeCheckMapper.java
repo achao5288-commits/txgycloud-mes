@@ -8,23 +8,25 @@ import cn.iocoder.txgy.module.mes.dal.dataobject.set.ppecheck.MesSetPpeCheckDO;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
- * MES 安全环保检测-PPE防护检查记录 Mapper
+ * MES 安全环保检测-劳保用品检查 Mapper
  *
  * @author OPENLAB BS
  */
 @Mapper
 public interface MesSetPpeCheckMapper extends BaseMapperX<MesSetPpeCheckDO> {
 
-    default PageResult<MesSetPpeCheckDO> selectPage(MesSetPpeCheckPageReqVO reqVO) {
-        return selectPage(reqVO, new LambdaQueryWrapperX<MesSetPpeCheckDO>()
-                .eqIfPresent(MesSetPpeCheckDO::getPpeType, reqVO.getPpeType())
-                .eqIfPresent(MesSetPpeCheckDO::getResult, reqVO.getResult())
-                .betweenIfPresent(MesSetPpeCheckDO::getCheckTime, reqVO.getCheckTime())
-                .orderByDesc(MesSetPpeCheckDO::getId));
+    default MesSetPpeCheckDO selectByRecordNo(String record_no) {
+        return selectOne(MesSetPpeCheckDO::getRecordNo, record_no);
     }
 
-    default MesSetPpeCheckDO selectByRecordNo(String recordNo) {
-        return selectOne(MesSetPpeCheckDO::getRecordNo, recordNo);
+    default PageResult<MesSetPpeCheckDO> selectPage(MesSetPpeCheckPageReqVO reqVO) {
+        LambdaQueryWrapperX<MesSetPpeCheckDO> query = new LambdaQueryWrapperX<MesSetPpeCheckDO>()
+                .likeIfPresent(MesSetPpeCheckDO::getRecordNo, reqVO.getRecordNo())
+                .likeIfPresent(MesSetPpeCheckDO::getPpeType, reqVO.getPpeType())
+                .eqIfPresent(MesSetPpeCheckDO::getCheckMode, reqVO.getCheckMode())
+                .eqIfPresent(MesSetPpeCheckDO::getResult, reqVO.getResult())
+                .orderByDesc(MesSetPpeCheckDO::getId);
+        return selectPage(reqVO, query);
     }
 
 }

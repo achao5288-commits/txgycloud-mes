@@ -2,41 +2,40 @@ package cn.iocoder.txgy.module.mes.controller.admin.set.pressurevessel.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-@Schema(description = "管理后台 - MES 安全环保检测-压力容器检测记录 Response VO")
+@Schema(description = "管理后台 - MES 安全环保检测-压力容器检查 Response VO")
 @Data
 public class MesSetPressureVesselRespVO {
 
-    @Schema(description = "编号", example = "1")
+    @Schema(description = "编号")
     private Long id;
 
-    @Schema(description = "记录编号")
+    @Schema(description = "检验记录/报告编号 PV-YYYY-NNN")
     private String recordNo;
 
-    @Schema(description = "关联检测计划编号", example = "1")
+    @Schema(description = "关联检测计划编号")
     private Long planId;
 
-    @Schema(description = "关联设备编号", example = "1")
+    @Schema(description = "关联设备编号(特种设备台账)")
     private Long deviceId;
 
-    @Schema(description = "压力容器使用登记证号")
+    @Schema(description = "压力容器使用登记证号(特种设备注册代码)")
     private String vesselRegNo;
 
     @Schema(description = "壁厚测定最小壁厚 mm")
     private BigDecimal wallThickness;
 
-    @Schema(description = "无损检测方法：UT/RT/MT/PT")
+    @Schema(description = "无损检测方法：UT/RT/MT/PT(多选逗号分隔)")
     private String ndtMethods;
 
-    @Schema(description = "无损检测结果 JSON 文本")
+    @Schema(description = "无损检测结果JSON文本如{UT:PASS,MT:PASS}")
     private String ndtResults;
 
     @Schema(description = "安全阀校验合格：1是/0否")
-    private Integer safetyValveOk;
+    private Boolean safetyValveOk;
 
     @Schema(description = "耐压试验压力 MPa")
     private BigDecimal pressureTestValue;
@@ -50,13 +49,13 @@ public class MesSetPressureVesselRespVO {
     @Schema(description = "综合结论 PASS/FAIL")
     private String result;
 
-    @Schema(description = "检验机构")
+    @Schema(description = "检验机构(需资质)")
     private String inspectOrg;
 
     @Schema(description = "下次检验日期")
     private LocalDate nextInspectDate;
 
-    @Schema(description = "检验报告文件 URL")
+    @Schema(description = "检验报告文件URL")
     private String reportFileUrl;
 
     @Schema(description = "检验人")

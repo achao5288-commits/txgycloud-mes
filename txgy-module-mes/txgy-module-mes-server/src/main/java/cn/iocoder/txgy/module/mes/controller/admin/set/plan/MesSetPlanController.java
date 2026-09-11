@@ -54,17 +54,18 @@ public class MesSetPlanController {
 
     @GetMapping("/get")
     @Operation(summary = "获得检测计划")
-    @Parameter(name = "id", description = "编号", required = true, example = "1024")
+    @Parameter(name = "id", description = "编号", required = true, example = "1")
     @PreAuthorize("@ss.hasPermission('mes:set-plan:query')")
     public CommonResult<MesSetPlanRespVO> getPlan(@RequestParam("id") Long id) {
-        MesSetPlanDO plan = planService.getPlan(id);
-        return success(BeanUtils.toBean(plan, MesSetPlanRespVO.class));
+        MesSetPlanDO obj = planService.getPlan(id);
+        return success(BeanUtils.toBean(obj, MesSetPlanRespVO.class));
     }
 
     @GetMapping("/page")
     @Operation(summary = "获得检测计划分页")
     @PreAuthorize("@ss.hasPermission('mes:set-plan:query')")
-    public CommonResult<PageResult<MesSetPlanRespVO>> getPlanPage(@Valid MesSetPlanPageReqVO pageReqVO) {
+    public CommonResult<PageResult<MesSetPlanRespVO>> getPlanPage(
+            @Valid MesSetPlanPageReqVO pageReqVO) {
         PageResult<MesSetPlanDO> pageResult = planService.getPlanPage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, MesSetPlanRespVO.class));
     }

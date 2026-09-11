@@ -7,6 +7,10 @@ import cn.iocoder.txgy.module.mes.controller.admin.set.pollutioncheck.vo.MesSetP
 import cn.iocoder.txgy.module.mes.dal.dataobject.set.pollutioncheck.MesSetPollutionCheckDO;
 import org.apache.ibatis.annotations.Mapper;
 
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
 /**
  * MES 安全环保检测-污染判定记录 Mapper
  *
@@ -21,6 +25,10 @@ public interface MesSetPollutionCheckMapper extends BaseMapperX<MesSetPollutionC
                 .eqIfPresent(MesSetPollutionCheckDO::getBizNo, reqVO.getBizNo())
                 .eqIfPresent(MesSetPollutionCheckDO::getBatchNo, reqVO.getBatchNo())
                 .eqIfPresent(MesSetPollutionCheckDO::getAiResult, reqVO.getAiResult())
+                .eqIfPresent(MesSetPollutionCheckDO::getReviewResult, reqVO.getReviewResult())
+                .eqIfPresent(MesSetPollutionCheckDO::getFinishedResult, reqVO.getFinishedResult())
+                .eqIfPresent(MesSetPollutionCheckDO::getReviewBy, reqVO.getReviewBy())
+                .betweenIfPresent(MesSetPollutionCheckDO::getCreateTime, reqVO.getCreateTime())
                 .orderByDesc(MesSetPollutionCheckDO::getId);
         // 物料名称模糊
         if (reqVO.getItemName() != null && !reqVO.getItemName().isEmpty()) {
@@ -35,6 +43,19 @@ public interface MesSetPollutionCheckMapper extends BaseMapperX<MesSetPollutionC
             }
         }
         return selectPage(reqVO, query);
+    }
+
+    /**
+     * 按批次取该批全部判定的记录号（批次全链追溯用，去重）
+     */
+    default List<String> selectRecordNoListByBatchNo(String batchNo) {
+        return selectList(new LambdaQueryWrapperX<MesSetPollutionCheckDO>()
+                .eq(MesSetPollutionCheckDO::getBatchNo, batchNo))
+                .stream()
+                .map(MesSetPollutionCheckDO::getRecordNo)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
     }
 
 }

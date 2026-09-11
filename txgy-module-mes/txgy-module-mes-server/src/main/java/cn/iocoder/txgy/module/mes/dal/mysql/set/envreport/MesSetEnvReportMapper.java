@@ -15,15 +15,19 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface MesSetEnvReportMapper extends BaseMapperX<MesSetEnvReportDO> {
 
-    default PageResult<MesSetEnvReportDO> selectPage(MesSetEnvReportPageReqVO reqVO) {
-        return selectPage(reqVO, new LambdaQueryWrapperX<MesSetEnvReportDO>()
-                .eqIfPresent(MesSetEnvReportDO::getReportType, reqVO.getReportType())
-                .eqIfPresent(MesSetEnvReportDO::getStatus, reqVO.getStatus())
-                .orderByDesc(MesSetEnvReportDO::getId));
+    default MesSetEnvReportDO selectByReportNo(String report_no) {
+        return selectOne(MesSetEnvReportDO::getReportNo, report_no);
     }
 
-    default MesSetEnvReportDO selectByReportNo(String reportNo) {
-        return selectOne(MesSetEnvReportDO::getReportNo, reportNo);
+    default PageResult<MesSetEnvReportDO> selectPage(MesSetEnvReportPageReqVO reqVO) {
+        LambdaQueryWrapperX<MesSetEnvReportDO> query = new LambdaQueryWrapperX<MesSetEnvReportDO>()
+                .likeIfPresent(MesSetEnvReportDO::getReportNo, reqVO.getReportNo())
+                .likeIfPresent(MesSetEnvReportDO::getReportName, reqVO.getReportName())
+                .eqIfPresent(MesSetEnvReportDO::getReportType, reqVO.getReportType())
+                .likeIfPresent(MesSetEnvReportDO::getReportCategory, reqVO.getReportCategory())
+                .eqIfPresent(MesSetEnvReportDO::getStatus, reqVO.getStatus())
+                .orderByDesc(MesSetEnvReportDO::getId);
+        return selectPage(reqVO, query);
     }
 
 }

@@ -8,23 +8,26 @@ import cn.iocoder.txgy.module.mes.dal.dataobject.set.occupationalhazard.MesSetOc
 import org.apache.ibatis.annotations.Mapper;
 
 /**
- * MES 安全环保检测-职业病危害因素检测记录 Mapper
+ * MES 安全环保检测-职业危害检测 Mapper
  *
  * @author OPENLAB BS
  */
 @Mapper
 public interface MesSetOccupationalHazardMapper extends BaseMapperX<MesSetOccupationalHazardDO> {
 
-    default PageResult<MesSetOccupationalHazardDO> selectPage(MesSetOccupationalHazardPageReqVO reqVO) {
-        return selectPage(reqVO, new LambdaQueryWrapperX<MesSetOccupationalHazardDO>()
-                .eqIfPresent(MesSetOccupationalHazardDO::getFactorCode, reqVO.getFactorCode())
-                .eqIfPresent(MesSetOccupationalHazardDO::getResult, reqVO.getResult())
-                .betweenIfPresent(MesSetOccupationalHazardDO::getInspectTime, reqVO.getInspectTime())
-                .orderByDesc(MesSetOccupationalHazardDO::getId));
+    default MesSetOccupationalHazardDO selectByRecordNo(String record_no) {
+        return selectOne(MesSetOccupationalHazardDO::getRecordNo, record_no);
     }
 
-    default MesSetOccupationalHazardDO selectByRecordNo(String recordNo) {
-        return selectOne(MesSetOccupationalHazardDO::getRecordNo, recordNo);
+    default PageResult<MesSetOccupationalHazardDO> selectPage(MesSetOccupationalHazardPageReqVO reqVO) {
+        LambdaQueryWrapperX<MesSetOccupationalHazardDO> query = new LambdaQueryWrapperX<MesSetOccupationalHazardDO>()
+                .likeIfPresent(MesSetOccupationalHazardDO::getRecordNo, reqVO.getRecordNo())
+                .eqIfPresent(MesSetOccupationalHazardDO::getFactorCategory, reqVO.getFactorCategory())
+                .likeIfPresent(MesSetOccupationalHazardDO::getFactorCode, reqVO.getFactorCode())
+                .likeIfPresent(MesSetOccupationalHazardDO::getWorkplace, reqVO.getWorkplace())
+                .eqIfPresent(MesSetOccupationalHazardDO::getResult, reqVO.getResult())
+                .orderByDesc(MesSetOccupationalHazardDO::getId);
+        return selectPage(reqVO, query);
     }
 
 }

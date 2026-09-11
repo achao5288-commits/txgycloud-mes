@@ -4,7 +4,6 @@ import cn.iocoder.txgy.framework.common.pojo.PageResult;
 import cn.iocoder.txgy.module.mes.controller.admin.set.noiserecord.vo.MesSetNoiseRecordPageReqVO;
 import cn.iocoder.txgy.module.mes.controller.admin.set.noiserecord.vo.MesSetNoiseRecordSaveReqVO;
 import cn.iocoder.txgy.module.mes.dal.dataobject.set.noiserecord.MesSetNoiseRecordDO;
-
 import jakarta.validation.Valid;
 
 /**
@@ -35,13 +34,6 @@ public interface MesSetNoiseRecordService {
      * @param id 编号
      */
     void deleteNoiseRecord(Long id);
-
-    /**
-     * 校验噪声检测记录存在
-     *
-     * @param id 编号
-     */
-    void validateNoiseRecordExists(Long id);
 
     /**
      * 获得噪声检测记录

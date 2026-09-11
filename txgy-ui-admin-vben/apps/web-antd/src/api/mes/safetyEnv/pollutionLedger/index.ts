@@ -14,6 +14,7 @@ export namespace MesPollutionLedgerApi {
     itemCode?: string; // 物料/产品编码
     itemName?: string; // 物料/产品名称
     itemSpec?: string; // 规格
+    weight?: number; // 重量(kg)，由源判定行带入
     disposition?: string; // 处置方式
     storageMethod?: string; // 最终存储方法
     location?: string; // 去向/库位
@@ -25,10 +26,19 @@ export namespace MesPollutionLedgerApi {
     createTime?: number; // 创建时间
   }
 
-  /** 处置流转参数 */
+  /** 处置流转参数(目标=已排放时另登记 排放去向/执行标准) */
   export interface StatusPayload {
     id: number;
     status: string;
+    remark?: string;
+    destination?: string;
+    standard?: string;
+  }
+
+  /** 标记品终审参数（环保专员） */
+  export interface MarkPayload {
+    id: number;
+    marked: boolean;
     remark?: string;
   }
 
@@ -60,6 +70,11 @@ export function updatePollutionLedgerStatus(data: MesPollutionLedgerApi.StatusPa
 }
 
 /** 查询台账流转历史(登记→处置→闭环，时间正序) */
+/** 标记品终审（标记/解除标记，环保专员专属权限） */
+export function updatePollutionLedgerMark(data: MesPollutionLedgerApi.MarkPayload) {
+  return requestClient.put('/mes/safety-env/pollution-ledger/mark', data);
+}
+
 export function getPollutionLedgerHistory(ledgerId: number) {
   return requestClient.get<MesPollutionLedgerApi.LedgerHistoryLog[]>(
     `/mes/safety-env/pollution-ledger/history?ledgerId=${ledgerId}`,

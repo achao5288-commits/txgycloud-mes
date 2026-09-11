@@ -36,13 +36,6 @@ public interface MesSetEmissionOutletService {
     void deleteEmissionOutlet(Long id);
 
     /**
-     * 校验排放口存在
-     *
-     * @param id 编号
-     */
-    void validateEmissionOutletExists(Long id);
-
-    /**
      * 获得排放口
      *
      * @param id 编号

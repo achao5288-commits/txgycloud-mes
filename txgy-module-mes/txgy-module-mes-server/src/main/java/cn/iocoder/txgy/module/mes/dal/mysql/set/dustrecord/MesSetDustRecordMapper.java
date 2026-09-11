@@ -8,23 +8,26 @@ import cn.iocoder.txgy.module.mes.dal.dataobject.set.dustrecord.MesSetDustRecord
 import org.apache.ibatis.annotations.Mapper;
 
 /**
- * MES 安全环保检测-粉尘浓度检测记录 Mapper
+ * MES 安全环保检测-粉尘检测记录 Mapper
  *
  * @author OPENLAB BS
  */
 @Mapper
 public interface MesSetDustRecordMapper extends BaseMapperX<MesSetDustRecordDO> {
 
-    default PageResult<MesSetDustRecordDO> selectPage(MesSetDustRecordPageReqVO reqVO) {
-        return selectPage(reqVO, new LambdaQueryWrapperX<MesSetDustRecordDO>()
-                .eqIfPresent(MesSetDustRecordDO::getDustType, reqVO.getDustType())
-                .eqIfPresent(MesSetDustRecordDO::getResult, reqVO.getResult())
-                .betweenIfPresent(MesSetDustRecordDO::getInspectTime, reqVO.getInspectTime())
-                .orderByDesc(MesSetDustRecordDO::getId));
+    default MesSetDustRecordDO selectByRecordNo(String record_no) {
+        return selectOne(MesSetDustRecordDO::getRecordNo, record_no);
     }
 
-    default MesSetDustRecordDO selectByRecordNo(String recordNo) {
-        return selectOne(MesSetDustRecordDO::getRecordNo, recordNo);
+    default PageResult<MesSetDustRecordDO> selectPage(MesSetDustRecordPageReqVO reqVO) {
+        LambdaQueryWrapperX<MesSetDustRecordDO> query = new LambdaQueryWrapperX<MesSetDustRecordDO>()
+                .likeIfPresent(MesSetDustRecordDO::getRecordNo, reqVO.getRecordNo())
+                .likeIfPresent(MesSetDustRecordDO::getLocation, reqVO.getLocation())
+                .likeIfPresent(MesSetDustRecordDO::getDustType, reqVO.getDustType())
+                .likeIfPresent(MesSetDustRecordDO::getResult, reqVO.getResult())
+                .likeIfPresent(MesSetDustRecordDO::getCollectionMode, reqVO.getCollectionMode())
+                .orderByDesc(MesSetDustRecordDO::getId);
+        return selectPage(reqVO, query);
     }
 
 }

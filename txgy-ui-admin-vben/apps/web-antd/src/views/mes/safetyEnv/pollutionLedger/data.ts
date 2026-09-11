@@ -42,8 +42,10 @@ export const DISPOSITION_MAP: Record<string, string> = {
   MARKED_STORAGE: '标记存储',
 };
 
-/** 处置流转表单(状态 + 备注) */
+/** 处置流转表单(状态 + 已排放时登记去向/标准 + 备注) */
 export function useStatusFormSchema(): VbenFormSchema[] {
+  /** 仅目标状态=已排放(DISCHARGED)时展示排放登记项 */
+  const onlyDischarge = (values: Record<string, any>) => values.status === 'DISCHARGED';
   return [
     {
       fieldName: 'status',
@@ -54,6 +56,30 @@ export function useStatusFormSchema(): VbenFormSchema[] {
         placeholder: '选择目标状态(终态将放行该批次)',
       },
       rules: 'required',
+    },
+    {
+      fieldName: 'destination',
+      label: '排放去向',
+      component: 'Input',
+      dependencies: {
+        triggerFields: ['status'],
+        if: onlyDischarge,
+      },
+      componentProps: {
+        placeholder: '如：厂区污水处理站',
+      },
+    },
+    {
+      fieldName: 'standard',
+      label: '执行标准',
+      component: 'Input',
+      dependencies: {
+        triggerFields: ['status'],
+        if: onlyDischarge,
+      },
+      componentProps: {
+        placeholder: '如：GB8978-1996 三级',
+      },
     },
     {
       fieldName: 'remark',
@@ -108,6 +134,19 @@ export function useGridFormSchema(): VbenFormSchema[] {
         placeholder: 'PC-...',
       },
     },
+    {
+      fieldName: 'marked',
+      label: '被标记品',
+      component: 'Select',
+      componentProps: {
+        allowClear: true,
+        options: [
+          { label: '仅看被标记品', value: true },
+          { label: '仅看未标记', value: false },
+        ],
+        placeholder: '全部',
+      },
+    },
   ];
 }
 
@@ -119,8 +158,10 @@ export function useGridColumns(): VxeTableGridOptions<MesPollutionLedgerApi.Ledg
     { field: 'bizNo', title: '关联单号', minWidth: 150, showOverflow: true },
     { field: 'batchNo', title: '批次号', minWidth: 140 },
     { field: 'itemName', title: '物料/产品名称', minWidth: 150 },
+    { field: 'weight', title: '重量(kg)', width: 110, formatter: ({ cellValue }) => (cellValue != null ? `${cellValue}` : '-') },
     { field: 'disposition', title: '处置方式', width: 120, formatter: ({ cellValue }) => (cellValue ? (DISPOSITION_MAP[cellValue] ?? cellValue) : '-') },
     { field: 'location', title: '去向/库位', minWidth: 130 },
+    { field: 'marked', title: '标记品', width: 90, slots: { default: 'marked' } },
     { field: 'status', title: '台账状态', width: 100, slots: { default: 'status' } },
     { field: 'statusBy', title: '最近流转人', width: 100 },
     { field: 'statusTime', title: '最近流转时间', width: 165, formatter: 'formatDateTime' },

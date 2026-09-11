@@ -26,20 +26,20 @@ import static cn.iocoder.txgy.framework.common.pojo.CommonResult.success;
 public class MesSetEnvReportController {
 
     @Resource
-    private MesSetEnvReportService envReportService;
+    private MesSetEnvReportService envreportService;
 
     @PostMapping("/create")
     @Operation(summary = "创建环保检测报告")
     @PreAuthorize("@ss.hasPermission('mes:set-env-report:create')")
     public CommonResult<Long> createEnvReport(@Valid @RequestBody MesSetEnvReportSaveReqVO createReqVO) {
-        return success(envReportService.createEnvReport(createReqVO));
+        return success(envreportService.createEnvReport(createReqVO));
     }
 
     @PutMapping("/update")
     @Operation(summary = "更新环保检测报告")
     @PreAuthorize("@ss.hasPermission('mes:set-env-report:update')")
     public CommonResult<Boolean> updateEnvReport(@Valid @RequestBody MesSetEnvReportSaveReqVO updateReqVO) {
-        envReportService.updateEnvReport(updateReqVO);
+        envreportService.updateEnvReport(updateReqVO);
         return success(true);
     }
 
@@ -48,25 +48,44 @@ public class MesSetEnvReportController {
     @Parameter(name = "id", description = "编号", required = true)
     @PreAuthorize("@ss.hasPermission('mes:set-env-report:delete')")
     public CommonResult<Boolean> deleteEnvReport(@RequestParam("id") Long id) {
-        envReportService.deleteEnvReport(id);
+        envreportService.deleteEnvReport(id);
         return success(true);
     }
 
     @GetMapping("/get")
     @Operation(summary = "获得环保检测报告")
-    @Parameter(name = "id", description = "编号", required = true, example = "1024")
+    @Parameter(name = "id", description = "编号", required = true, example = "1")
     @PreAuthorize("@ss.hasPermission('mes:set-env-report:query')")
     public CommonResult<MesSetEnvReportRespVO> getEnvReport(@RequestParam("id") Long id) {
-        MesSetEnvReportDO envReport = envReportService.getEnvReport(id);
-        return success(BeanUtils.toBean(envReport, MesSetEnvReportRespVO.class));
+        MesSetEnvReportDO obj = envreportService.getEnvReport(id);
+        return success(BeanUtils.toBean(obj, MesSetEnvReportRespVO.class));
     }
 
     @GetMapping("/page")
     @Operation(summary = "获得环保检测报告分页")
     @PreAuthorize("@ss.hasPermission('mes:set-env-report:query')")
-    public CommonResult<PageResult<MesSetEnvReportRespVO>> getEnvReportPage(@Valid MesSetEnvReportPageReqVO pageReqVO) {
-        PageResult<MesSetEnvReportDO> pageResult = envReportService.getEnvReportPage(pageReqVO);
+    public CommonResult<PageResult<MesSetEnvReportRespVO>> getEnvReportPage(
+            @Valid MesSetEnvReportPageReqVO pageReqVO) {
+        PageResult<MesSetEnvReportDO> pageResult = envreportService.getEnvReportPage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, MesSetEnvReportRespVO.class));
+    }
+
+    // 以下两个动作都写报告（data_summary / file_url），故复用 update 权限——菜单里没有也不该有独立按钮
+
+    @PostMapping("/auto-summary")
+    @Operation(summary = "按统计期自动取数汇总执行报告（回写 data_summary，返回 JSON）")
+    @Parameter(name = "id", description = "编号", required = true, example = "1")
+    @PreAuthorize("@ss.hasPermission('mes:set-env-report:update')")
+    public CommonResult<String> autoSummary(@RequestParam("id") Long id) {
+        return success(envreportService.autoSummary(id));
+    }
+
+    @PostMapping("/archive")
+    @Operation(summary = "把报告摘要归档到文件服务（回写 file_url，返回 URL）")
+    @Parameter(name = "id", description = "编号", required = true, example = "1")
+    @PreAuthorize("@ss.hasPermission('mes:set-env-report:update')")
+    public CommonResult<String> archiveSummary(@RequestParam("id") Long id) {
+        return success(envreportService.archiveSummary(id));
     }
 
 }

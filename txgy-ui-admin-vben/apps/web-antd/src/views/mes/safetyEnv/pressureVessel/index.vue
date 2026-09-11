@@ -1,16 +1,16 @@
 <script lang="ts" setup>
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
-import type { MesSetPressureVesselApi } from '#/api/mes/safetyEnv/pressureVessel';
+import type { MesSetPressureVesselApi } from '#/api/mes/safetyEnv/pressurevessel';
 
 import { Page, useVbenModal } from '@vben/common-ui';
 
-import { message, Tag } from 'ant-design-vue';
+import { message } from 'ant-design-vue';
 
 import { ACTION_ICON, TableAction, useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   deletePressureVessel,
   getPressureVesselPage,
-} from '#/api/mes/safetyEnv/pressureVessel';
+} from '#/api/mes/safetyEnv/pressurevessel';
 import { $t } from '#/locales';
 
 import { useGridColumns, useGridFormSchema } from './data';
@@ -26,25 +26,26 @@ function handleRefresh() {
   gridApi.query();
 }
 
-/** 创建压力容器检测记录 */
+/** 新建压力容器检查 */
 function handleCreate() {
   formModalApi.setData({ formType: 'create' }).open();
 }
 
-/** 编辑压力容器检测记录 */
+/** 编辑压力容器检查 */
 function handleEdit(row: MesSetPressureVesselApi.PressureVessel) {
   formModalApi.setData({ id: row.id, formType: 'update' }).open();
 }
 
-/** 删除压力容器检测记录 */
+/** 删除压力容器检查 */
 async function handleDelete(row: MesSetPressureVesselApi.PressureVessel) {
+  const label = row.vesselRegNo ?? '';
   const hideLoading = message.loading({
-    content: $t('ui.actionMessage.deleting', [row.recordNo]),
+    content: $t('ui.actionMessage.deleting', [label]),
     duration: 0,
   });
   try {
     await deletePressureVessel(row.id!);
-    message.success($t('ui.actionMessage.deleteSuccess', [row.recordNo]));
+    message.success($t('ui.actionMessage.deleteSuccess', [label]));
     handleRefresh();
   } finally {
     hideLoading();
@@ -83,12 +84,12 @@ const [Grid, gridApi] = useVbenVxeGrid({
 <template>
   <Page auto-content-height>
     <FormModal @success="handleRefresh" />
-    <Grid table-title="压力容器检测记录列表">
+    <Grid table-title="压力容器检查列表">
       <template #toolbar-tools>
         <TableAction
           :actions="[
             {
-              label: $t('ui.actionTitle.create', ['压力容器检测记录']),
+              label: '新建压力容器检查',
               type: 'primary',
               icon: ACTION_ICON.ADD,
               auth: ['mes:set-pressure-vessel:create'],
@@ -96,12 +97,6 @@ const [Grid, gridApi] = useVbenVxeGrid({
             },
           ]"
         />
-      </template>
-      <template #result="{ row }">
-        <Tag v-if="row.result" :color="row.result === 'PASS' ? 'success' : 'error'">
-          {{ row.result === 'PASS' ? '合格' : '不合格' }}
-        </Tag>
-        <span v-else>-</span>
       </template>
       <template #actions="{ row }">
         <TableAction
@@ -120,7 +115,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
               icon: ACTION_ICON.DELETE,
               auth: ['mes:set-pressure-vessel:delete'],
               popConfirm: {
-                title: $t('ui.actionMessage.deleteConfirm', [row.recordNo]),
+                title: $t('ui.actionMessage.deleteConfirm', [row.vesselRegNo]),
                 confirm: handleDelete.bind(null, row),
               },
             },

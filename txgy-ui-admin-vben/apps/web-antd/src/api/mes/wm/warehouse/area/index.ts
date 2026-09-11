@@ -21,6 +21,7 @@ export namespace MesWmWarehouseAreaApi {
     frozen?: boolean; // 是否冻结
     allowItemMixing?: boolean; // 是否允许物料混放
     allowBatchMixing?: boolean; // 是否允许批次混放
+    pollutionControl?: boolean; // 是否污染管控库位（受控/危废暂存）
     remark?: string; // 备注
     createTime?: Date; // 创建时间
   }

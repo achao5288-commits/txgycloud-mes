@@ -4,11 +4,10 @@ import cn.iocoder.txgy.framework.common.pojo.PageResult;
 import cn.iocoder.txgy.module.mes.controller.admin.set.gasrecord.vo.MesSetGasRecordPageReqVO;
 import cn.iocoder.txgy.module.mes.controller.admin.set.gasrecord.vo.MesSetGasRecordSaveReqVO;
 import cn.iocoder.txgy.module.mes.dal.dataobject.set.gasrecord.MesSetGasRecordDO;
-
 import jakarta.validation.Valid;
 
 /**
- * MES 安全环保检测-作业环境气体检测记录 Service 接口
+ * MES 安全环保检测-气体检测记录 Service 接口
  *
  * @author OPENLAB BS
  */
@@ -35,13 +34,6 @@ public interface MesSetGasRecordService {
      * @param id 编号
      */
     void deleteGasRecord(Long id);
-
-    /**
-     * 校验气体检测记录存在
-     *
-     * @param id 编号
-     */
-    void validateGasRecordExists(Long id);
 
     /**
      * 获得气体检测记录

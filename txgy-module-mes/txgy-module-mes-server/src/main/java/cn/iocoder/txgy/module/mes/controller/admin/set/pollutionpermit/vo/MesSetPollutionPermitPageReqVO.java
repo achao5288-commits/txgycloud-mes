@@ -6,16 +6,19 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-@Schema(description = "管理后台 - MES 安全环保检测-排污许可管理 分页 Request VO")
+@Schema(description = "管理后台 - MES 安全环保检测-排污许可证 分页 Request VO")
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 public class MesSetPollutionPermitPageReqVO extends PageParam {
 
-    @Schema(description = "排污许可证编号", example = "91450100-2025-001")
+    @Schema(description = "排污许可证编号(模糊)", example = "P-110108")
     private String permitNo;
 
-    @Schema(description = "状态：VALID(有效)/EXPIRING(即将到期)/EXPIRED(已失效)/REVOKED(已注销)", example = "VALID")
+    @Schema(description = "持证单位名称(模糊)", example = "华瀚")
+    private String enterpriseName;
+
+    @Schema(description = "状态：ACTIVE/EXPIRED/REVOKED", example = "ACTIVE")
     private String status;
 
 }

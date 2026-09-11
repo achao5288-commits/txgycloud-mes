@@ -8,23 +8,25 @@ import cn.iocoder.txgy.module.mes.dal.dataobject.set.electricalrecord.MesSetElec
 import org.apache.ibatis.annotations.Mapper;
 
 /**
- * MES 安全环保检测-电气安全检测记录 Mapper
+ * MES 安全环保检测-电气安全检查 Mapper
  *
  * @author OPENLAB BS
  */
 @Mapper
 public interface MesSetElectricalRecordMapper extends BaseMapperX<MesSetElectricalRecordDO> {
 
-    default PageResult<MesSetElectricalRecordDO> selectPage(MesSetElectricalRecordPageReqVO reqVO) {
-        return selectPage(reqVO, new LambdaQueryWrapperX<MesSetElectricalRecordDO>()
-                .eqIfPresent(MesSetElectricalRecordDO::getCheckItem, reqVO.getCheckItem())
-                .eqIfPresent(MesSetElectricalRecordDO::getResult, reqVO.getResult())
-                .betweenIfPresent(MesSetElectricalRecordDO::getInspectTime, reqVO.getInspectTime())
-                .orderByDesc(MesSetElectricalRecordDO::getId));
+    default MesSetElectricalRecordDO selectByRecordNo(String record_no) {
+        return selectOne(MesSetElectricalRecordDO::getRecordNo, record_no);
     }
 
-    default MesSetElectricalRecordDO selectByRecordNo(String recordNo) {
-        return selectOne(MesSetElectricalRecordDO::getRecordNo, recordNo);
+    default PageResult<MesSetElectricalRecordDO> selectPage(MesSetElectricalRecordPageReqVO reqVO) {
+        LambdaQueryWrapperX<MesSetElectricalRecordDO> query = new LambdaQueryWrapperX<MesSetElectricalRecordDO>()
+                .likeIfPresent(MesSetElectricalRecordDO::getRecordNo, reqVO.getRecordNo())
+                .likeIfPresent(MesSetElectricalRecordDO::getLocation, reqVO.getLocation())
+                .likeIfPresent(MesSetElectricalRecordDO::getCheckItem, reqVO.getCheckItem())
+                .likeIfPresent(MesSetElectricalRecordDO::getResult, reqVO.getResult())
+                .orderByDesc(MesSetElectricalRecordDO::getId);
+        return selectPage(reqVO, query);
     }
 
 }
