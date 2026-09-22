@@ -28,6 +28,10 @@ public class MesSetChemicalProfileSaveReqVO {
     @Schema(description = "CAS 号")
     private String casNo;
 
+    @Schema(description = "关联物料 id。绑定后才在在库侧（受控库位调整）参与禁配/专区校验；"
+            + "不绑定的物料不当危化品管——CAS 号与物料编码对不上，只能靠这条显式绑定")
+    private Long itemId;
+
     @Schema(description = "相容组（禁配判定用）")
     private String compatGroup;
 

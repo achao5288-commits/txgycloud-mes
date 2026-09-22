@@ -19,6 +19,9 @@ public class MesPollutionLedgerRespVO {
     @Schema(description = "来源判定记录编号(PC-...)")
     private String sourceRecordNo;
 
+    @Schema(description = "来源类型：POLLUTION_CHECK(判定复核登记)/WASTE_REGISTER(产废登记)", example = "POLLUTION_CHECK")
+    private String sourceType;
+
     @Schema(description = "环节")
     private String stage;
 
@@ -37,8 +40,11 @@ public class MesPollutionLedgerRespVO {
     @Schema(description = "规格")
     private String itemSpec;
 
-    @Schema(description = "重量(kg)", example = "12.500")
+    @Schema(description = "重量——单位见 unitName", example = "12.500")
     private BigDecimal weight;
+
+    @Schema(description = "重量单位：KG 表示已换算的质量，其余为物料原单位(个/箱/米…)", example = "KG")
+    private String unitName;
 
     @Schema(description = "处置方式")
     private String disposition;

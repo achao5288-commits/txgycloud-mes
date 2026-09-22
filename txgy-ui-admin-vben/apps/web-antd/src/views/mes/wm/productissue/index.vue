@@ -19,9 +19,9 @@ import {
 import { getProductIssueLinePage } from '#/api/mes/wm/productissue/line';
 import { $t } from '#/locales';
 
+import JudgeModal from '../_pollution/judge-modal.vue';
 import { useGridColumns, useGridFormSchema } from './data';
 import Form from './modules/form.vue';
-import JudgeModal from '../_pollution/judge-modal.vue';
 
 const [FormModal, formModalApi] = useVbenModal({
   connectedComponent: Form,
@@ -80,6 +80,8 @@ async function handleJudge(row: MesWmProductIssueApi.ProductIssue) {
         itemCode: line.itemCode,
         itemName: line.itemName,
         itemSpec: line.specification,
+        batchId: line.batchId,
+        weight: line.quantity,
       })),
     })
     .open();
@@ -162,7 +164,8 @@ const [Grid, gridApi] = useVbenVxeGrid({
 
     <FormModal @success="handleRefresh" />
 
-    <PollutionJudgeModal />
+    <!-- 判定弹窗每次建单/复核都会 emit success：不接这个事件，列表要手动刷新才看得到判定结果 -->
+    <PollutionJudgeModal @success="handleRefresh" />
 
     <Grid table-title="领料出库单列表">
       <template #toolbar-tools>

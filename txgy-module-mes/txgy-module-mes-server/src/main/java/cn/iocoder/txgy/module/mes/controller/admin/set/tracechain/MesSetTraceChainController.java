@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 import static cn.iocoder.txgy.framework.common.pojo.CommonResult.success;
 
 @Tag(name = "管理后台 - MES 安全环保检测-污染追溯")
@@ -55,6 +57,13 @@ public class MesSetTraceChainController {
             @RequestParam(value = "containerCode", required = false) String containerCode,
             @RequestParam(value = "manifestNo", required = false) String manifestNo) {
         return success(traceChainService.reverseTrace(containerCode, manifestNo));
+    }
+
+    @GetMapping("/reverse-list")
+    @Operation(summary = "反向查来源·全量：点开即列全部危废台账行及源头判定，无需先输入桶码")
+    @PreAuthorize("@ss.hasPermission('mes:set-pollution-trace:query')")
+    public CommonResult<List<MesSetTraceReverseRespVO.Ledger>> listAllSources() {
+        return success(traceChainService.listAllSources());
     }
 
     @GetMapping(value = "/report", produces = "text/markdown;charset=UTF-8")

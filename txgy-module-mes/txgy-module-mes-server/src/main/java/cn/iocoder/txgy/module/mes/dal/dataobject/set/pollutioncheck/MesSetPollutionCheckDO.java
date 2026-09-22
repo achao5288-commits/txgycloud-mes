@@ -38,6 +38,20 @@ public class MesSetPollutionCheckDO extends BaseDO {
      */
     private String recordNo;
     /**
+     * 被变更的原单号。空 = 首版；非空 = 本行是一张变更单（替代 originRecordNo 那一行）。
+     * 单号本身走 generateRecordNo()，**不派生后缀** —— 本表仍带 uk_record_no(record_no) 唯一键。
+     */
+    private String originRecordNo;
+    /**
+     * 变更事由（变更单必填，说明为什么要把原单作废重开）
+     */
+    private String amendReason;
+    /**
+     * 替代本单的变更单号。收口前的行恒为空；一旦回填，本行即"已被替代"，内容彻底冻死。
+     * 这是全表**唯一**允许写已收口行的列，只写一次、只有变更流程能写。
+     */
+    private String supersededBy;
+    /**
      * 环节：PURCHASE_INBOUND(采购入库)/MATERIAL_ISSUE(生产领用)/WASTE_INTERMEDIATE(中间废弃物)/FINISHED_PRODUCT(成品)
      */
     private String stage;
@@ -46,7 +60,12 @@ public class MesSetPollutionCheckDO extends BaseDO {
      */
     private String bizNo;
     /**
-     * 批次号
+     * 批次编号（mes_wm_batch.id）——判定锚定的权威批次。
+     * 空 = 历史手工录入的未关联记录（存量 32 条），非"无批次"；中间废弃物环节无批次主数据时也为空。
+     */
+    private Long batchId;
+    /**
+     * 批次号（显示快照，权威值见 batchId）
      */
     private String batchNo;
     /**
@@ -62,9 +81,21 @@ public class MesSetPollutionCheckDO extends BaseDO {
      */
     private String itemSpec;
     /**
-     * 重量(kg)
+     * 现场观察到的污染特征（多选）：存 {@code PollutionLegalBasis.SIGN_CATALOG} 的 code，换行分隔。
+     *
+     * 供操作员按"眼睛看得见的现象"勾选，系统据此收窄复核时的法条候选。
+     * ⚠️ 存的是 code 不是文案，增删条目时别改已有条目的 code。
+     */
+    private String fieldSigns;
+    /**
+     * 重量——单位见 {@link #unitName}，不是恒为 kg
      */
     private BigDecimal weight;
+    /**
+     * 重量单位快照：取自物料主单位；质量单位(kg/g/mg/t)已在入库前换算成 KG 并落 "KG"，
+     * 其余(个/箱/米…)原样保留。为空表示来源行没带数量，重量列为空。
+     */
+    private String unitName;
     /**
      * AI 初筛结果：CLEAN(无污染)/POLLUTED(有污染)/UNCERTAIN(不确定)
      */
@@ -78,6 +109,13 @@ public class MesSetPollutionCheckDO extends BaseDO {
      */
     private String aiReason;
     /**
+     * AI 判定的法规依据（法规名 + 条款号/名录编号 + 要点），取自 {@code PollutionLegalBasis}
+     *
+     * 与 {@link #aiReason} 的分工：aiReason 是自然语言的理由，本字段是**可引用的法条出处**，
+     * 对外出合规说明时引的是这个。
+     */
+    private String aiBasis;
+    /**
      * AI 推荐存储方法
      */
     private String suggestedStorage;
@@ -89,6 +127,13 @@ public class MesSetPollutionCheckDO extends BaseDO {
      * 成品达标分支（仅环节 FINISHED_PRODUCT）：QUALIFIED(达标)/REWORK(局部缺陷返工)/SCRAPPED(整体报废)
      */
     private String finishedResult;
+    /**
+     * 人工复核的判定依据（复选的法规条款，换行分隔），取自与 AI 同一份 {@code PollutionLegalBasis.CATALOG} 白名单。
+     *
+     * 口径：**不强制**。填了就落库并对外可引，没填也放行（复核结论本身仍是终态权威）。
+     * 分隔符是换行不是「；」——法条正文本身含「；」，用它做分隔回填时会被切碎。
+     */
+    private String reviewBasis;
     /**
      * 最终存储方法（复核确认）
      */

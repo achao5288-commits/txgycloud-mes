@@ -35,6 +35,10 @@ public class MesPollutionCheckLogDO extends BaseDO {
     public static final String OP_UPDATE = "UPDATE";
     /** 操作类型：人工复核(终态) */
     public static final String OP_REVIEW = "REVIEW";
+    /** 操作类型：发起变更(本行是一张变更单，承接原单的改动) */
+    public static final String OP_AMEND = "AMEND";
+    /** 操作类型：被变更单替代(原单收口，内容从此只读) */
+    public static final String OP_SUPERSEDE = "SUPERSEDE";
 
     /**
      * 编号
@@ -58,6 +62,10 @@ public class MesPollutionCheckLogDO extends BaseDO {
      */
     private String itemName;
     /**
+     * 当时现场观察到的污染特征快照（存 SIGN_* code，换行分隔）
+     */
+    private String fieldSigns;
+    /**
      * 当时 AI 初筛结果：CLEAN/POLLUTED/UNCERTAIN
      */
     private String aiResult;
@@ -70,6 +78,10 @@ public class MesPollutionCheckLogDO extends BaseDO {
      */
     private String aiReason;
     /**
+     * 当时 AI 判定的法规依据（法规名 + 条款号/名录编号 + 要点）
+     */
+    private String aiBasis;
+    /**
      * 当时 AI 推荐存储方法
      */
     private String suggestedStorage;
@@ -77,6 +89,10 @@ public class MesPollutionCheckLogDO extends BaseDO {
      * 人工复核结果(仅 REVIEW 行)：CLEAN/POLLUTED
      */
     private String reviewResult;
+    /**
+     * 人工复核的判定依据（仅 REVIEW 行，复选法条，换行分隔）
+     */
+    private String reviewBasis;
     /**
      * 最终存储方法
      */

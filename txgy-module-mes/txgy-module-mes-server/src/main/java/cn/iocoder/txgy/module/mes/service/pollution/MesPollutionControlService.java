@@ -1,6 +1,11 @@
 package cn.iocoder.txgy.module.mes.service.pollution;
 
+import cn.iocoder.txgy.module.mes.controller.admin.set.pollutioncheck.vo.MesSetPollutionCheckControlLocationReqVO;
 import cn.iocoder.txgy.module.mes.dal.dataobject.set.pollutioncheck.MesSetPollutionCheckDO;
+
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * MES 环保污染管控服务（P2「真落地管控」心脏）
@@ -44,6 +49,22 @@ public interface MesPollutionControlService {
      * @param reviewed 已复核的完整判定记录（含 reviewResult/location/marked/recordNo 等落库后回查的整行）
      */
     void applyReviewEffect(MesSetPollutionCheckDO reviewed);
+
+    /**
+     * 复核后单独调整受控库位（需求 5.4「受控库位调整」）：
+     * 判定一旦复核即终态（reviewPollutionCheck 会拒改），但受控库位是**物理事实**，现场倒库/危废间扩容后必须能改。
+     *
+     * 与复核同用一把门禁尺子（有污染→必须受控库位；无污染→不得占用受控库位），并同步三处，缺一处就会出现"判定行说 A、台账和批次戳还在 B"：
+     *  1) 判定行 location/location_id；
+     *  2) 该判定已登记的台账行（**关键**：批次污染戳是从台账行投影的，见 refreshBatchStamp 取最早开放行的 location）。
+     *     applyReviewEffect 的登记是"不存在才插"，重复复核也不会补这一步，所以只能在这里改；
+     *  3) 批次戳重投影。
+     *
+     * 人为操作，故带手写签名（reqVO.signImg）：缺签名抛 SET_POLLUTION_CHECK_SIGN_REQUIRED，且早返回路径也要签字。
+     *
+     * @param reqVO 判定记录编号（必须已复核）+ 目标库位编号 + 手写签名
+     */
+    void changeControlLocation(MesSetPollutionCheckControlLocationReqVO reqVO);
 
     /**
      * A3 生产领用门禁：批次戳 POLLUTED（即该批仍有未闭环"有污染"台账行）→ 抛 MES_POLLUTION_ISSUE_BLOCKED 拒绝领用。
@@ -99,10 +120,52 @@ public interface MesPollutionControlService {
     int purgePendingByBizNo(String stage, String bizNo);
 
     /**
+     * 按单据号批量取判定行（只读，供单据列表做「本单判定到哪一步」投影）。
+     *
+     * 单据表与判定表没有外键，唯一句柄是 biz_no，逐单查就是 N+1，所以在这里开一个批量口子；
+     * 不在这里聚合，是因为「几行算判完」要用单据自己的行数去比，判定侧不知道单据有几行。
+     *
+     * @param stage  环节（如 {@link #STAGE_PURCHASE_INBOUND}）
+     * @param bizNos 单据号集合；空集合返回空表（**不返回全表**）
+     */
+    List<MesSetPollutionCheckDO> listByBizNos(String stage, Collection<String> bizNos);
+
+    /**
      * A4 级联清理(行删除)：删除某单据某行(stage+bizNo+itemCode，可带 batchNo)下仍"待复核"的判定记录。
      *
      * @return 清理条数
      */
     int purgePendingByBizNoItem(String stage, String bizNo, String itemCode, String batchNo);
+
+    /**
+     * 产废登记：直接把一条产废记录登记为台账行（**不经过污染判定**）。
+     *
+     * 用于治理设施换炭、设备维保换油等「确定性危废」——这类废物的危废身份是法定的、不需要现场判断。
+     * 绕开判定表既避免往判定表灌机器数据（那会让人误以为是人判的），
+     * 也避免把 createPollutionCheck 内部的 AI 调用带进业务事务。
+     * 登记后 status=STORED、source_type=WASTE_REGISTER，可继续走台账的处置流转。
+     * 产废无批次主数据，故不做批次戳投影（与"中间废弃物只登记台账不投影"同口径）。
+     *
+     * @param waste 产废信息
+     * @return 生成的台账行 id
+     */
+    Long registerWasteLedger(WasteRegister waste);
+
+    /**
+     * 产废登记入参
+     *
+     * @param itemCode       物料编码（用真实物料，如 TX-FW-CAR-005）
+     * @param itemSpec       规格/废物类别代码（如 HW49 900-039-49）
+     * @param weight         重量；单位见 unitName（与判定侧同口径，不另立数量列）
+     * @param unitName       重量单位
+     * @param location       暂存去向
+     * @param sourceRecordNo 来源单号（如换炭作业票号），可供反查
+     * @param remark         备注
+     */
+    record WasteRegister(String itemCode, String itemName, String itemSpec,
+                         BigDecimal weight, String unitName,
+                         String location, String sourceRecordNo,
+                         String remark) {
+    }
 
 }

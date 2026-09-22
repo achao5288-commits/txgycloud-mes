@@ -10,6 +10,7 @@ export namespace MesChemicalApi {
     chemicalCode?: string; // 危化品编码
     chemicalName?: string;
     casNo?: string; // CAS 号
+    itemId?: number; // 关联物料 id；绑定后在在库侧（受控库位调整）才判禁配/专区
     compatGroup?: string; // 相容组 ISOCYANATE/POLYOL/THINNER/EPOXY/WATER/ALCOHOL/AMINE
     hazardClass?: string; // 危险性类别
     storageZone?: string; // 储存专区 GENERAL/EXPLOSION_PROOF/ISOLATION/SPECIAL

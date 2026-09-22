@@ -45,10 +45,19 @@ export function getMaterialStock(id: number) {
   );
 }
 
-/** 更新库存冻结状态 */
+/**
+ * 更新库存冻结状态（**人工**入口）。
+ *
+ * 后端对"缺签名"直接拒（1040703015）。注意 frozen 是批次污染的投影，
+ * 人工改动会被下一次投影重算盖掉 —— 签字证明的是"谁点过这个按钮"，不是"这批货冻着"。
+ * 系统内部批量冻结走的是另一个重载，不经这里。
+ */
 export function updateMaterialStockFrozen(data: {
   frozen: boolean;
   id: number;
+  /** 手写签名图 URL，必传（同上，漏传编译不过） */
+  signImg: string;
+  opinion?: string;
 }) {
   return requestClient.put('/mes/wm/material-stock/update-frozen', data);
 }

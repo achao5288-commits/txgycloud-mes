@@ -54,6 +54,12 @@ const signedRoles = computed(() => new Set(signs.value.map((s) => s.signRole)));
 const locked = computed(() =>
   ['CLOSED', 'TRANSFERRED'].includes(manifest.value?.status ?? ''),
 );
+/** 终态联单不签的理由，写在界面上：入口静默消失时无从判断是"坏了"还是"本来就不能签" */
+const lockedTip = computed(() =>
+  manifest.value?.status === 'CLOSED'
+    ? '该联单已回执归档，签字与编辑入口已关闭（历史签字与附件仍可查阅）。'
+    : '该联单已启运出厂，签字与编辑入口已关闭（门卫放行时自动补签）。',
+);
 
 const [Form, formApi] = useVbenForm({
   commonConfig: {
@@ -100,6 +106,12 @@ function handleConfirm(partyRole: string, label: string) {
 
 async function handleSign(signRole: string) {
   const signImg = await signPadRef.value?.commit();
+  // 手写签名必画：没签就不提交。后端 signImg 可空（系统补签也走这个接口），
+  // 卡口必须在前端，否则"会签"会落一条没有签名图的记录。
+  if (!signImg) {
+    message.warning('请先在手写板上签名，再点会签');
+    return;
+  }
   await run(
     () => signManifest({
       manifestNo: manifestNo.value,
@@ -230,12 +242,32 @@ const [Drawer, drawerApi] = useVbenDrawer({
             四方会签（移交环保员 / 押运司机 / 接收经手人 / 门卫；门卫在放行时自动补签）
           </div>
           <Space wrap>
-            <Tag v-for="role in ['HANDOVER', 'DRIVER', 'RECEIVER', 'GUARD']" :key="role"
-                 :color="signedRoles.has(role) ? 'success' : 'default'">
+            <Tag
+v-for="role in ['HANDOVER', 'DRIVER', 'RECEIVER', 'GUARD']" :key="role"
+                 :color="signedRoles.has(role) ? 'success' : 'default'"
+>
               {{ SIGN_ROLE_MAP[role] }}{{ signedRoles.has(role) ? ' ✔' : ' （待签）' }}
             </Tag>
           </Space>
         </div>
+
+        <!-- 签字区紧跟在「四方会签」状态后面，画板紧邻会签按钮 —— 两处都不能挪：
+             画板放到明细/附件后面时，按钮会被顶到抽屉可视区外（实测窗外 120px），
+             用户画完签名满屏找提交入口，就是现场报的"签字签不了"。 -->
+        <div v-if="!locked" class="mt-4 rounded-md border border-solid border-gray-200 p-3">
+          <SignaturePad ref="signPadRef" />
+          <div class="mt-3 flex flex-wrap gap-2">
+            <Button
+              v-for="role in ['HANDOVER', 'DRIVER', 'RECEIVER']"
+              :key="role"
+              @click="handleSign(role)"
+            >
+              会签·{{ SIGN_ROLE_MAP[role] }}
+            </Button>
+          </div>
+        </div>
+        <!-- 已归档/已出厂不签：入口静默消失时用户只能对着"（待签）"标签干找 -->
+        <Alert v-else class="mt-4" type="info" show-icon :message="lockedTip" />
 
         <div class="mt-4">
           <div class="mb-2 font-medium">签字明细</div>
@@ -246,8 +278,6 @@ const [Drawer, drawerApi] = useVbenDrawer({
             <img v-if="s.signImg" :src="s.signImg" class="mt-1 h-12 border border-solid border-gray-200" alt="签名" />
           </div>
         </div>
-
-        <SignaturePad v-if="!locked" ref="signPadRef" class="mt-4" />
 
         <div class="mt-4">
           <AttachmentPanel

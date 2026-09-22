@@ -45,6 +45,11 @@ public class MesPollutionLedgerDO extends BaseDO {
     /** 台账状态：已解除（批次后续复核为无污染时，系统自动关闭历史"有污染"台账行） */
     public static final String STATUS_CLEARED = "CLEARED";
 
+    /** 来源类型：判定复核登记（复核判"有污染"自动登记，有 source_check_id） */
+    public static final String SOURCE_POLLUTION_CHECK = "POLLUTION_CHECK";
+    /** 来源类型：产废登记（换炭/换油等称重入账，无判定记录，source_check_id 为空） */
+    public static final String SOURCE_WASTE_REGISTER = "WASTE_REGISTER";
+
     /**
      * 编号
      */
@@ -53,13 +58,19 @@ public class MesPollutionLedgerDO extends BaseDO {
     /**
      * 来源判定记录ID
      *
-     * 关联 {@link MesSetPollutionCheckDO#getId()}
+     * 关联 {@link MesSetPollutionCheckDO#getId()}；产废登记({@link #SOURCE_WASTE_REGISTER})无判定记录，此列为 NULL。
      */
     private Long sourceCheckId;
     /**
      * 来源判定记录编号（PC-...）
      */
     private String sourceRecordNo;
+    /**
+     * 来源类型：POLLUTION_CHECK(判定复核登记)/WASTE_REGISTER(产废登记)
+     *
+     * 历史行为空，按 {@link #SOURCE_POLLUTION_CHECK} 理解（迁移脚本已回填）。
+     */
+    private String sourceType;
     /**
      * 环节：PURCHASE_INBOUND(采购入库)/MATERIAL_ISSUE(生产领用)/WASTE_INTERMEDIATE(中间废弃物)/FINISHED_PRODUCT(成品)
      */
@@ -85,9 +96,13 @@ public class MesPollutionLedgerDO extends BaseDO {
      */
     private String itemSpec;
     /**
-     * 重量(kg)——由源判定行带入，同一批废物只有一个重量来源
+     * 重量——由源判定行带入，同一批废物只有一个重量来源；单位见 {@link #unitName}
      */
     private BigDecimal weight;
+    /**
+     * 重量单位快照，随重量一起从源判定行带入
+     */
+    private String unitName;
     /**
      * 处置方式
      */

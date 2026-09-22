@@ -13,7 +13,7 @@ import {
 } from '#/api/mes/safetyEnv/standard';
 import { $t } from '#/locales';
 
-import { DOMAIN_MAP, PERIOD_TYPE_MAP, useGridColumns, useGridFormSchema } from './data';
+import { DOMAIN_MAP, PERIOD_TYPE_MAP, STATUS_MAP, TEST_TYPE_MAP, useGridColumns, useGridFormSchema } from './data';
 import Form from './modules/form.vue';
 
 const [FormModal, formModalApi] = useVbenModal({
@@ -106,6 +106,16 @@ const [Grid, gridApi] = useVbenVxeGrid({
       <template #periodType="{ row }">
         <Tag :color="PERIOD_TYPE_MAP[row.periodType]?.color">
           {{ PERIOD_TYPE_MAP[row.periodType]?.text ?? row.periodType }}
+        </Tag>
+      </template>
+      <template #testType="{ row }">
+        <Tag :color="TEST_TYPE_MAP[row.testType]?.color">
+          {{ TEST_TYPE_MAP[row.testType]?.text ?? row.testType ?? '-' }}
+        </Tag>
+      </template>
+      <template #status="{ row }">
+        <Tag :color="STATUS_MAP[row.status]?.color">
+          {{ STATUS_MAP[row.status]?.text ?? row.status ?? '-' }}
         </Tag>
       </template>
       <template #actions="{ row }">

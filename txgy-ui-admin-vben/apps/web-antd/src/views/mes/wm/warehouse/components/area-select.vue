@@ -107,6 +107,9 @@ watchEffect(async () => {
         <div class="flex items-center gap-2">
           <span>{{ item.name }}</span>
           <Tag v-if="item.pollutionControl" color="orange">受控库位</Tag>
+          <!-- 专区要能一眼看见：给防爆类危化品选错专区会被后端拦下，选之前就该知道 -->
+          <Tag v-if="item.storageZone === 'EXPLOSION_PROOF'" color="red">防爆区</Tag>
+          <Tag v-else-if="item.storageZone === 'ISOLATION'" color="purple">隔离区</Tag>
           <Tag v-if="item.code" color="blue">编号: {{ item.code }}</Tag>
         </div>
       </SelectOption>

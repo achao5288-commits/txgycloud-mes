@@ -23,6 +23,7 @@ public interface MesSetPollutionCheckMapper extends BaseMapperX<MesSetPollutionC
         LambdaQueryWrapperX<MesSetPollutionCheckDO> query = new LambdaQueryWrapperX<MesSetPollutionCheckDO>()
                 .eqIfPresent(MesSetPollutionCheckDO::getStage, reqVO.getStage())
                 .eqIfPresent(MesSetPollutionCheckDO::getBizNo, reqVO.getBizNo())
+                .eqIfPresent(MesSetPollutionCheckDO::getBatchId, reqVO.getBatchId())
                 .eqIfPresent(MesSetPollutionCheckDO::getBatchNo, reqVO.getBatchNo())
                 .eqIfPresent(MesSetPollutionCheckDO::getAiResult, reqVO.getAiResult())
                 .eqIfPresent(MesSetPollutionCheckDO::getReviewResult, reqVO.getReviewResult())
@@ -40,6 +41,14 @@ public interface MesSetPollutionCheckMapper extends BaseMapperX<MesSetPollutionC
                 query.isNotNull(MesSetPollutionCheckDO::getReviewResult);
             } else {
                 query.isNull(MesSetPollutionCheckDO::getReviewResult);
+            }
+        }
+        // 批次关联状态：null=全部，true=已锚定批次，false=历史手工录入的未关联行（实测占 46%）
+        if (reqVO.getLinked() != null) {
+            if (reqVO.getLinked()) {
+                query.isNotNull(MesSetPollutionCheckDO::getBatchId);
+            } else {
+                query.isNull(MesSetPollutionCheckDO::getBatchId);
             }
         }
         return selectPage(reqVO, query);

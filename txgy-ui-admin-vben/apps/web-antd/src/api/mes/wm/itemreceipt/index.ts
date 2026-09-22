@@ -25,6 +25,11 @@ export namespace MesWmItemReceiptApi {
     status?: number; // 状态
     remark?: string; // 备注
     createTime?: Date; // 创建时间
+    // 整单环保判定投影（服务端按 biz_no=入库单编码聚合判定表回填，非本表字段）
+    pollutionStatus?: string; // NOT_JUDGED/PENDING/PARTIAL/DONE_CLEAN/DONE_POLLUTED
+    pollutionJudgedLines?: number; // 已判定物料行数
+    pollutionLineCount?: number; // 物料行总数
+    pollutionPendingLines?: number; // 待复核行数
   }
 }
 

@@ -7,8 +7,10 @@ import cn.iocoder.txgy.module.mes.controller.admin.set.pollutionledger.vo.MesPol
 import cn.iocoder.txgy.module.mes.controller.admin.set.pollutionledger.vo.MesPollutionLedgerPageReqVO;
 import cn.iocoder.txgy.module.mes.controller.admin.set.pollutionledger.vo.MesPollutionLedgerRespVO;
 import cn.iocoder.txgy.module.mes.controller.admin.set.pollutionledger.vo.MesPollutionLedgerStatusReqVO;
+import cn.iocoder.txgy.module.mes.controller.admin.set.pollutionledger.vo.MesPollutionLedgerWasteRegisterReqVO;
 import cn.iocoder.txgy.module.mes.dal.dataobject.set.pollutionledger.MesPollutionLedgerDO;
 import cn.iocoder.txgy.module.mes.dal.dataobject.set.pollutionledger.MesPollutionLedgerLogDO;
+import cn.iocoder.txgy.module.mes.service.pollution.MesPollutionControlService;
 import cn.iocoder.txgy.module.mes.service.set.pollutionledger.MesPollutionLedgerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -31,6 +33,19 @@ public class MesPollutionLedgerController {
 
     @Resource
     private MesPollutionLedgerService pollutionLedgerService;
+
+    @Resource
+    private MesPollutionControlService pollutionControlService;
+
+    @PostMapping("/waste-register")
+    @Operation(summary = "产废登记(换炭/换油等确定性危废称重入暂存台账，不经过污染判定)")
+    @PreAuthorize("@ss.hasPermission('mes:set-pollution-check:review')")
+    public CommonResult<Long> registerWasteLedger(@Valid @RequestBody MesPollutionLedgerWasteRegisterReqVO reqVO) {
+        return success(pollutionControlService.registerWasteLedger(
+                new MesPollutionControlService.WasteRegister(reqVO.getItemCode(), reqVO.getItemName(),
+                        reqVO.getItemSpec(), reqVO.getWeight(), reqVO.getUnitName(),
+                        reqVO.getLocation(), reqVO.getSourceRecordNo(), reqVO.getRemark())));
+    }
 
     @PutMapping("/status")
     @Operation(summary = "处置流转(终态清批次污染戳)")

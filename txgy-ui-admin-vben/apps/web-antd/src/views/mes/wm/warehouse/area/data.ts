@@ -205,6 +205,22 @@ export function useFormSchema(
       rules: z.boolean().default(false),
     },
     {
+      // 储存专区：与「污染管控库位」**相互独立**——一个库位可以既是受控危废暂存间、又是防爆区。
+      // 危化品相容组的专区要求（稀释剂须防爆存放）判的就是这一列：不选对，防爆类危化品哪个库位都进不去。
+      fieldName: 'storageZone',
+      label: '储存专区',
+      component: 'Select',
+      componentProps: {
+        allowClear: true,
+        options: [
+          { label: '一般区', value: 'GENERAL' },
+          { label: '防爆区', value: 'EXPLOSION_PROOF' },
+          { label: '隔离区', value: 'ISOLATION' },
+        ],
+        placeholder: '默认为一般区',
+      },
+    },
+    {
       fieldName: 'remark',
       label: '备注',
       component: 'Textarea',
@@ -333,6 +349,12 @@ export function useGridColumns(): VxeTableGridOptions<MesWmWarehouseAreaApi.Ware
       title: '污染管控',
       width: 110,
       slots: { default: 'pollutionControl' },
+    },
+    {
+      field: 'storageZone',
+      title: '储存专区',
+      width: 110,
+      slots: { default: 'storageZone' },
     },
     {
       field: 'remark',

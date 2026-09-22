@@ -447,6 +447,7 @@ public interface ErrorCodeConstants {
     ErrorCode WM_TRANSACTION_BATCH_NOT_EXISTS = new ErrorCode(1_040_703_012, "批次记录不存在");
     ErrorCode WM_MATERIAL_STOCK_REQUIRED = new ErrorCode(1_040_703_013, "库存记录不能为空");
     ErrorCode WM_MATERIAL_STOCK_SELECTION_MISMATCH = new ErrorCode(1_040_703_014, "库存记录与提交的物料、批次或库位信息不一致");
+    ErrorCode WM_MATERIAL_STOCK_SIGN_REQUIRED = new ErrorCode(1_040_703_015, "库存冻结/解冻会改动环保数据，必须手写签名确认（未收到签名图），已拒绝");
 
     // ========== MES 仓库管理-到货通知单（1-040-704-000） ==========
     ErrorCode WM_ARRIVAL_NOTICE_NOT_EXISTS = new ErrorCode(1_040_704_000, "到货通知单不存在");
@@ -735,11 +736,29 @@ public interface ErrorCodeConstants {
     ErrorCode SET_POLLUTION_CHECK_FINISHED_RESULT_INVALID = new ErrorCode(1_040_818_013, "达标分支不合法（仅支持 QUALIFIED/REWORK/SCRAPPED）");
     ErrorCode SET_POLLUTION_CHECK_FINISHED_RESULT_NOT_ALLOWED = new ErrorCode(1_040_818_014, "非成品环节不得填写达标分支");
     ErrorCode SET_POLLUTION_CHECK_SCRAP_LOCATION_REQUIRED = new ErrorCode(1_040_818_015, "整体报废必须指定存放去向（受控存储或直接存储），请选择库位");
+    // ========== 在库/入库物品环保检测（判定行锚定批次） ==========
+    ErrorCode SET_POLLUTION_CHECK_BATCH_ID_NOT_FOUND = new ErrorCode(1_040_818_016, "批次编号 {} 不存在，无法发起在库检测，请重新选择批次");
+    ErrorCode SET_POLLUTION_CHECK_ITEM_REQUIRED = new ErrorCode(1_040_818_017, "必须提供批次编号或物料名称（二者至少其一），否则无法判定");
+    ErrorCode SET_POLLUTION_CHECK_LEDGER_CLOSED = new ErrorCode(1_040_818_018, "该判定的污染台账已闭环（当前状态 {}），物品已不在库，库位属历史事实不可调整");
+    // @note 人为改数据的操作一律要手写签名（在库环保视图/发起检测）。签名图缺失 = 拒绝执行，
+    //       不做"签名可选"的兼容：留一个不签名的口子，事后追责时这一条就是无主的。
+    ErrorCode SET_POLLUTION_CHECK_SIGN_REQUIRED = new ErrorCode(1_040_818_019, "该操作会改动环保数据，必须手写签名确认（未收到签名图），已拒绝");
+    // ========== 签字即冻结 / 变更单（1-040-818-020 起） ==========
+    // 冻结线 = **收口线**（已复核，或已被变更单替代），不是"有没有签字行"：判定在创建时就落了一条
+    // 发起检测签字（那是「这批要查」的主张，不是结论），按签字行冻结会让改单/删单从创建那一刻起
+    // 永久失效，待复核的草稿连纠错都做不到。
+    // 020 留空：原打算给"已收口"单发一个码，实际复用 ALREADY_REVIEWED(001) 更贴切——
+    // 用户在前端看到的就是"已复核"，不该因为多了一层变更单概念而换一个陌生的码。
+    ErrorCode SET_POLLUTION_CHECK_SUPERSEDED = new ErrorCode(1_040_818_021, "该判定已被变更单 {} 替代，请在新单上操作");
+    ErrorCode SET_POLLUTION_CHECK_AMEND_REASON_REQUIRED = new ErrorCode(1_040_818_022, "发起变更必须填写变更事由（说明为什么要改）");
+    ErrorCode SET_POLLUTION_CHECK_AMEND_ORIGIN_INVALID = new ErrorCode(1_040_818_023, "被变更的原单不存在或尚未复核；未复核的判定直接改即可，不必开变更单");
     // ========== MES 安全环保检测-污染管控门禁与台账（1-040-819-000） ==========
     ErrorCode MES_POLLUTION_ISSUE_BLOCKED = new ErrorCode(1_040_819_000, "批次 {} 存在有污染环保判定（去向：{}），拒绝领用，请先在污染/危废暂存区完成处理");
     ErrorCode MES_POLLUTION_OUTBOUND_BLOCKED = new ErrorCode(1_040_819_001, "批次 {} 存在有污染/标记环保判定（去向：{}），禁止出库");
     ErrorCode SET_POLLUTION_LEDGER_NOT_EXISTS = new ErrorCode(1_040_819_002, "污染/危废暂存台账记录不存在");
     ErrorCode SET_POLLUTION_LEDGER_STATUS_INVALID = new ErrorCode(1_040_819_003, "台账状态不合法（支持：处置中/已回用/已排放/已处置）");
+    ErrorCode SET_POLLUTION_LEDGER_SIGN_REQUIRED = new ErrorCode(1_040_819_004, "标记品终审会改动环保数据，必须手写签名确认（未收到签名图），已拒绝");
+    ErrorCode SET_POLLUTION_LEDGER_FLOW_SIGN_REQUIRED = new ErrorCode(1_040_819_005, "危废处置流转会改动环保数据，必须手写签名确认（未收到签名图），已拒绝");
     // ========== MES 安全环保检测-排污许可证（1-040-820-000） ==========
     // ========== MES 安全环保检测-追溯链/称重（1-040-821-000） ==========
     ErrorCode MES_SET_WEIGH_NET_WEIGHT_INVALID = new ErrorCode(1_040_821_000, "净重必须大于 0，请核对毛重与皮重");
@@ -813,6 +832,9 @@ public interface ErrorCodeConstants {
     ErrorCode SET_CHEMICAL_DOUBLE_SIGN_SAME_USER = new ErrorCode(1_040_830_007, "五双拦截：同一账号不能连签两次，双人制须双账号各签一次");
     ErrorCode SET_CHEMICAL_DOUBLE_SIGN_ACTION_INVALID = new ErrorCode(1_040_830_008, "五双作业类型不合法（支持：RECEIVE 双人收发 / KEEP 双人保管 / LOCK 双人双锁 / ISSUE 双人领料 / TRANSPORT 双人运输）");
     ErrorCode SET_CHEMICAL_QUANTITY_INVALID = new ErrorCode(1_040_830_009, "数量不合法：必须大于 0");
+    ErrorCode SET_CHEMICAL_ITEM_BOUND_DUPLICATE = new ErrorCode(1_040_830_010, "该物料已被危化品档案「{}」绑定——一个物料只能按一条危化品档案管，请先解绑");
+    ErrorCode SET_CHEMICAL_ITEM_ZONE_MISMATCH = new ErrorCode(1_040_830_011, "危化品拦截：物料「{}」（{}）须存放于{}，库位「{}」是{}，专区不符");
+    ErrorCode SET_CHEMICAL_ITEM_INCOMPATIBLE = new ErrorCode(1_040_830_012, "危化品拦截：物料「{}」（{}）与库位「{}」在库的「{}」（{}）禁配，不得同区存放");
 
     // ========== 治污设施运行管控（台账 / 换炭→HW49 / 停运申报审批 / 同开同停）1_040_831_xxx ==========
     ErrorCode SET_FACILITY_NOT_EXISTS = new ErrorCode(1_040_831_000, "治污设施不存在");
@@ -901,5 +923,13 @@ public interface ErrorCodeConstants {
     // ========== 通用业务附件 1_040_848_xxx ==========
 
     ErrorCode SET_ATTACHMENT_NOT_EXISTS = new ErrorCode(1_040_848_000, "附件不存在（可能已被删除）");
+    ErrorCode SET_ATTACHMENT_BIZ_SIGNED = new ErrorCode(1_040_848_001, "所属业务单已签字，附件不可删除（附件是签字结论的证据，删了结论就悬空了）");
+
+    // ========== 在线监控看板 1_040_849_xxx ==========
+
+    ErrorCode SET_MONITOR_EXCEED_NOT_EXISTS = new ErrorCode(1_040_849_000, "超标事件不存在（可能已被删除）");
+    ErrorCode SET_MONITOR_EXCEED_STATUS_INVALID = new ErrorCode(1_040_849_001, "超标事件已闭环，不能重复处置：超标记录是审计证据，闭环后不再改状态");
+    ErrorCode SET_MONITOR_EXCEED_ALREADY_DISPATCHED = new ErrorCode(1_040_849_002, "该超标事件已派单，不能重复派单（改派请先在追溯链留下原处置人）");
+    ErrorCode SET_MONITOR_EXCEED_ALREADY_CLOSED = new ErrorCode(1_040_849_003, "该超标事件已闭环，不能重复闭环");
 
 }

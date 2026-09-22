@@ -39,20 +39,20 @@ export function useGridFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'planType',
-      label: '预案类型：COMPREHENSIVE(综合)/SPECIAL(专项)/ONSITE(现场处置)',
+      label: '预案类型',
       component: 'Input',
       componentProps: {
         allowClear: true,
-        placeholder: '请输入预案类型：COMPREHENSIVE(综合)/SPECIAL(专项)/ONSITE(现场处置)',
+        placeholder: '请输入预案类型',
       },
     },
     {
       fieldName: 'status',
-      label: '状态：DRAFT(草稿)/PUBLISHED(已发布)/FILED(已备案)',
+      label: '状态',
       component: 'Input',
       componentProps: {
         allowClear: true,
-        placeholder: '请输入状态：DRAFT(草稿)/PUBLISHED(已发布)/FILED(已备案)',
+        placeholder: '请输入状态',
       },
     },
   ];
@@ -63,13 +63,13 @@ export function useGridColumns(): VxeTableGridOptions<MesSetEmergencyPlanApi.Eme
   return [
     { field: 'planNo', title: '预案编号', minWidth: 170, showOverflow: true },
     { field: 'planName', title: '预案名称', minWidth: 170, showOverflow: true },
-    { field: 'planType', title: '预案类型：COMPREHENSIVE(综合)/SPECIAL(专项)/ONSITE(现场处置)', minWidth: 170, showOverflow: true , slots: { default: 'planType' } },
+    { field: 'planType', title: '预案类型', minWidth: 170, showOverflow: true , slots: { default: 'planType' } },
     { field: 'version', title: '版本号', minWidth: 170, showOverflow: true },
     { field: 'publishDate', title: '发布日期（备案时限与评估周期的起算点）', width: 120 },
-    { field: 'filingDeadline', title: '备案截止日（发布 + 20 个工作日，派生值不进表单）', width: 120 },
+    { field: 'filingDeadline', title: '备案截止日', width: 120 },
     { field: 'filingNo', title: '备案号（报生态环境部门后登记）', minWidth: 170, showOverflow: true },
-    { field: 'nextReviewDate', title: '下次评估修订日期（发布或上次修订 + 3 年，派生值不进表单）', width: 120 },
-    { field: 'status', title: '状态：DRAFT(草稿)/PUBLISHED(已发布)/FILED(已备案)', minWidth: 170, showOverflow: true , slots: { default: 'status' } },
+    { field: 'nextReviewDate', title: '下次评估修订日期', width: 120 },
+    { field: 'status', title: '状态', minWidth: 170, showOverflow: true , slots: { default: 'status' } },
     {
       title: '操作',
       width: 150,
@@ -104,10 +104,10 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'planType',
-      label: '预案类型：COMPREHENSIVE(综合)/SPECIAL(专项)/ONSITE(现场处置)',
+      label: '预案类型',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入预案类型：COMPREHENSIVE(综合)/SPECIAL(专项)/ONSITE(现场处置)',
+        placeholder: '请输入预案类型',
       },
       rules: 'required',
     },
@@ -131,7 +131,7 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'filingDeadline',
-      label: '备案截止日（发布 + 20 个工作日，派生值不进表单）',
+      label: '备案截止日',
       component: 'DatePicker',
       componentProps: {
         valueFormat: 'YYYY-MM-DD',
@@ -177,7 +177,7 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'nextReviewDate',
-      label: '下次评估修订日期（发布或上次修订 + 3 年，派生值不进表单）',
+      label: '下次评估修订日期',
       component: 'DatePicker',
       componentProps: {
         valueFormat: 'YYYY-MM-DD',
@@ -195,10 +195,10 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'status',
-      label: '状态：DRAFT(草稿)/PUBLISHED(已发布)/FILED(已备案)',
+      label: '状态',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入状态：DRAFT(草稿)/PUBLISHED(已发布)/FILED(已备案)',
+        placeholder: '请输入状态',
       },
     },
     {

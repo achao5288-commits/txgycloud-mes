@@ -6,26 +6,26 @@ import type { MesSetPlanApi } from '#/api/mes/safetyEnv/plan';
 export const PLAN_TYPE_OPTIONS = [
   { label: '事件触发', value: 'EVENT' },
   { label: '周期', value: 'PERIODIC' },
-  { label: 'YEAR', value: 'YEAR' },
+  { label: '年', value: 'YEAR' },
 ];
 
 /** 触发类型：PERIODIC(周期)/EVENT(事件)文案 */
-export const PLAN_TYPE_MAP: Record<string, { text: string; color: string }> = {
+export const PLAN_TYPE_MAP: Record<string, { color: string; text: string; }> = {
   EVENT: { text: '事件触发', color: 'success' },
   PERIODIC: { text: '周期', color: 'error' },
-  YEAR: { text: 'YEAR', color: 'warning' },
+  YEAR: { text: '年', color: 'warning' },
 };
 
 /** 周期类型(周期型)：DAILY/WEEKLY/MONTHLY/QUARTERLY/YEARLY选项 */
 export const PERIOD_TYPE_OPTIONS = [
   { label: '月', value: 'MONTHLY' },
-  { label: 'YEAR', value: 'YEAR' },
+  { label: '年', value: 'YEAR' },
 ];
 
 /** 周期类型(周期型)：DAILY/WEEKLY/MONTHLY/QUARTERLY/YEARLY文案 */
-export const PERIOD_TYPE_MAP: Record<string, { text: string; color: string }> = {
+export const PERIOD_TYPE_MAP: Record<string, { color: string; text: string; }> = {
   MONTHLY: { text: '月', color: 'success' },
-  YEAR: { text: 'YEAR', color: 'error' },
+  YEAR: { text: '年', color: 'error' },
 };
 
 /** 状态：DRAFT/ACTIVE/STOPPED选项 */
@@ -35,7 +35,7 @@ export const STATUS_OPTIONS = [
 ];
 
 /** 状态：DRAFT/ACTIVE/STOPPED文案 */
-export const STATUS_MAP: Record<string, { text: string; color: string }> = {
+export const STATUS_MAP: Record<string, { color: string; text: string; }> = {
   ACTIVE: { text: '有效', color: 'success' },
   DRAFT: { text: '草稿', color: 'error' },
 };
@@ -63,7 +63,7 @@ export function useGridFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'planType',
-      label: '触发类型：PERIODIC(周期)/EVENT(事件)',
+      label: '触发类型',
       component: 'Select',
       componentProps: {
         allowClear: true,
@@ -73,7 +73,7 @@ export function useGridFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'periodType',
-      label: '周期类型(周期型)：DAILY/WEEKLY/MONTHLY/QUARTERLY/YEARLY',
+      label: '周期类型(周期型)',
       component: 'Select',
       componentProps: {
         allowClear: true,
@@ -83,7 +83,7 @@ export function useGridFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'status',
-      label: '状态：DRAFT/ACTIVE/STOPPED',
+      label: '状态',
       component: 'Select',
       componentProps: {
         allowClear: true,
@@ -99,12 +99,12 @@ export function useGridColumns(): VxeTableGridOptions<MesSetPlanApi.Plan>['colum
   return [
     { field: 'planNo', title: '计划编号', minWidth: 170, showOverflow: true },
     { field: 'planName', title: '计划名称', minWidth: 170, showOverflow: true },
-    { field: 'planType', title: '触发类型：PERIODIC(周期)/EVENT(事件)', minWidth: 170, showOverflow: true, slots: { default: 'planType' } },
-    { field: 'periodType', title: '周期类型(周期型)：DAILY/WEEKLY/MONTHLY/QUARTERLY/YEARLY', minWidth: 170, showOverflow: true, slots: { default: 'periodType' } },
+    { field: 'planType', title: '触发类型', minWidth: 170, showOverflow: true, slots: { default: 'planType' } },
+    { field: 'periodType', title: '周期类型(周期型)', minWidth: 170, showOverflow: true, slots: { default: 'periodType' } },
     { field: 'startDate', title: '生效开始日期', width: 120 },
     { field: 'endDate', title: '生效结束日期', width: 120 },
     { field: 'assigneeId', title: '责任人/执行人编号', width: 120 },
-    { field: 'status', title: '状态：DRAFT/ACTIVE/STOPPED', minWidth: 170, showOverflow: true, slots: { default: 'status' } },
+    { field: 'status', title: '状态', minWidth: 170, showOverflow: true, slots: { default: 'status' } },
     {
       title: '操作',
       width: 150,
@@ -139,7 +139,7 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'planType',
-      label: '触发类型：PERIODIC(周期)/EVENT(事件)',
+      label: '触发类型',
       component: 'Select',
       componentProps: {
         options: PLAN_TYPE_OPTIONS,
@@ -148,7 +148,7 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'periodType',
-      label: '周期类型(周期型)：DAILY/WEEKLY/MONTHLY/QUARTERLY/YEARLY',
+      label: '周期类型(周期型)',
       component: 'Select',
       componentProps: {
         options: PERIOD_TYPE_OPTIONS,
@@ -209,7 +209,7 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'status',
-      label: '状态：DRAFT/ACTIVE/STOPPED',
+      label: '状态',
       component: 'Select',
       componentProps: {
         options: STATUS_OPTIONS,

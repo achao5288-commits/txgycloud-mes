@@ -14,9 +14,9 @@ import {
 import { $t } from '#/locales';
 
 import {
+  EVENT_STATUS_MAP,
   EVENT_TYPE_MAP,
   SCENARIO_MAP,
-  EVENT_STATUS_MAP,
   useGridColumns,
   useGridFormSchema,
 } from './data';

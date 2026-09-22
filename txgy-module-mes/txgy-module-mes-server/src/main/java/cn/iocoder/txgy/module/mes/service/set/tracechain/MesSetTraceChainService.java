@@ -5,6 +5,8 @@ import cn.iocoder.txgy.module.mes.controller.admin.set.tracechain.vo.MesSetTrace
 import cn.iocoder.txgy.module.mes.controller.admin.set.tracechain.vo.MesSetTraceReverseRespVO;
 import cn.iocoder.txgy.module.mes.dal.dataobject.set.tracechain.MesSetTraceChainDO;
 
+import java.util.List;
+
 /**
  * MES 安全环保检测-追溯链节点 Service 接口
  *
@@ -48,6 +50,16 @@ public interface MesSetTraceChainService {
      * @return 台账行 + 每行的源头判定 + 过秤证据 + 时间轴 + 签字
      */
     MesSetTraceReverseRespVO reverseTrace(String containerCode, String manifestNo);
+
+    /**
+     * 反向查来源·全量：一次列出全部危废台账行及各自的源头判定。
+     *
+     * 现场常常并不知道桶码该填什么，「先列全量、再按桶码/联单号筛」比「必须先输对桶码」
+     * 更接近真实用法。判定逻辑与 reverseTrace 同源（都走 resolveSource），不另立一套。
+     *
+     * @return 全部台账行 + 每行的源头判定（UNSOURCED 即无源异常，须人工补录）
+     */
+    List<MesSetTraceReverseRespVO.Ledger> listAllSources();
 
     /**
      * 导出全程追溯报告（Markdown 文本，调用方直接作为下载内容回给浏览器）。

@@ -45,20 +45,20 @@ export function useGridFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'materialType',
-      label: '物资类型：DRY_SAND(干沙)/OIL_ABSORBENT(吸油毡)/CHEM_SUIT(防化服)/GAS_MASK(防毒面具)/EXPLOSION_TOOL(防爆工具)/SANDBAG(围堰沙袋)/EYE_WASH(洗眼器)/DRY_POWDER(干粉灭火器)',
+      label: '物资类型',
       component: 'Input',
       componentProps: {
         allowClear: true,
-        placeholder: '请输入物资类型：DRY_SAND(干沙)/OIL_ABSORBENT(吸油毡)/CHEM_SUIT(防化服)/GAS_MASK(防毒面具)/EXPLOSION_TOOL(防爆工具)/SANDBAG(围堰沙袋)/EYE_WASH(洗眼器)/DRY_POWDER(干粉灭火器)',
+        placeholder: '请输入物资类型',
       },
     },
     {
       fieldName: 'status',
-      label: '状态：NORMAL(正常)/EXPIRING(临期)/EXPIRED(过期)/OUT(缺货)，派生值不进表单',
+      label: '状态',
       component: 'Input',
       componentProps: {
         allowClear: true,
-        placeholder: '请输入状态：NORMAL(正常)/EXPIRING(临期)/EXPIRED(过期)/OUT(缺货)，派生值不进表单',
+        placeholder: '请输入状态',
       },
     },
   ];
@@ -69,13 +69,13 @@ export function useGridColumns(): VxeTableGridOptions<MesSetEmergencyMaterialApi
   return [
     { field: 'materialNo', title: '物资编号', minWidth: 170, showOverflow: true },
     { field: 'materialName', title: '物资名称', minWidth: 170, showOverflow: true },
-    { field: 'materialType', title: '物资类型：DRY_SAND(干沙)/OIL_ABSORBENT(吸油毡)/CHEM_SUIT(防化服)/GAS_MASK(防毒面具)/EXPLOSION_TOOL(防爆工具)/SANDBAG(围堰沙袋)/EYE_WASH(洗眼器)/DRY_POWDER(干粉灭火器)', minWidth: 170, showOverflow: true , slots: { default: 'materialType' } },
+    { field: 'materialType', title: '物资类型', minWidth: 170, showOverflow: true , slots: { default: 'materialType' } },
     { field: 'spec', title: '规格型号', minWidth: 170, showOverflow: true },
     { field: 'unit', title: '计量单位', minWidth: 170, showOverflow: true },
     { field: 'quantity', title: '在库数量', width: 120 },
     { field: 'storageLocation', title: '定点存放位置', minWidth: 170, showOverflow: true },
     { field: 'expireDate', title: '有效期至（临期预警依据）', width: 120 },
-    { field: 'status', title: '状态：NORMAL(正常)/EXPIRING(临期)/EXPIRED(过期)/OUT(缺货)，派生值不进表单', minWidth: 170, showOverflow: true , slots: { default: 'status' } },
+    { field: 'status', title: '状态', minWidth: 170, showOverflow: true , slots: { default: 'status' } },
     {
       title: '操作',
       width: 150,
@@ -110,10 +110,10 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'materialType',
-      label: '物资类型：DRY_SAND(干沙)/OIL_ABSORBENT(吸油毡)/CHEM_SUIT(防化服)/GAS_MASK(防毒面具)/EXPLOSION_TOOL(防爆工具)/SANDBAG(围堰沙袋)/EYE_WASH(洗眼器)/DRY_POWDER(干粉灭火器)',
+      label: '物资类型',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入物资类型：DRY_SAND(干沙)/OIL_ABSORBENT(吸油毡)/CHEM_SUIT(防化服)/GAS_MASK(防毒面具)/EXPLOSION_TOOL(防爆工具)/SANDBAG(围堰沙袋)/EYE_WASH(洗眼器)/DRY_POWDER(干粉灭火器)',
+        placeholder: '请输入物资类型',
       },
       rules: 'required',
     },
@@ -182,10 +182,10 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'status',
-      label: '状态：NORMAL(正常)/EXPIRING(临期)/EXPIRED(过期)/OUT(缺货)，派生值不进表单',
+      label: '状态',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入状态：NORMAL(正常)/EXPIRING(临期)/EXPIRED(过期)/OUT(缺货)，派生值不进表单',
+        placeholder: '请输入状态',
       },
     },
     {

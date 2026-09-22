@@ -54,6 +54,13 @@ public class MesSetSignRecordDO extends BaseDO {
      */
     private Long signUserId;
     /**
+     * 实际操作账号ID（谁点的这一下）。
+     *
+     * 追溯页允许代签（下拉选签字人，默认当前登录人）：signUserId 记「签的是谁」，
+     * 本列记「谁操作的系统」。两者不一致即代签，事后查得出。
+     */
+    private Long operatorUserId;
+    /**
      * 签字时间
      */
     private LocalDateTime signTime;

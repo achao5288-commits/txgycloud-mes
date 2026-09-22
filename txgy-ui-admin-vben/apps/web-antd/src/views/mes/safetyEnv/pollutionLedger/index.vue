@@ -2,19 +2,22 @@
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { MesPollutionLedgerApi } from '#/api/mes/safetyEnv/pollutionLedger';
 
+import { ref } from 'vue';
+
 import { Page, useVbenDrawer, useVbenModal } from '@vben/common-ui';
 
-import { message, Modal, Tag } from 'ant-design-vue';
+import { message, Tag } from 'ant-design-vue';
 
 import { ACTION_ICON, TableAction, useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   getPollutionLedgerPage,
   updatePollutionLedgerMark,
 } from '#/api/mes/safetyEnv/pollutionLedger';
-import { STAGE_MAP } from '../pollutionCheck/data';
 
-import { LEDGER_STATUS_MAP, useGridColumns, useGridFormSchema } from './data';
+import { STAGE_MAP } from '../pollutionCheck/data';
+import SignConfirmModal from '../components/SignConfirmModal.vue';
 import TraceDrawer from '../pollutionTrace/modules/trace-drawer.vue';
+import { LEDGER_STATUS_MAP, useGridColumns, useGridFormSchema } from './data';
 import HistoryDrawer from './modules/history-drawer.vue';
 import StatusModal from './modules/status-modal.vue';
 
@@ -32,6 +35,9 @@ const [TraceDrawerComp, traceDrawerApi] = useVbenDrawer({
   connectedComponent: TraceDrawer,
   destroyOnClose: true,
 });
+
+/** 终审是人为定夺（标记=禁止正常出库/销售），本页这扇门与在库环保视图那扇一样要签字 */
+const signRef = ref<InstanceType<typeof SignConfirmModal>>();
 
 /** 打开台账流转历史(全链追溯) */
 function handleHistory(row: MesPollutionLedgerApi.Ledger) {
@@ -54,19 +60,25 @@ function handleFlow(row: MesPollutionLedgerApi.Ledger) {
 }
 
 /** 标记品终审(环保专员专属)：标记=禁止正常出库/销售，解除标记=恢复正常流转 */
-function handleMark(row: MesPollutionLedgerApi.Ledger) {
+async function handleMark(row: MesPollutionLedgerApi.Ledger) {
   const next = !row.marked;
-  Modal.confirm({
-    title: next ? '标记为受控品（禁止正常出库）' : '解除标记（恢复正常出库）',
-    content: `${row.sourceRecordNo ?? ''}｜${row.itemName ?? '-'}｜批次 ${row.batchNo || '-'}`,
-    okText: '确认终审',
-    cancelText: '取消',
-    onOk: async () => {
-      await updatePollutionLedgerMark({ id: row.id!, marked: next });
-      gridApi.query();
-      message.success(next ? '已标记' : '已解除标记');
-    },
+  // 签字即确认：原来的 Modal.confirm 与签字弹窗是两次确认，合成一次
+  const sign = await signRef.value?.open(
+    next ? '标记为受控品（禁止正常出库）' : '解除标记（恢复正常出库）',
+    `${row.sourceRecordNo ?? ''}｜${row.itemName ?? '-'}｜批次 ${row.batchNo || '-'}`,
+  );
+  if (!sign) {
+    return;
+  }
+  // remark 后端拿它当签字说明存
+  await updatePollutionLedgerMark({
+    id: row.id!,
+    marked: next,
+    remark: sign.opinion,
+    signImg: sign.signImg,
   });
+  gridApi.query();
+  message.success(next ? '已标记' : '已解除标记');
 }
 
 /** 闭环状态(处置终态/无污染自动解除)：不再提供处置流转入口 */
@@ -106,6 +118,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
     <StatusModalComp @success="handleRefresh" />
     <HistoryDrawerComp />
     <TraceDrawerComp />
+    <SignConfirmModal ref="signRef" />
     <Grid table-title="污染/危废暂存台账">
       <template #stage="{ row }">
         <span>{{ STAGE_MAP[row.stage] ?? row.stage }}</span>

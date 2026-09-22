@@ -21,7 +21,13 @@ public class MesSetPollutionCheckPageReqVO extends PageParam {
     @Schema(description = "关联单号(采购入库/领料/产品入库等真实单据号)", example = "IR20260329000001")
     private String bizNo;
 
-    @Schema(description = "批次号", example = "B20260903-001")
+    @Schema(description = "批次编号（mes_wm_batch.id），在库/入库检测按此精确取该批全部判定", example = "9")
+    private Long batchId;
+
+    @Schema(description = "批次关联状态：null=全部 true=已关联批次 false=未关联（历史手工录入，无法回到库存）", example = "false")
+    private Boolean linked;
+
+    @Schema(description = "批次号（快照字段，模糊匹配）", example = "B20260903-001")
     private String batchNo;
 
     @Schema(description = "物料/产品名称(模糊)", example = "涂料")

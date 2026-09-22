@@ -1,10 +1,11 @@
 <script lang="ts" setup>
 import type { MesSetPollutionCheckApi } from '#/api/mes/safetyEnv/pollutionCheck';
 
+import { computed, ref } from 'vue';
+
 import { useVbenModal } from '@vben/common-ui';
 
-import { Button, Input, Modal as AModal, Popconfirm, Radio, Table, Tag, message } from 'ant-design-vue';
-import { computed, ref } from 'vue';
+import { Modal as AModal, Button, Input, message, Popconfirm, Radio, Table, Tag, Tooltip } from 'ant-design-vue';
 
 import {
   createPollutionCheck,
@@ -12,6 +13,8 @@ import {
   getPollutionCheckPage,
   reviewPollutionCheck,
 } from '#/api/mes/safetyEnv/pollutionCheck';
+import SignConfirmModal from '#/views/mes/safetyEnv/components/SignConfirmModal.vue';
+import WmWarehouseAreaSelect from '#/views/mes/wm/warehouse/components/area-select.vue';
 
 import { AI_RESULT_MAP, REVIEW_RESULT_MAP, STAGE_MAP } from '../../safetyEnv/pollutionCheck/data';
 
@@ -21,13 +24,22 @@ interface DocLine {
   itemCode?: string;
   itemName?: string;
   itemSpec?: string;
+  /** 批次主数据 id：有它才对得上库存，有则优先用作匹配键 */
+  batchId?: number;
   batchNo?: string;
+  /**
+   * 来源单据的数量 → 台账「重量」列。取的是原值，**没有单位换算**
+   *（mes_md_item 只有 unit_measure_id，本仓没有任何换算率表）。
+   * 不传的话台账那一列永远是 `-`：判定表建单时 weight 只从请求里拿，服务端不会自己查单据行。
+   */
+  weight?: number;
 }
 
 /** 打开时入参 */
 interface JudgePayload {
   title?: string;
   stage: string;
+  /** 单据入口传单据号；在库入口没有单据，靠 lines[0].batchId 锚定 */
   bizNo: string;
   lines: DocLine[];
 }
@@ -38,6 +50,15 @@ interface RowItem extends DocLine {
 }
 
 const emit = defineEmits<{ success: [] }>();
+
+/** 签字弹窗：发起检测（建判定）是人为主张，后端逐单要签名 */
+const signRef = ref<InstanceType<typeof SignConfirmModal>>();
+/**
+ * 本次弹窗内已拿到的签名。一次「环保判定」通常要判多行，签名框弹一次覆盖
+ * 本次所有建单（每单后端仍各留一条签字记录），关窗即失效——
+ * 否则判 5 行要人画 5 遍，只会把人逼回去走别的路。
+ */
+let sessionSign: null | { opinion?: string; signImg: string } = null;
 
 /** 弹窗内状态 */
 const bizNo = ref('');
@@ -51,6 +72,8 @@ const loading = ref(false);
 const reviewOpen = ref(false);
 const reviewRecord = ref<MesSetPollutionCheckApi.PollutionCheck | null>(null);
 const reviewResult = ref<string>();
+/** 受控库位：id 是权威值（落 mes_set_pollution_check.location_id），名称只是显示快照 */
+const reviewLocationId = ref<number>();
 const reviewLocation = ref('');
 const reviewRemark = ref('');
 const reviewSaving = ref(false);
@@ -59,7 +82,7 @@ const reviewSaving = ref(false);
 const recordMap = computed(() => {
   const map = new Map<string, MesSetPollutionCheckApi.PollutionCheck>();
   for (const rec of records.value) {
-    const key = joinKey(rec.itemCode, rec.batchNo);
+    const key = joinKey(rec);
     if (!map.has(key)) {
       map.set(key, rec);
     }
@@ -68,30 +91,56 @@ const recordMap = computed(() => {
 });
 
 const rows = computed<RowItem[]>(() =>
-  lines.value.map((line) => ({ ...line, rec: recordMap.value.get(joinKey(line.itemCode, line.batchNo)) })),
+  lines.value.map((line) => ({ ...line, rec: recordMap.value.get(joinKey(line)) })),
 );
 
 const stageLabel = computed(() => STAGE_MAP[stage.value] ?? stage.value);
 const modalTitle = computed(() => `${docTitle.value} · 环保判定`);
+/**
+ * 该行没有批次锚点——物料没启用批次管理，或单据行没关联批次。
+ * 判定照样建、照样复核，但**锚不到任何批次**：库存不冻结、批次污染戳不更新、
+ * 在库环保视图里也不会出现这条判定。不说清楚就是"判完了环保那边什么都没有"。
+ */
+function noBatch(x: DocLine) {
+  return x.batchId == null && !x.batchNo;
+}
+
 const summaryText = computed(() => {
   const total = rows.value.length;
   const reviewed = rows.value.filter((r) => r.rec?.reviewResult).length;
   const polluted = rows.value.filter((r) => r.rec?.reviewResult === 'POLLUTED').length;
-  return total === 0 ? '该单暂无物料行，请先在单据中添加行' : `共 ${total} 个物料行 · 已复核 ${reviewed} · 其中有污染 ${polluted}`;
+  const noBatchLines = rows.value.filter((r) => noBatch(r)).length;
+  if (total === 0) {
+    return '该单暂无物料行，请先在单据中添加行';
+  }
+  // 无批次行单独提示：它是"判完了台账有、库存侧什么都没有"的唯一原因
+  return `共 ${total} 个物料行 · 已复核 ${reviewed} · 其中有污染 ${polluted}`
+    + (noBatchLines > 0 ? ` · ${noBatchLines} 行无批次（不冻结库存、不进在库环保视图）` : '');
 });
 
-function joinKey(itemCode?: string, batchNo?: string) {
-  return `${itemCode ?? ''}|${batchNo ?? ''}`;
+/**
+ * 匹配键：有 batchId 就用它——批次号字符串是人工录入的，实测半数对不上真实批次；
+ * 没有 batchId 的历史记录退回「物料编码|批次号」，保持原有行为不变。
+ */
+function joinKey(x: { batchId?: number; batchNo?: string; itemCode?: string; }) {
+  return x.batchId != null ? `b${x.batchId}` : `${x.itemCode ?? ''}|${x.batchNo ?? ''}`;
 }
 
-/** 拉取本单已有判定 */
+/** 在库入口没有单据号，退回以批次为锚点拉该批已有判定 */
+const anchorBatchId = computed(() => (bizNo.value ? undefined : lines.value[0]?.batchId));
+
+/** 拉取本单/本批已有判定 */
 async function refresh() {
-  if (!bizNo.value) {
+  if (!bizNo.value && anchorBatchId.value == null) {
     return;
   }
   loading.value = true;
   try {
-    const result = await getPollutionCheckPage({ pageNo: 1, pageSize: 200, bizNo: bizNo.value });
+    const result = await getPollutionCheckPage({
+      pageNo: 1,
+      pageSize: 200,
+      ...(bizNo.value ? { bizNo: bizNo.value } : { batchId: anchorBatchId.value }),
+    });
     records.value = result.list ?? [];
   } finally {
     loading.value = false;
@@ -100,19 +149,31 @@ async function refresh() {
 
 /** 对某物料行发起判定：服务端自动 AI 初筛 → 待复核 */
 async function handleJudge(line: DocLine) {
+  sessionSign ??= (await signRef.value?.open(
+    '发起环保检测',
+    `对「${line.itemName ?? ''}」建一条待复核判定。注意：这是实在的业务动作——`
+      + `判「有污染」时该批在库库存会被冻结、批次污染戳更新，判「无污染」后才解冻。`,
+  )) ?? null;
+  if (!sessionSign) {
+    return; // 用户没签：不建单（后端缺签名也会拒，1040818019）
+  }
   const hide = message.loading(`正在对「${line.itemName}」AI 初筛…`, 0);
   try {
     await createPollutionCheck({
       stage: stage.value,
       bizNo: bizNo.value,
+      batchId: line.batchId,
       batchNo: line.batchNo,
       itemCode: line.itemCode,
       itemName: line.itemName,
       itemSpec: line.itemSpec,
+      weight: line.weight,
+      signImg: sessionSign.signImg,
+      opinion: sessionSign.opinion,
     });
     message.success('已生成判定记录（AI 初筛完成，待人工复核）');
     await refresh();
-    const rec = recordMap.value.get(joinKey(line.itemCode, line.batchNo));
+    const rec = recordMap.value.get(joinKey(line));
     if (rec) {
       openReview(rec);
     }
@@ -126,9 +187,16 @@ async function handleJudge(line: DocLine) {
 function openReview(rec: MesSetPollutionCheckApi.PollutionCheck) {
   reviewRecord.value = rec;
   reviewResult.value = undefined;
+  reviewLocationId.value = rec.locationId ?? undefined;
   reviewLocation.value = rec.location ?? '';
   reviewRemark.value = '';
   reviewOpen.value = true;
+}
+
+/** 用户改选了受控库位：id 落库，名称跟着更新（后端只存请求里的快照，不回写名称） */
+function handleLocationPicked(area?: { id?: number; name?: string; }) {
+  reviewLocationId.value = area?.id;
+  reviewLocation.value = area?.name ?? '';
 }
 
 /** 提交复核（终态二值；存储/处置留空由后端按环节×结论补默认） */
@@ -145,6 +213,7 @@ async function handleReviewOk() {
     await reviewPollutionCheck({
       id: reviewRecord.value.id!,
       reviewResult: reviewResult.value,
+      locationId: reviewLocationId.value,
       location: reviewLocation.value || undefined,
       remark: reviewRemark.value || undefined,
     });
@@ -167,8 +236,19 @@ async function handleDelete(rec: MesSetPollutionCheckApi.PollutionCheck) {
 
 const [JudgeModal, modalApi] = useVbenModal({
   destroyOnClose: true,
+  // 必须给 onConfirm：ModalApi.onCancel() 在没有 onCancel 时会兜底 this.close()，
+  // 而 onConfirm() 只有 `this.api.onConfirm?.()` —— 没传就是纯空转。
+  // 表现为「确定」按钮看得见、点得动、毫无反应（不报错、不关闭），
+  // 这个弹窗的判定是逐行提交的，页脚没有表单要交，确定=关闭。
+  onConfirm() {
+    // 关之前先让宿主列表重拉一次：这个弹窗里可能刚判过/重检过若干行，
+    // 只 close 不 emit，列表就还停在打开弹窗前的样子——表现就是"点了确定，判定完成没出来"
+    emit('success');
+    modalApi.close();
+  },
   async onOpenChange(isOpen: boolean) {
     if (!isOpen) {
+      sessionSign = null;
       return;
     }
     const data = modalApi.getData<JudgePayload>();
@@ -196,7 +276,7 @@ const columns = [
   <JudgeModal :title="modalTitle" class="w-[960px]">
     <div class="mx-1">
       <div class="mb-3 text-sm text-gray-500">
-        <span>环节：{{ stageLabel }}（{{ bizNo }}）</span>
+        <span>环节：{{ stageLabel }}<template v-if="bizNo">（{{ bizNo }}）</template></span>
         <span class="mx-2">｜</span>
         <span>{{ summaryText }}</span>
       </div>
@@ -205,12 +285,23 @@ const columns = [
         :data-source="rows"
         :loading="loading"
         :pagination="false"
-        :row-key="(_row: RowItem, index: number) => `${joinKey(_row.itemCode, _row.batchNo)}-${index}`"
+        :row-key="(_row: RowItem, index: number) => `${joinKey(_row)}-${index}`"
         size="middle"
       >
         <template #bodyCell="{ column, record }">
+          <!-- 批次：没有就明确标出来，别留一格空白让人以为只是没填 -->
+          <template v-if="column.key === 'batchNo'">
+            <span v-if="record.batchNo">{{ record.batchNo }}</span>
+            <Tooltip
+              v-else
+              title="该物料行没有批次（物料未启用批次管理，或单据行未关联批次）。判定照常生效并进污染判定台账，但不会锚到批次：库存不冻结、批次污染戳不更新、在库环保视图里也不会出现。判「有污染」时，除中间废弃物环节外会被服务端拦下、要求先有批次。"
+            >
+              <Tag color="warning">无批次</Tag>
+            </Tooltip>
+          </template>
+
           <!-- 判定状态 -->
-          <template v-if="column.key === 'status'">
+          <template v-else-if="column.key === 'status'">
             <template v-if="!record.rec">
               <Tag>未判定</Tag>
             </template>
@@ -257,10 +348,15 @@ const columns = [
                 <Button type="link" size="small" danger>删除</Button>
               </Popconfirm>
             </template>
-            <span v-else class="text-xs text-gray-400">
-              已复核
-              <span v-if="record.rec.location"> · {{ record.rec.location }}</span>
-            </span>
+            <template v-else>
+              <span class="text-xs text-gray-400">
+                已复核
+                <span v-if="record.rec.location"> · {{ record.rec.location }}</span>
+              </span>
+              <!-- 体检是周期性的：旧判定（可能半年前）不能当成"永远合格"，
+                   同批次可再发一条，最新一条即当前有效判定（列表按 id 倒序取首条）。 -->
+              <Button type="link" size="small" @click="handleJudge(record)">重新检测</Button>
+            </template>
           </template>
         </template>
         <template #emptyText>
@@ -270,24 +366,24 @@ const columns = [
     </div>
   </JudgeModal>
 
+  <!-- 本弹窗内所有"建判定"动作共用这一个签字框（签一次覆盖本次多行） -->
+  <SignConfirmModal ref="signRef" />
+
   <!-- 人工复核 -->
   <AModal
     v-model:open="reviewOpen"
-    :title="`人工复核 · ${reviewRecord?.itemName ?? ''}（${reviewRecord?.bizNo ?? ''}）`"
+    :title="`人工复核 · ${reviewRecord?.itemName ?? ''}${reviewRecord?.bizNo ? `（${reviewRecord.bizNo}）` : ''}`"
     :confirm-loading="reviewSaving"
     ok-text="提交复核"
     cancel-text="取消"
     @ok="handleReviewOk"
   >
     <template v-if="reviewRecord">
-      <div class="mb-3 rounded-md bg-gray-50 p-3 text-sm">
+      <div class="mb-3 rounded-md bg-gray-50 p-3 text-sm text-black">
         <div>记录：{{ reviewRecord.recordNo }}</div>
         <div>
-          AI 初筛：
-          <span :style="{ color: AI_RESULT_MAP[reviewRecord.aiResult ?? '']?.color }">
-            {{ AI_RESULT_MAP[reviewRecord.aiResult ?? '']?.text ?? reviewRecord.aiResult }}
-          </span>
-          （置信度 {{ reviewRecord.aiConfidence ?? '-' }}%）
+          AI 初筛：{{ AI_RESULT_MAP[reviewRecord.aiResult ?? '']?.text ?? reviewRecord.aiResult }}（置信度
+          {{ reviewRecord.aiConfidence ?? '-' }}%）
         </div>
         <div v-if="reviewRecord.aiReason">依据：{{ reviewRecord.aiReason }}</div>
         <div v-if="reviewRecord.suggestedStorage">AI 推荐存储：{{ reviewRecord.suggestedStorage }}</div>
@@ -302,7 +398,12 @@ const columns = [
         </div>
         <div>
           <div class="mb-1 text-sm">去向/库位（留空按环节×结论取默认存储）</div>
-          <Input v-model:value="reviewLocation" placeholder="如：危化品库-污染管控区" allow-clear />
+          <WmWarehouseAreaSelect
+            v-model="reviewLocationId"
+            allow-clear
+            placeholder="请选择库位（有污染必须选受控/危废库位）"
+            @change="handleLocationPicked"
+          />
         </div>
         <div>
           <div class="mb-1 text-sm">复核备注</div>

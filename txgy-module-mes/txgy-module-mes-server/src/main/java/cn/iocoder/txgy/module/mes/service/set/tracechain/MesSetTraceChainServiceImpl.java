@@ -2,6 +2,7 @@ package cn.iocoder.txgy.module.mes.service.set.tracechain;
 
 import cn.hutool.core.util.StrUtil;
 import cn.iocoder.txgy.framework.common.pojo.PageResult;
+import cn.iocoder.txgy.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.txgy.module.mes.controller.admin.set.tracechain.vo.MesSetTraceChainPageReqVO;
 import cn.iocoder.txgy.module.mes.controller.admin.set.tracechain.vo.MesSetTraceReverseRespVO;
 import cn.iocoder.txgy.module.mes.dal.dataobject.set.emergencyevent.MesSetEmergencyEventDO;
@@ -197,6 +198,22 @@ public class MesSetTraceChainServiceImpl implements MesSetTraceChainService {
         }
         resp.setSignRecords(new ArrayList<>(signs.values()));
         return resp;
+    }
+
+    @Override
+    public List<MesSetTraceReverseRespVO.Ledger> listAllSources() {
+        // ponytail: 每行台账两条点查（应急废物 + 设施），全量 N+1。台账是百行量级，
+        // 真到万行再把两个 Mapper 换成按 id/桶码集合的批量查。
+        List<MesSetHazardousWasteDO> all = hazwasteMapper.selectList(
+                new LambdaQueryWrapperX<MesSetHazardousWasteDO>()
+                        .orderByDesc(MesSetHazardousWasteDO::getId));
+        List<MesSetTraceReverseRespVO.Ledger> rows = new ArrayList<>(all.size());
+        for (MesSetHazardousWasteDO l : all) {
+            MesSetTraceReverseRespVO.Ledger row = toLedger(l);
+            resolveSource(l, row);
+            rows.add(row);
+        }
+        return rows;
     }
 
     /**

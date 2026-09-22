@@ -4,8 +4,8 @@ import type { MesHazwasteApi } from '#/api/mes/safetyEnv/hazwaste';
 import { ref } from 'vue';
 
 import { useVbenModal } from '@vben/common-ui';
-import { useQRCode } from '@vueuse/integrations/useQRCode';
 
+import { useQRCode } from '@vueuse/integrations/useQRCode';
 import { Button, message, Space, Tag } from 'ant-design-vue';
 
 import {
@@ -68,22 +68,39 @@ const [Modal, modalApi] = useVbenModal({
 <template>
   <Modal title="危险废物标签（HJ 1276-2022）" class="w-1/2">
     <div class="mx-4">
+      <!--
+        样式一律内联：打印是开新窗口 write(outerHTML)，那个窗口里没有 Tailwind，
+        用 class 打出来会掉光（没边框、没加粗、没底色）。内联才能"屏上所见=纸上所得"。
+        配色按 HJ 1276-2022：底色橘黄 rgb(255,150,0)，边框与字体均为黑色 rgb(0,0,0)。
+      -->
       <div
         id="hj1276-label"
-        class="mx-auto w-[420px] border-2 border-black p-3 text-black"
+        class="mx-auto w-[420px]"
+        style="
+          background-color: rgb(255, 150, 0);
+          border: 2px solid #000;
+          color: rgb(0, 0, 0);
+          font-family: SimHei, 'Heiti SC', 'Microsoft YaHei', sans-serif;
+          padding: 12px;
+        "
       >
-        <div class="flex items-center justify-between border-b border-black pb-2">
-          <div class="text-2xl font-bold tracking-widest">危险废物</div>
-          <div class="text-sm">HJ 1276-2022</div>
+        <div
+          class="flex items-center justify-between"
+          style="border-bottom: 1px solid #000; padding-bottom: 8px"
+        >
+          <div style="font-size: 24px; font-weight: 700; letter-spacing: 0.1em">
+            危险废物
+          </div>
+          <div style="font-size: 14px">HJ 1276-2022</div>
         </div>
 
         <div class="mt-2 flex gap-3">
-          <div class="flex-1 text-sm leading-7">
+          <div class="flex-1" style="font-size: 14px; line-height: 28px">
             <div>废物名称：{{ label?.wasteName ?? '-' }}</div>
             <div>废物类别：{{ label?.wasteCode ?? '-' }}</div>
             <div>
               危险特性：<Tag v-if="label?.hazardTraits" color="red">{{ label?.hazardTraits }}</Tag>
-              <span v-else class="text-gray-400">未配置</span>
+              <span v-else style="color: #4d3300">未配置</span>
             </div>
             <div>产生单位：{{ label?.generateUnit ?? '-' }}</div>
             <div>容器码：{{ label?.containerCode ?? label?.qrContent ?? '-' }}</div>
@@ -93,8 +110,17 @@ const [Modal, modalApi] = useVbenModal({
             <div>日期：{{ label?.labelDate ?? '-' }}</div>
           </div>
           <div class="flex w-[110px] flex-col items-center justify-center">
-            <img v-if="qr" :src="qr" alt="容器码" class="h-[104px] w-[104px]" />
-            <div class="mt-1 text-center text-[11px] text-gray-600">
+            <img
+              v-if="qr"
+              :src="qr"
+              alt="容器码"
+              class="h-[104px] w-[104px]"
+              style="border: 1px solid #000"
+            />
+            <div
+              class="mt-1 text-center"
+              style="color: #4d3300; font-size: 11px"
+            >
               扫码查该桶全程
             </div>
           </div>

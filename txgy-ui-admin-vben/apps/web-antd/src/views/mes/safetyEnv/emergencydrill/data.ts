@@ -46,20 +46,20 @@ export function useGridFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'drillType',
-      label: '演练类型：COMPREHENSIVE(综合)/SPECIAL(专项)/ONSITE(现场处置)',
+      label: '演练类型',
       component: 'Input',
       componentProps: {
         allowClear: true,
-        placeholder: '请输入演练类型：COMPREHENSIVE(综合)/SPECIAL(专项)/ONSITE(现场处置)',
+        placeholder: '请输入演练类型',
       },
     },
     {
       fieldName: 'status',
-      label: '状态：PLANNED(已计划)/DONE(已演练)/CLOSED(已闭环)',
+      label: '状态',
       component: 'Input',
       componentProps: {
         allowClear: true,
-        placeholder: '请输入状态：PLANNED(已计划)/DONE(已演练)/CLOSED(已闭环)',
+        placeholder: '请输入状态',
       },
     },
   ];
@@ -70,12 +70,12 @@ export function useGridColumns(): VxeTableGridOptions<MesSetEmergencyDrillApi.Em
   return [
     { field: 'drillNo', title: '演练编号', minWidth: 170, showOverflow: true },
     { field: 'drillName', title: '演练名称', minWidth: 170, showOverflow: true },
-    { field: 'drillType', title: '演练类型：COMPREHENSIVE(综合)/SPECIAL(专项)/ONSITE(现场处置)', minWidth: 170, showOverflow: true , slots: { default: 'drillType' } },
+    { field: 'drillType', title: '演练类型', minWidth: 170, showOverflow: true , slots: { default: 'drillType' } },
     { field: 'drillDate', title: '演练日期', width: 120 },
     { field: 'participantCount', title: '参加人数', width: 120 },
     { field: 'evaluation', title: '演练评估', minWidth: 170, showOverflow: true },
-    { field: 'rectifyStatus', title: '整改状态：NONE(无需整改)/PENDING(待整改)/DONE(已整改)', minWidth: 170, showOverflow: true , slots: { default: 'rectifyStatus' } },
-    { field: 'status', title: '状态：PLANNED(已计划)/DONE(已演练)/CLOSED(已闭环)', minWidth: 170, showOverflow: true , slots: { default: 'status' } },
+    { field: 'rectifyStatus', title: '整改状态', minWidth: 170, showOverflow: true , slots: { default: 'rectifyStatus' } },
+    { field: 'status', title: '状态', minWidth: 170, showOverflow: true , slots: { default: 'status' } },
     {
       title: '操作',
       width: 150,
@@ -126,10 +126,10 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'drillType',
-      label: '演练类型：COMPREHENSIVE(综合)/SPECIAL(专项)/ONSITE(现场处置)',
+      label: '演练类型',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入演练类型：COMPREHENSIVE(综合)/SPECIAL(专项)/ONSITE(现场处置)',
+        placeholder: '请输入演练类型',
       },
       rules: 'required',
     },
@@ -195,18 +195,18 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'rectifyRequirement',
-      label: '整改要求（填写后整改状态转 PENDING）',
+      label: '整改要求',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入整改要求（填写后整改状态转 PENDING）',
+        placeholder: '请输入整改要求',
       },
     },
     {
       fieldName: 'rectifyStatus',
-      label: '整改状态：NONE(无需整改)/PENDING(待整改)/DONE(已整改)',
+      label: '整改状态',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入整改状态：NONE(无需整改)/PENDING(待整改)/DONE(已整改)',
+        placeholder: '请输入整改状态',
       },
     },
     {
@@ -231,10 +231,10 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'status',
-      label: '状态：PLANNED(已计划)/DONE(已演练)/CLOSED(已闭环)',
+      label: '状态',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入状态：PLANNED(已计划)/DONE(已演练)/CLOSED(已闭环)',
+        placeholder: '请输入状态',
       },
     },
     {

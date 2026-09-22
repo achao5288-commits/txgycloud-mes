@@ -55,7 +55,8 @@ public class MesSetPollutionCheckAiService {
             "PURCHASE_INBOUND", "采购入库（原料/外购件到货验收）",
             "MATERIAL_ISSUE", "生产领用（仓库向产线发料）",
             "WASTE_INTERMEDIATE", "中间废弃物（生产过程中产生/收集的废料、废液）",
-            "FINISHED_PRODUCT", "成品（产出/出货）");
+            "FINISHED_PRODUCT", "成品（产出/出货）",
+            "IN_STOCK", "在库复查（对已入库的存量批次做环保体检，非新到货验收）");
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
@@ -104,6 +105,10 @@ public class MesSetPollutionCheckAiService {
          */
         private String aiReason;
         /**
+         * AI 判定的法规依据（只能取自 {@link PollutionLegalBasis#CATALOG}；永不落空）
+         */
+        private String aiBasis;
+        /**
          * AI 推荐存储方法
          */
         private String suggestedStorage;
@@ -123,6 +128,7 @@ public class MesSetPollutionCheckAiService {
                     .setAiResult(AI_RESULT_UNCERTAIN)
                     .setAiConfidence(ThreadLocalRandom.current().nextInt(55, 76))
                     .setAiReason("物料名称为空，无法判定，请人工复核")
+                    .setAiBasis(PollutionLegalBasis.FALLBACK_UNCERTAIN)
                     .setSuggestedStorage("隔离待检库位暂存，待人工复核/送检后确定存储");
         }
         if (apiKey == null || apiKey.isBlank()) {
@@ -152,15 +158,20 @@ public class MesSetPollutionCheckAiService {
                 + "判定规则:\n"
                 + "1. 名称或规格含重金属(铅镉铬汞砷镍等)、有机溶剂/油漆油墨、酸碱腐蚀性、放射性、危废字样或明显高污染工艺残留 → 判 POLLUTED;\n"
                 + "2. 常见安全物料(金属结构件、木材纸品、常规塑料件、纯水等)或含'无铅/无溶剂/环保'等安全声明 → 判 CLEAN;\n"
-                + "3. 信息不足或处于边界 → 判 UNCERTAIN，并说明需人工复核/送检。\n"
+                + "3. 信息不足或处于边界 → 判 UNCERTAIN，并说明需人工复核/送检。\n\n"
+                + PollutionLegalBasis.PROMPT_BLOCK
+                + "\n4. 无论判成哪种结果，都必须从上面的清单里挑出最贴切的 1-2 条作为 basis，"
+                + "只能写条款号与要点，禁止自创或引用清单外的法规。\n"
                 + "只返回严格 JSON(不要多余文字): "
                 + "{\"aiResult\":\"CLEAN|POLLUTED|UNCERTAIN\",\"confidence\":0到100的整数,"
-                + "\"reason\":\"不超过80字的中文判定依据\",\"suggestedStorage\":\"不超过40字的中文存储建议\"}";
+                + "\"reason\":\"不超过80字的中文判定依据\","
+                + "\"basis\":\"不超过100字的中文法规依据(法规名+条款号+要点)\","
+                + "\"suggestedStorage\":\"不超过40字的中文存储建议\"}";
 
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("model", model);
         body.put("temperature", 0.2);
-        body.put("max_tokens", 400);
+        body.put("max_tokens", 600);
         body.put("response_format", Map.of("type", "json_object"));
         body.put("messages", List.of(
                 Map.of("role", "system", "content", "你是严谨的环保工程师，只输出符合要求的 JSON。"),
@@ -192,6 +203,7 @@ public class MesSetPollutionCheckAiService {
                 .setAiResult(sanitizeResult(suggestion.path("aiResult").asText("")))
                 .setAiConfidence(sanitizeConfidence(suggestion.path("confidence").asText("")))
                 .setAiReason(defaultText(suggestion.path("reason").asText(""), "AI 已判定，详见人工复核"))
+                .setAiBasis(sanitizeBasis(suggestion.path("basis").asText("")))
                 .setSuggestedStorage(defaultText(suggestion.path("suggestedStorage").asText(""),
                         "按判定结果受控存储或常规存放"));
     }
@@ -239,6 +251,17 @@ public class MesSetPollutionCheckAiService {
         }
     }
 
+    /**
+     * 法规依据清洗：模型偶尔会返回空或自创法条，空则回退到与结果无关的通用兜底。
+     *
+     * 这里**不做"是否真在清单里"的字符串比对**——模型常把法条正文缩写后再输出，逐字比对会把
+     * 合理引用误判成自创。合规性由提示词约束（PROMPT_BLOCK 明确禁止引用清单外内容），
+     * 最终仍以人工复核勾选的 review_basis 为准。
+     */
+    private String sanitizeBasis(String basis) {
+        return (basis == null || basis.isBlank()) ? PollutionLegalBasis.FALLBACK_UNCERTAIN : basis.trim();
+    }
+
     private String stageContext(String stage) {
         if (stage == null) {
             return "通用（未指明具体环节）";
@@ -264,6 +287,7 @@ public class MesSetPollutionCheckAiService {
                     .setAiResult(AI_RESULT_CLEAN)
                     .setAiConfidence(ThreadLocalRandom.current().nextInt(85, 96))
                     .setAiReason("命中安全特征词「" + matchedClean + "」，未检出污染特征")
+                    .setAiBasis(PollutionLegalBasis.FALLBACK_CLEAN)
                     .setSuggestedStorage("普通仓储（常温、通风、防潮常规存放）");
         }
         String matchedPolluted = matchKeyword(itemName, POLLUTED_KEYWORDS);
@@ -272,12 +296,14 @@ public class MesSetPollutionCheckAiService {
                     .setAiResult(AI_RESULT_POLLUTED)
                     .setAiConfidence(ThreadLocalRandom.current().nextInt(90, 99))
                     .setAiReason("命中污染特征词「" + matchedPolluted + "」，需按污染受控处置")
+                    .setAiBasis(PollutionLegalBasis.FALLBACK_POLLUTED)
                     .setSuggestedStorage("污染/危废受控存储：密封防渗容器、专用污染管控库位、贴污染标识并登记暂存台账，避免混放");
         }
         return new PrescreenResult()
                 .setAiResult(AI_RESULT_UNCERTAIN)
                 .setAiConfidence(ThreadLocalRandom.current().nextInt(55, 76))
                 .setAiReason("未命中污染词典与安全白名单，请人工复核/必要时送检")
+                .setAiBasis(PollutionLegalBasis.FALLBACK_UNCERTAIN)
                 .setSuggestedStorage("隔离待检库位暂存，待人工复核/送检后确定存储");
     }
 

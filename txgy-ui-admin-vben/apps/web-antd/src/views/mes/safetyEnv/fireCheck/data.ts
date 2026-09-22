@@ -9,7 +9,7 @@ export const RESULT_OPTIONS = [
 ];
 
 /** 结果：PASS/FAIL文案 */
-export const RESULT_MAP: Record<string, { text: string; color: string }> = {
+export const RESULT_MAP: Record<string, { color: string; text: string; }> = {
   FAIL: { text: '超标', color: 'success' },
   PASS: { text: '达标', color: 'error' },
 };
@@ -46,7 +46,7 @@ export function useGridFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'result',
-      label: '结果：PASS/FAIL',
+      label: '结果',
       component: 'Select',
       componentProps: {
         allowClear: true,
@@ -65,7 +65,7 @@ export function useGridColumns(): VxeTableGridOptions<MesSetFireCheckApi.FireChe
     { field: 'facilityName', title: '设施名称(灭火器/消火栓/烟感/温感/应急照明/疏散指示等)', minWidth: 170, showOverflow: true },
     { field: 'facilityCode', title: '设施编号(资产编号)', minWidth: 170, showOverflow: true },
     { field: 'checkTime', title: '检测时间', width: 120 },
-    { field: 'result', title: '结果：PASS/FAIL', minWidth: 170, showOverflow: true, slots: { default: 'result' } },
+    { field: 'result', title: '结果', minWidth: 170, showOverflow: true, slots: { default: 'result' } },
     { field: 'problemDesc', title: '异常/不合格描述', minWidth: 170, showOverflow: true },
     { field: 'inspector', title: '检测人', minWidth: 170, showOverflow: true },
     {
@@ -138,7 +138,7 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'result',
-      label: '结果：PASS/FAIL',
+      label: '结果',
       component: 'Select',
       componentProps: {
         options: RESULT_OPTIONS,
@@ -164,10 +164,10 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'photoUrls',
-      label: '检测照片URL(逗号分隔)',
+      label: '检测照片',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入检测照片URL(逗号分隔)',
+        placeholder: '请输入检测照片',
       },
     },
     {

@@ -13,7 +13,7 @@ import {
 } from '#/api/mes/safetyEnv/carbonEmission';
 import { $t } from '#/locales';
 
-import { ENERGY_TYPE_MAP, useGridColumns, useGridFormSchema } from './data';
+import { ENERGY_TYPE_MAP, PERIOD_TYPE_MAP, useGridColumns, useGridFormSchema } from './data';
 import Form from './modules/form.vue';
 
 const [FormModal, formModalApi] = useVbenModal({
@@ -101,6 +101,11 @@ const [Grid, gridApi] = useVbenVxeGrid({
       <template #energyType="{ row }">
         <Tag :color="ENERGY_TYPE_MAP[row.energyType]?.color">
           {{ ENERGY_TYPE_MAP[row.energyType]?.text ?? row.energyType }}
+        </Tag>
+      </template>
+      <template #periodType="{ row }">
+        <Tag :color="PERIOD_TYPE_MAP[row.periodType]?.color">
+          {{ PERIOD_TYPE_MAP[row.periodType]?.text ?? row.periodType ?? '-' }}
         </Tag>
       </template>
       <template #actions="{ row }">

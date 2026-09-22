@@ -4,13 +4,13 @@ import type { MesSetNoiseRecordApi } from '#/api/mes/safetyEnv/noiserecord';
 
 /** 采集方式：IOT_AUTO/MANUAL选项 */
 export const COLLECTION_MODE_OPTIONS = [
-  { label: 'AUTO', value: 'AUTO' },
+  { label: '自动', value: 'AUTO' },
   { label: '手工', value: 'MANUAL' },
 ];
 
 /** 采集方式：IOT_AUTO/MANUAL文案 */
-export const COLLECTION_MODE_MAP: Record<string, { text: string; color: string }> = {
-  AUTO: { text: 'AUTO', color: 'success' },
+export const COLLECTION_MODE_MAP: Record<string, { color: string; text: string; }> = {
+  AUTO: { text: '自动', color: 'success' },
   MANUAL: { text: '手工', color: 'error' },
 };
 
@@ -21,9 +21,14 @@ export const RESULT_OPTIONS = [
 ];
 
 /** 结果：PASS/FAIL文案 */
-export const RESULT_MAP: Record<string, { text: string; color: string }> = {
-  FAIL: { text: '超标', color: 'success' },
-  PASS: { text: '达标', color: 'error' },
+export const RESULT_MAP: Record<string, { color: string; text: string; }> = {
+  FAIL: { text: '超标', color: 'error' },
+  PASS: { text: '达标', color: 'success' },
+};
+
+export const SOURCE_TYPE_MAP: Record<string, { color: string; text: string; }> = {
+  STATIONARY: { text: '固定式声级计', color: 'processing' },
+  PERSONAL: { text: '个体剂量计', color: 'warning' },
 };
 
 /** 搜索表单 */
@@ -31,20 +36,20 @@ export function useGridFormSchema(): VbenFormSchema[] {
   return [
     {
       fieldName: 'recordNo',
-      label: '记录编号 NOISE-YYYYMMDD-NNN',
+      label: '记录编号',
       component: 'Input',
       componentProps: {
         allowClear: true,
-        placeholder: '请输入记录编号 NOISE-YYYYMMDD-NNN',
+        placeholder: '请输入记录编号',
       },
     },
     {
       fieldName: 'sourceType',
-      label: '监测类型：STATIONARY(固定式声级计)/PERSONAL(个体剂量计)',
+      label: '监测类型',
       component: 'Input',
       componentProps: {
         allowClear: true,
-        placeholder: '请输入监测类型：STATIONARY(固定式声级计)/PERSONAL(个体剂量计)',
+        placeholder: '请输入监测类型',
       },
     },
     {
@@ -58,7 +63,7 @@ export function useGridFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'collectionMode',
-      label: '采集方式：IOT_AUTO/MANUAL',
+      label: '采集方式',
       component: 'Select',
       componentProps: {
         allowClear: true,
@@ -68,7 +73,7 @@ export function useGridFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'result',
-      label: '结果：PASS/FAIL',
+      label: '结果',
       component: 'Select',
       componentProps: {
         allowClear: true,
@@ -82,15 +87,15 @@ export function useGridFormSchema(): VbenFormSchema[] {
 /** 列表字段 */
 export function useGridColumns(): VxeTableGridOptions<MesSetNoiseRecordApi.NoiseRecord>['columns'] {
   return [
-    { field: 'recordNo', title: '记录编号 NOISE-YYYYMMDD-NNN', minWidth: 170, showOverflow: true },
-    { field: 'sourceType', title: '监测类型：STATIONARY(固定式声级计)/PERSONAL(个体剂量计)', minWidth: 170, showOverflow: true },
+    { field: 'recordNo', title: '记录编号', minWidth: 170, showOverflow: true },
+    { field: 'sourceType', title: '监测类型', minWidth: 170, showOverflow: true, slots: { default: 'sourceType' } },
     { field: 'location', title: '检测位置/区域', minWidth: 170, showOverflow: true },
-    { field: 'collectionMode', title: '采集方式：IOT_AUTO/MANUAL', minWidth: 170, showOverflow: true, slots: { default: 'collectionMode' } },
-    { field: 'lex8h', title: '8小时等效声级 dB(A)', width: 120 },
-    { field: 'lpeak', title: '峰值声级 dB(C)', width: 120 },
-    { field: 'limitLex8h', title: '限值 dB(A)≤85', width: 120 },
-    { field: 'limitLpeak', title: '限值 dB(C)≤140', width: 120 },
-    { field: 'result', title: '结果：PASS/FAIL', minWidth: 170, showOverflow: true, slots: { default: 'result' } },
+    { field: 'collectionMode', title: '采集方式', minWidth: 170, showOverflow: true, slots: { default: 'collectionMode' } },
+    { field: 'lex8h', title: '8小时等效声级', width: 120 },
+    { field: 'lpeak', title: '峰值声级', width: 120 },
+    { field: 'limitLex8h', title: '限值', width: 120 },
+    { field: 'limitLpeak', title: '限值', width: 120 },
+    { field: 'result', title: '结果', minWidth: 170, showOverflow: true, slots: { default: 'result' } },
     { field: 'inspectTime', title: '检测时间', width: 120 },
     {
       title: '操作',
@@ -108,10 +113,10 @@ export function useFormSchema(): VbenFormSchema[] {
   return [
     {
       fieldName: 'recordNo',
-      label: '记录编号 NOISE-YYYYMMDD-NNN',
+      label: '记录编号',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入记录编号 NOISE-YYYYMMDD-NNN',
+        placeholder: '请输入记录编号',
       },
       rules: 'required',
     },
@@ -157,10 +162,10 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'sourceType',
-      label: '监测类型：STATIONARY(固定式声级计)/PERSONAL(个体剂量计)',
+      label: '监测类型',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入监测类型：STATIONARY(固定式声级计)/PERSONAL(个体剂量计)',
+        placeholder: '请输入监测类型',
       },
       rules: 'required',
     },
@@ -174,7 +179,7 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'collectionMode',
-      label: '采集方式：IOT_AUTO/MANUAL',
+      label: '采集方式',
       component: 'Select',
       componentProps: {
         options: COLLECTION_MODE_OPTIONS,
@@ -183,46 +188,46 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'lex8h',
-      label: '8小时等效声级 dB(A)',
+      label: '8小时等效声级',
       component: 'InputNumber',
       componentProps: {
-        placeholder: '请输入8小时等效声级 dB(A)',
+        placeholder: '请输入8小时等效声级',
         class: 'w-full',
       },
     },
     {
       fieldName: 'lpeak',
-      label: '峰值声级 dB(C)',
+      label: '峰值声级',
       component: 'InputNumber',
       componentProps: {
-        placeholder: '请输入峰值声级 dB(C)',
+        placeholder: '请输入峰值声级',
         class: 'w-full',
       },
     },
     {
       fieldName: 'limitLex8h',
-      label: '限值 dB(A)≤85',
+      label: '限值',
       component: 'InputNumber',
       componentProps: {
-        placeholder: '请输入限值 dB(A)≤85',
+        placeholder: '请输入限值',
         class: 'w-full',
       },
     },
     {
       fieldName: 'limitLpeak',
-      label: '限值 dB(C)≤140',
+      label: '限值',
       component: 'InputNumber',
       componentProps: {
-        placeholder: '请输入限值 dB(C)≤140',
+        placeholder: '请输入限值',
         class: 'w-full',
       },
     },
     {
       fieldName: 'spectrum',
-      label: '频谱分析(倍频程，JSON文本)',
+      label: '频谱分析',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入频谱分析(倍频程，JSON文本)',
+        placeholder: '请输入频谱分析',
       },
     },
     {
@@ -235,7 +240,7 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'result',
-      label: '结果：PASS/FAIL',
+      label: '结果',
       component: 'Select',
       componentProps: {
         options: RESULT_OPTIONS,
@@ -272,10 +277,10 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'photoUrls',
-      label: '检测照片URL(逗号分隔)',
+      label: '检测照片',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入检测照片URL(逗号分隔)',
+        placeholder: '请输入检测照片',
       },
     },
     {

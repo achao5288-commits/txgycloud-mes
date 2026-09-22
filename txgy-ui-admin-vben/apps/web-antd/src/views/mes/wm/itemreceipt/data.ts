@@ -33,6 +33,18 @@ import {
 /** 表单类型 */
 export type FormType = 'create' | 'detail' | 'finish' | 'stock' | 'update';
 
+/**
+ * 整单环保判定状态（服务端投影，键与后端 MesWmItemReceiptServiceImpl 的 POLLUTION_* 常量一一对应）。
+ * 「已完成」＝该单每一行都判过且都复核完，行数由服务端拿入库单行数比出来。
+ */
+export const POLLUTION_STATUS_MAP: Record<string, { color: string; text: string; }> = {
+  NOT_JUDGED: { text: '未判定', color: 'default' },
+  PENDING: { text: '待复核', color: 'warning' },
+  PARTIAL: { text: '部分判定', color: 'processing' },
+  DONE_CLEAN: { text: '已完成·无污染', color: 'success' },
+  DONE_POLLUTED: { text: '已完成·有污染', color: 'error' },
+};
+
 /** 表单头部是否只读（上架、详情、入库态） */
 function isHeaderReadonly(formType: FormType): boolean {
   return formType === 'detail' || formType === 'finish' || formType === 'stock';
@@ -229,6 +241,14 @@ export function useGridColumns(): VxeTableGridOptions<MesWmItemReceiptApi.ItemRe
         name: 'CellDict',
         props: { type: DICT_TYPE.MES_WM_ITEM_RECEIPT_STATUS },
       },
+    },
+    {
+      // 判定结果只有写在单据本身上才看得见：判完回来列表原来毫无变化，
+      // 而结果其实早就进了安全环保侧（判定台账 + 在库环保视图），只是这边不显示
+      field: 'pollutionStatus',
+      title: '环保判定',
+      width: 130,
+      slots: { default: 'pollutionStatus' },
     },
     {
       title: '操作',

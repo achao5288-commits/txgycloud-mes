@@ -2,16 +2,26 @@ import type { VbenFormSchema } from '#/adapter/form';
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { MesSetElectricalRecordApi } from '#/api/mes/safetyEnv/electricalrecord';
 
+export const RESULT_MAP: Record<string, { color: string; text: string; }> = {
+  PASS: { text: '合格', color: 'success' },
+  FAIL: { text: '不合格', color: 'error' },
+};
+
+export const CALIB_OK_MAP: Record<string, { color: string; text: string; }> = {
+  1: { text: '已校准', color: 'success' },
+  0: { text: '未校准', color: 'error' },
+};
+
 /** 搜索表单 */
 export function useGridFormSchema(): VbenFormSchema[] {
   return [
     {
       fieldName: 'recordNo',
-      label: '记录编号 ELEC-YYYYMMDD-NNN',
+      label: '记录编号',
       component: 'Input',
       componentProps: {
         allowClear: true,
-        placeholder: '请输入记录编号 ELEC-YYYYMMDD-NNN',
+        placeholder: '请输入记录编号',
       },
     },
     {
@@ -25,20 +35,20 @@ export function useGridFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'checkItem',
-      label: '检测项目：INSULATION_RESISTANCE/GROUND_RESISTANCE/LEAKAGE_ACTION_CURRENT/LEAKAGE_ACTION_TIME/WITHSTAND_VOLTAGE',
+      label: '检测项目',
       component: 'Input',
       componentProps: {
         allowClear: true,
-        placeholder: '请输入检测项目：INSULATION_RESISTANCE/GROUND_RESISTANCE/LEAKAGE_ACTION_CURRENT/LEAKAGE_ACTION_TIME/WITHSTAND_VOLTAGE',
+        placeholder: '请输入检测项目',
       },
     },
     {
       fieldName: 'result',
-      label: '结果：PASS/FAIL',
+      label: '结果',
       component: 'Input',
       componentProps: {
         allowClear: true,
-        placeholder: '请输入结果：PASS/FAIL',
+        placeholder: '请输入结果',
       },
     },
   ];
@@ -47,14 +57,14 @@ export function useGridFormSchema(): VbenFormSchema[] {
 /** 列表字段 */
 export function useGridColumns(): VxeTableGridOptions<MesSetElectricalRecordApi.ElectricalRecord>['columns'] {
   return [
-    { field: 'recordNo', title: '记录编号 ELEC-YYYYMMDD-NNN', minWidth: 170, showOverflow: true },
+    { field: 'recordNo', title: '记录编号', minWidth: 170, showOverflow: true },
     { field: 'location', title: '检测位置(配电柜/线路区域)', minWidth: 170, showOverflow: true },
-    { field: 'checkItem', title: '检测项目：INSULATION_RESISTANCE/GROUND_RESISTANCE/LEAKAGE_ACTION_CURRENT/LEAKAGE_ACTION_TIME/WITHSTAND_VOLTAGE', minWidth: 170, showOverflow: true },
+    { field: 'checkItem', title: '检测项目', minWidth: 170, showOverflow: true },
     { field: 'measuredValue', title: '实测值', width: 120 },
-    { field: 'unit', title: '单位 MΩ/Ω/mA/ms/V', minWidth: 170, showOverflow: true },
+    { field: 'unit', title: '单位', minWidth: 170, showOverflow: true },
     { field: 'limitValue', title: '标准限值', width: 120 },
-    { field: 'result', title: '结果：PASS/FAIL', minWidth: 170, showOverflow: true },
-    { field: 'instrumentCalibOk', title: '仪器校准状态快照：1已校准/0未校准', width: 120 },
+    { field: 'result', title: '结果', minWidth: 170, showOverflow: true, slots: { default: 'result' } },
+    { field: 'instrumentCalibOk', title: '仪器校准状态快照', width: 120, slots: { default: 'instrumentCalibOk' } },
     { field: 'inspector', title: '检测人', minWidth: 170, showOverflow: true },
     { field: 'inspectTime', title: '检测时间', width: 120 },
     {
@@ -73,10 +83,10 @@ export function useFormSchema(): VbenFormSchema[] {
   return [
     {
       fieldName: 'recordNo',
-      label: '记录编号 ELEC-YYYYMMDD-NNN',
+      label: '记录编号',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入记录编号 ELEC-YYYYMMDD-NNN',
+        placeholder: '请输入记录编号',
       },
       rules: 'required',
     },
@@ -107,10 +117,10 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'checkItem',
-      label: '检测项目：INSULATION_RESISTANCE/GROUND_RESISTANCE/LEAKAGE_ACTION_CURRENT/LEAKAGE_ACTION_TIME/WITHSTAND_VOLTAGE',
+      label: '检测项目',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入检测项目：INSULATION_RESISTANCE/GROUND_RESISTANCE/LEAKAGE_ACTION_CURRENT/LEAKAGE_ACTION_TIME/WITHSTAND_VOLTAGE',
+        placeholder: '请输入检测项目',
       },
       rules: 'required',
     },
@@ -125,10 +135,10 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'unit',
-      label: '单位 MΩ/Ω/mA/ms/V',
+      label: '单位',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入单位 MΩ/Ω/mA/ms/V',
+        placeholder: '请输入单位',
       },
     },
     {
@@ -142,10 +152,10 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'result',
-      label: '结果：PASS/FAIL',
+      label: '结果',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入结果：PASS/FAIL',
+        placeholder: '请输入结果',
       },
     },
     {
@@ -158,7 +168,7 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'instrumentCalibOk',
-      label: '仪器校准状态快照：1已校准/0未校准',
+      label: '仪器校准状态快照',
       component: 'Switch',
       componentProps: {
         checkedValue: true,
@@ -187,10 +197,10 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'photoUrls',
-      label: '检测照片URL(逗号分隔)',
+      label: '检测照片',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入检测照片URL(逗号分隔)',
+        placeholder: '请输入检测照片',
       },
     },
     {

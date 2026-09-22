@@ -25,4 +25,8 @@ public class MesPollutionLedgerMarkReqVO {
     @Schema(description = "终审意见")
     private String remark;
 
+    @Schema(description = "手写签名图片地址（前端手写板上传 infra 文件服务后回填）。必填：终审会改动环保数据，"
+            + "缺签名后端直接拒绝（错误码 1_040_819_004）")
+    private String signImg;
+
 }

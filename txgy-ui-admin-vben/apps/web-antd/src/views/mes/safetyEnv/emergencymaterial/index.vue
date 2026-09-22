@@ -14,8 +14,8 @@ import {
 import { $t } from '#/locales';
 
 import {
-  MATERIAL_TYPE_MAP,
   MATERIAL_STATUS_MAP,
+  MATERIAL_TYPE_MAP,
   useGridColumns,
   useGridFormSchema,
 } from './data';

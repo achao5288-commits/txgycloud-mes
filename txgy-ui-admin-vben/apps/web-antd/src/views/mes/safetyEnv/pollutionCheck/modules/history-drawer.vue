@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import type { MesPollutionLedgerApi } from '#/api/mes/safetyEnv/pollutionLedger';
 import type { MesSetPollutionCheckApi } from '#/api/mes/safetyEnv/pollutionCheck';
+import type { MesPollutionLedgerApi } from '#/api/mes/safetyEnv/pollutionLedger';
 
 import { ref } from 'vue';
 
@@ -21,10 +21,14 @@ import {
 } from '../data';
 
 /** 操作类型展示 */
-const OP_TYPE_META: Record<string, { text: string; color: string }> = {
+const OP_TYPE_META: Record<string, { color: string; text: string; }> = {
   CREATE: { text: '创建 · AI 初筛', color: 'blue' },
   UPDATE: { text: '改单 · AI 重筛', color: 'orange' },
   REVIEW: { text: '人工复核', color: 'green' },
+  // 收口后内容冻死，改动只能新开一份记录：AMEND 落在新单上、SUPERSEDE 落在被替代的原单上，
+  // 两行成对出现（后端拆成两次 appendCheckLog，所以一张单的履历里只会看到属于它的那一条）
+  AMEND: { text: '发起变更 · 新开一份记录', color: 'purple' },
+  SUPERSEDE: { text: '已被变更单替代', color: 'gray' },
 };
 
 /** 当前判定行(来自列表) */
@@ -104,6 +108,20 @@ const [Drawer, drawerApi] = useVbenDrawer({
           </Tag>
           <Tag v-else>待复核</Tag>
           <Tag v-if="row.marked" color="orange">已标记</Tag>
+          <Tag v-if="row.originRecordNo" color="processing">变更单</Tag>
+          <Tag v-if="row.supersededBy">已被替代</Tag>
+        </div>
+        <!-- 变更链两头必须说清，否则读履历的人会把作废的结论当现行有效的那份 -->
+        <div
+          v-if="row.originRecordNo || row.supersededBy"
+          class="text-xs font-medium text-orange-600 dark:text-orange-400"
+        >
+          <template v-if="row.originRecordNo">
+            本单是变更单，替代 {{ row.originRecordNo }}<template v-if="row.amendReason">｜事由：{{ row.amendReason }}</template>
+          </template>
+          <template v-else>
+            已被变更单 {{ row.supersededBy }} 替代，本单结论作废，请以新单为准
+          </template>
         </div>
         <div class="text-xs text-muted-foreground">
           关联单号 {{ row.bizNo ?? '-' }}｜批次 {{ row.batchNo ?? '-' }}｜创建于
@@ -138,7 +156,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
 
           <!-- AI 建议/判断快照 -->
           <div
-            v-if="log.aiResult || log.aiReason || log.suggestedStorage"
+            v-if="log.aiResult || log.aiReason || log.aiBasis || log.suggestedStorage"
             class="rounded-md border-l-4 border-l-blue-500/70 bg-card px-3 py-2 text-xs leading-6"
           >
             <div v-if="log.aiResult" class="flex items-center gap-2">
@@ -148,8 +166,13 @@ const [Drawer, drawerApi] = useVbenDrawer({
               </Tag>
               <span class="text-muted-foreground">置信度 {{ log.aiConfidence ?? '-' }}%</span>
             </div>
-            <div v-if="log.aiReason" class="text-muted-foreground">判定依据：{{ log.aiReason }}</div>
-            <div v-if="log.suggestedStorage" class="text-muted-foreground">
+            <!-- AI 的判断依据/建议是要读的内容，不能和「置信度」这种标签一个灰度 -->
+            <div v-if="log.aiReason" class="text-foreground/80">判定依据：{{ log.aiReason }}</div>
+            <!-- 多条法条以换行分隔，pre-line 才能按行显示（法条正文含「；」，不能用标点断句） -->
+            <div v-if="log.aiBasis" class="whitespace-pre-line text-foreground/80">
+              AI 援引法规：{{ log.aiBasis }}
+            </div>
+            <div v-if="log.suggestedStorage" class="text-foreground/80">
               AI 推荐存储方法：{{ log.suggestedStorage }}
             </div>
           </div>
@@ -171,6 +194,9 @@ const [Drawer, drawerApi] = useVbenDrawer({
               最终存储方法：{{ log.storageMethod }}
             </div>
             <div v-if="log.location" class="text-muted-foreground">去向/库位：{{ log.location }}</div>
+            <div v-if="log.reviewBasis" class="whitespace-pre-line text-foreground/80">
+              复核依据：{{ log.reviewBasis }}
+            </div>
             <div v-if="log.remark" class="text-muted-foreground">备注：{{ log.remark }}</div>
           </div>
         </TimelineItem>

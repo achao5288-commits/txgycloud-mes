@@ -14,8 +14,8 @@ import {
 import { $t } from '#/locales';
 
 import {
-  PLAN_TYPE_MAP,
   PLAN_STATUS_MAP,
+  PLAN_TYPE_MAP,
   useGridColumns,
   useGridFormSchema,
 } from './data';

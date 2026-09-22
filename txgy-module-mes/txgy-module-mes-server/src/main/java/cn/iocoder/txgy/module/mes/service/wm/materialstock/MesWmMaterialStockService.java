@@ -18,6 +18,14 @@ import java.util.List;
 public interface MesWmMaterialStockService {
 
     /**
+     * 签字业务关联类型：库存台账人工冻结/解冻。
+     *
+     * 与 CHECK/LEDGER/HAZWASTE_MANIFEST 并列，专给「在库环保视图/库存台账」上手点的冻结解冻留痕。
+     * 该键不进污染追溯时间轴（时间轴按 bizNo 取节点，这里没有对应节点），只在签字表里查得到。
+     */
+    String SIGN_BIZ_TYPE_MATERIAL_STOCK = "MATERIAL_STOCK";
+
+    /**
      * 获得库存记录
      *
      * @param id 编号
@@ -42,14 +50,20 @@ public interface MesWmMaterialStockService {
     PageResult<MesWmMaterialStockDO> getMaterialStockPage(MesWmMaterialStockPageReqVO pageReqVO);
 
     /**
-     * 更新库存冻结状态
+     * 更新库存冻结状态（前端人为入口，须带手写签名）。
      *
-     * @param updateReqVO 更新信息
+     * 缺签名抛 WM_MATERIAL_STOCK_SIGN_REQUIRED。
+     *
+     * 注意 frozen 是**投影**不是人工开关：批次戳 POLLUTED/marked、仍有待复核判定、批次过期三条
+     * 任一条成立，下一次 refreshBatchStamp/syncStockFrozenByBatch 就会把它盖回去。签名证明的是
+     * "某人点过这一下"，证不出"这批货冻着"。
+     *
+     * @param updateReqVO 更新信息 + 手写签名
      */
     void updateMaterialStockFrozen(@Valid MesWmMaterialStockFreezeReqVO updateReqVO);
 
     /**
-     * 批量更新库存冻结状态
+     * 批量更新库存冻结状态（系统内部调用：盘点、调拨，无人工签字环节，故不要签名）
      *
      * @param ids 库存记录编号列表
      * @param frozen 是否冻结

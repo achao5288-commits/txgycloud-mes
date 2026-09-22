@@ -14,9 +14,9 @@ import {
 import { $t } from '#/locales';
 
 import {
+  DRILL_STATUS_MAP,
   DRILL_TYPE_MAP,
   RECTIFY_STATUS_MAP,
-  DRILL_STATUS_MAP,
   useGridColumns,
   useGridFormSchema,
 } from './data';

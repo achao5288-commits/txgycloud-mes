@@ -13,7 +13,7 @@ import {
 } from '#/api/mes/safetyEnv/envReport';
 import { $t } from '#/locales';
 
-import { REPORT_TYPE_MAP, STATUS_MAP, useGridColumns, useGridFormSchema } from './data';
+import { REPORT_CATEGORY_MAP, REPORT_TYPE_MAP, STATUS_MAP, useGridColumns, useGridFormSchema } from './data';
 import Form from './modules/form.vue';
 
 const [FormModal, formModalApi] = useVbenModal({
@@ -106,6 +106,11 @@ const [Grid, gridApi] = useVbenVxeGrid({
       <template #status="{ row }">
         <Tag :color="STATUS_MAP[row.status]?.color">
           {{ STATUS_MAP[row.status]?.text ?? row.status }}
+        </Tag>
+      </template>
+      <template #reportCategory="{ row }">
+        <Tag :color="REPORT_CATEGORY_MAP[row.reportCategory]?.color">
+          {{ REPORT_CATEGORY_MAP[row.reportCategory]?.text ?? row.reportCategory ?? '-' }}
         </Tag>
       </template>
       <template #actions="{ row }">

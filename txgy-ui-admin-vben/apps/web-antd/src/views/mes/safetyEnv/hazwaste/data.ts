@@ -10,7 +10,7 @@ export const STAGE_OPTIONS = [
   { label: '处置', value: 'DISPOSED' },
 ];
 
-export const STAGE_MAP: Record<string, { text: string; color: string }> = {
+export const STAGE_MAP: Record<string, { color: string; text: string; }> = {
   DISPOSED: { text: '处置', color: 'default' },
   GENERATED: { text: '产生', color: 'warning' },
   STORED: { text: '贮存', color: 'processing' },
@@ -26,7 +26,7 @@ export const MANIFEST_STATUS_OPTIONS = [
   { label: '已归档', value: 'CLOSED' },
 ];
 
-export const MANIFEST_STATUS_MAP: Record<string, { text: string; color: string }> = {
+export const MANIFEST_STATUS_MAP: Record<string, { color: string; text: string; }> = {
   CLOSED: { text: '已归档', color: 'default' },
   DECLARED: { text: '已申报', color: 'processing' },
   DRAFT: { text: '草稿', color: 'default' },
@@ -122,7 +122,9 @@ export function useGridColumns(): VxeTableGridOptions<MesHazwasteApi.HazardousWa
     },
     {
       title: '操作',
-      width: 250,
+      // 250 装不下最宽的一行（联单/标签/推进到贮存/修改/删除，实测 268px + 单元格内边距），
+      // vxe 的 .vxe-cell 是 overflow:hidden，被裁掉的是右边那半个删除按钮——不报错、没滚动条
+      width: 300,
       fixed: 'right',
       slots: { default: 'actions' },
     },

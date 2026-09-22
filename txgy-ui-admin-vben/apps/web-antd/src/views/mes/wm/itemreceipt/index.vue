@@ -6,7 +6,7 @@ import { DocAlert, Page, useVbenModal } from '@vben/common-ui';
 import { MesWmItemReceiptStatusEnum } from '@vben/constants';
 import { downloadFileFromBlobPart } from '@vben/utils';
 
-import { Button, message } from 'ant-design-vue';
+import { Button, message, Tag, Tooltip } from 'ant-design-vue';
 
 import { ACTION_ICON, TableAction, useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
@@ -18,9 +18,9 @@ import {
 import { getItemReceiptLinePage } from '#/api/mes/wm/itemreceipt/line';
 import { $t } from '#/locales';
 
-import { useGridColumns, useGridFormSchema } from './data';
-import Form from './modules/form.vue';
 import JudgeModal from '../_pollution/judge-modal.vue';
+import { POLLUTION_STATUS_MAP, useGridColumns, useGridFormSchema } from './data';
+import Form from './modules/form.vue';
 
 const [FormModal, formModalApi] = useVbenModal({
   connectedComponent: Form,
@@ -79,10 +79,29 @@ async function handleJudge(row: MesWmItemReceiptApi.ItemReceipt) {
         itemCode: line.itemCode,
         itemName: line.itemName,
         itemSpec: line.specification,
+        batchId: line.batchId,
         batchNo: line.batchCode,
+        weight: line.receivedQuantity,
       })),
     })
     .open();
+}
+
+/**
+ * 判定状态列的悬浮说明：把「判定去了哪」写清楚。
+ * 只看这一列会以为结果只停在本单，实际上判定行同时进了安全环保侧的判定台账，
+ * 批次在库之后还会出现在在库环保视图——不说清楚就会出现"判完了环保那边怎么没有"。
+ */
+function pollutionTip(row: MesWmItemReceiptApi.ItemReceipt) {
+  const judged = row.pollutionJudgedLines ?? 0;
+  const total = row.pollutionLineCount ?? 0;
+  const pending = row.pollutionPendingLines ?? 0;
+  const parts = [`已判定 ${judged}/${total} 个物料行`];
+  if (pending > 0) {
+    parts.push(`待复核 ${pending} 行（判 CLEAN 才解冻，见库存冻结）`);
+  }
+  parts.push('判定记录已进「安全环保 › 污染管控 › 污染判定」台账；该批次入库后同步显示在「在库环保视图」');
+  return parts.join('；');
 }
 
 /** 删除采购入库单 */
@@ -155,7 +174,8 @@ const [Grid, gridApi] = useVbenVxeGrid({
 
     <FormModal @success="handleRefresh" />
 
-    <PollutionJudgeModal />
+    <!-- 判定弹窗每次建单/复核都会 emit success：不接这个事件，列表要手动刷新才看得到判定结果 -->
+    <PollutionJudgeModal @success="handleRefresh" />
 
     <Grid table-title="采购入库单列表">
       <template #toolbar-tools>
@@ -182,6 +202,17 @@ const [Grid, gridApi] = useVbenVxeGrid({
         <Button type="link" @click="handleDetail(row)">
           {{ row.code }}
         </Button>
+      </template>
+      <template #pollutionStatus="{ row }">
+        <Tooltip :title="pollutionTip(row)">
+          <Tag
+            class="cursor-pointer"
+            :color="POLLUTION_STATUS_MAP[row.pollutionStatus ?? '']?.color"
+            @click="handleJudge(row)"
+          >
+            {{ POLLUTION_STATUS_MAP[row.pollutionStatus ?? '']?.text ?? '未判定' }}
+          </Tag>
+        </Tooltip>
       </template>
       <template #actions="{ row }">
         <TableAction

@@ -4,7 +4,7 @@ import type { MesSetDustRecordApi } from '#/api/mes/safetyEnv/dustrecord';
 
 import { Page, useVbenModal } from '@vben/common-ui';
 
-import { message } from 'ant-design-vue';
+import { message, Tag } from 'ant-design-vue';
 
 import { ACTION_ICON, TableAction, useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
@@ -13,7 +13,7 @@ import {
 } from '#/api/mes/safetyEnv/dustrecord';
 import { $t } from '#/locales';
 
-import { useGridColumns, useGridFormSchema } from './data';
+import { COLLECTION_MODE_MAP, DUST_TYPE_MAP, RESULT_MAP, useGridColumns, useGridFormSchema } from './data';
 import Form from './modules/form.vue';
 
 const [FormModal, formModalApi] = useVbenModal({
@@ -97,6 +97,21 @@ const [Grid, gridApi] = useVbenVxeGrid({
             },
           ]"
         />
+      </template>
+      <template #dustType="{ row }">
+        <Tag :color="DUST_TYPE_MAP[row.dustType]?.color">
+          {{ DUST_TYPE_MAP[row.dustType]?.text ?? row.dustType ?? '-' }}
+        </Tag>
+      </template>
+      <template #result="{ row }">
+        <Tag :color="RESULT_MAP[row.result]?.color">
+          {{ RESULT_MAP[row.result]?.text ?? row.result ?? '-' }}
+        </Tag>
+      </template>
+      <template #collectionMode="{ row }">
+        <Tag :color="COLLECTION_MODE_MAP[row.collectionMode]?.color">
+          {{ COLLECTION_MODE_MAP[row.collectionMode]?.text ?? row.collectionMode ?? '-' }}
+        </Tag>
       </template>
       <template #actions="{ row }">
         <TableAction

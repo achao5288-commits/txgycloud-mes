@@ -1,21 +1,35 @@
 <script lang="ts" setup>
 import type { MesEnvBoardApi } from '#/api/mes/safetyEnv/envBoard';
+import type { MesMonitorApi } from '#/api/mes/safetyEnv/monitorBoard';
 
 import { computed, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 
 import { Page } from '@vben/common-ui';
 
-import { Alert, Card, Empty, Spin, Table, Tag } from 'ant-design-vue';
+import { Alert, Button, Card, Empty, Spin, Table, Tag } from 'ant-design-vue';
 
 import { getEnvBoard } from '#/api/mes/safetyEnv/envBoard';
+import { getMonitorBoard } from '#/api/mes/safetyEnv/monitorBoard';
+
+const router = useRouter();
 
 const loading = ref(true);
 const board = ref<MesEnvBoardApi.EnvBoard>({});
+/** 在线监测那一段：本页只看四个数，细节在「在线监控看板」页 */
+const monitor = ref<MesMonitorApi.Board>({});
 
 async function load() {
   loading.value = true;
   try {
-    board.value = await getEnvBoard();
+    // 两块一起拿：本看板是先看"今天有没有事"，在线监测那四个数是其中最急的一类，
+    // 串行发请求只会让首屏多等一个往返
+    const [env, mon] = await Promise.all([
+      getEnvBoard(),
+      getMonitorBoard({ range: '24h' }).catch(() => ({}) as MesMonitorApi.Board),
+    ]);
+    board.value = env;
+    monitor.value = mon;
   } finally {
     loading.value = false;
   }
@@ -77,6 +91,44 @@ const todos = computed(() => {
 function fmt(t?: number) {
   return t ? new Date(t).toLocaleString('zh-CN', { hour12: false }) : '-';
 }
+
+/**
+ * 在线监测只取四个数：本页的定位是"今天有没有事"，
+ * 排放浓度的小时曲线、达标率明细、超标派单闭环都在「在线监控看板」里做。
+ * 这里把整块搬过来只会让两个页面互相抄，改一处漏一处。
+ */
+const monitorKpis = computed(() => {
+  const m = monitor.value;
+  return [
+    {
+      label: '排口在线率',
+      value: m.onlineRate == null ? '-' : `${m.onlineRate}%`,
+      danger: (m.outletTotal ?? 0) > 0 && m.onlineRate != null && m.onlineRate < 90,
+    },
+    {
+      label: '当前超标排口',
+      value: m.exceedCount ?? 0,
+      danger: (m.exceedCount ?? 0) > 0,
+    },
+    {
+      label: '今日超标次数',
+      value: m.todayExceedTimes ?? 0,
+      danger: (m.todayExceedTimes ?? 0) > 0,
+    },
+    {
+      label: '数据完整率',
+      value: m.dataCompleteRate == null ? '-' : `${m.dataCompleteRate}%`,
+      danger: m.dataCompleteRate != null && m.dataCompleteRate < 90,
+    },
+  ];
+});
+
+/** 该租户没授过「在线监控看板」时按钮点了会 403，不如根本不显示 */
+const canViewMonitor = computed(() => (monitor.value.outletTotal ?? 0) > 0);
+
+function goMonitor() {
+  router.push({ name: 'MesSetMonitorBoard' });
+}
 </script>
 
 <template>
@@ -102,6 +154,31 @@ function fmt(t?: number) {
         message="本看板只读：所有判定复用各业务的既有规则，不另设一套阈值。"
         description="许可水位与证载有效期分开看——证过期不等于超总量。暂存倒计时按 GB18597 一年期（365 天）口径计算，该阈值目前写在服务端常量里，阈值配置页落地后改为字典项。"
       />
+
+      <Card v-if="canViewMonitor" class="mb-3" size="small">
+        <template #title>
+          在线监测
+          <span class="ml-2 text-xs font-normal text-gray-400">
+            {{ monitor.meta?.source ?? '' }} · {{ monitor.meta?.freq ?? '' }}
+          </span>
+        </template>
+        <template #extra>
+          <Button size="small" type="primary" @click="goMonitor">
+            进入在线监控看板
+          </Button>
+        </template>
+        <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <div v-for="k in monitorKpis" :key="k.label">
+            <div class="text-sm text-gray-500">{{ k.label }}</div>
+            <div
+              class="mt-1 text-2xl font-semibold"
+              :class="k.danger ? 'text-red-500' : ''"
+            >
+              {{ k.value }}
+            </div>
+          </div>
+        </div>
+      </Card>
 
       <Card class="mb-3" size="small" title="许可余量（自然年累计 vs 许可年总量）">
         <Table

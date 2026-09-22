@@ -16,6 +16,9 @@ public class MesSetPollutionCheckAiRespVO {
     @Schema(description = "AI 判定依据")
     private String aiReason;
 
+    @Schema(description = "AI 援引的法规依据（法规名+条款号/名录编号+要点）")
+    private String aiBasis;
+
     @Schema(description = "AI 推荐存储方法")
     private String suggestedStorage;
 

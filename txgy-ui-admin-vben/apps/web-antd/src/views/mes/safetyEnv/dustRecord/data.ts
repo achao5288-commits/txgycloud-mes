@@ -2,16 +2,32 @@ import type { VbenFormSchema } from '#/adapter/form';
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { MesSetDustRecordApi } from '#/api/mes/safetyEnv/dustrecord';
 
+export const DUST_TYPE_MAP: Record<string, { color: string; text: string; }> = {
+  TOTAL_DUST: { text: '总尘', color: 'processing' },
+  RESPIRABLE_DUST: { text: '呼吸性粉尘', color: 'warning' },
+  SIO2: { text: '游离二氧化硅', color: 'error' },
+};
+
+export const RESULT_MAP: Record<string, { color: string; text: string; }> = {
+  PASS: { text: '合格', color: 'success' },
+  FAIL: { text: '不合格', color: 'error' },
+};
+
+export const COLLECTION_MODE_MAP: Record<string, { color: string; text: string; }> = {
+  IOT_AUTO: { text: '物联网自动采集', color: 'processing' },
+  MANUAL: { text: '手工录入', color: 'default' },
+};
+
 /** 搜索表单 */
 export function useGridFormSchema(): VbenFormSchema[] {
   return [
     {
       fieldName: 'recordNo',
-      label: '记录编号 DUST-YYYYMMDD-NNN',
+      label: '记录编号',
       component: 'Input',
       componentProps: {
         allowClear: true,
-        placeholder: '请输入记录编号 DUST-YYYYMMDD-NNN',
+        placeholder: '请输入记录编号',
       },
     },
     {
@@ -25,29 +41,29 @@ export function useGridFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'dustType',
-      label: '检测参数：TOTAL_DUST/RESPIRABLE_DUST/SIO2',
+      label: '检测参数',
       component: 'Input',
       componentProps: {
         allowClear: true,
-        placeholder: '请输入检测参数：TOTAL_DUST/RESPIRABLE_DUST/SIO2',
+        placeholder: '请输入检测参数',
       },
     },
     {
       fieldName: 'result',
-      label: '结果：PASS/FAIL',
+      label: '结果',
       component: 'Input',
       componentProps: {
         allowClear: true,
-        placeholder: '请输入结果：PASS/FAIL',
+        placeholder: '请输入结果',
       },
     },
     {
       fieldName: 'collectionMode',
-      label: '采集方式：IOT_AUTO/MANUAL',
+      label: '采集方式',
       component: 'Input',
       componentProps: {
         allowClear: true,
-        placeholder: '请输入采集方式：IOT_AUTO/MANUAL',
+        placeholder: '请输入采集方式',
       },
     },
   ];
@@ -56,15 +72,15 @@ export function useGridFormSchema(): VbenFormSchema[] {
 /** 列表字段 */
 export function useGridColumns(): VxeTableGridOptions<MesSetDustRecordApi.DustRecord>['columns'] {
   return [
-    { field: 'recordNo', title: '记录编号 DUST-YYYYMMDD-NNN', minWidth: 170, showOverflow: true },
+    { field: 'recordNo', title: '记录编号', minWidth: 170, showOverflow: true },
     { field: 'location', title: '检测位置/作业区域', minWidth: 170, showOverflow: true },
-    { field: 'dustType', title: '检测参数：TOTAL_DUST/RESPIRABLE_DUST/SIO2', minWidth: 170, showOverflow: true },
+    { field: 'dustType', title: '检测参数', minWidth: 170, showOverflow: true, slots: { default: 'dustType' } },
     { field: 'concentration', title: '检测浓度/含量', width: 120 },
     { field: 'sio2Content', title: '游离SiO2含量%(总尘且需矽尘分级时)', width: 120 },
-    { field: 'unit', title: '单位 mg/m3/%', minWidth: 170, showOverflow: true },
+    { field: 'unit', title: '单位', minWidth: 170, showOverflow: true },
     { field: 'limitValue', title: '限值', width: 120 },
-    { field: 'result', title: '结果：PASS/FAIL', minWidth: 170, showOverflow: true },
-    { field: 'collectionMode', title: '采集方式：IOT_AUTO/MANUAL', minWidth: 170, showOverflow: true },
+    { field: 'result', title: '结果', minWidth: 170, showOverflow: true, slots: { default: 'result' } },
+    { field: 'collectionMode', title: '采集方式', minWidth: 170, showOverflow: true, slots: { default: 'collectionMode' } },
     { field: 'inspectTime', title: '检测时间', width: 120 },
     {
       title: '操作',
@@ -82,10 +98,10 @@ export function useFormSchema(): VbenFormSchema[] {
   return [
     {
       fieldName: 'recordNo',
-      label: '记录编号 DUST-YYYYMMDD-NNN',
+      label: '记录编号',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入记录编号 DUST-YYYYMMDD-NNN',
+        placeholder: '请输入记录编号',
       },
       rules: 'required',
     },
@@ -131,10 +147,10 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'dustType',
-      label: '检测参数：TOTAL_DUST/RESPIRABLE_DUST/SIO2',
+      label: '检测参数',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入检测参数：TOTAL_DUST/RESPIRABLE_DUST/SIO2',
+        placeholder: '请输入检测参数',
       },
       rules: 'required',
     },
@@ -158,10 +174,10 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'unit',
-      label: '单位 mg/m3/%',
+      label: '单位',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入单位 mg/m3/%',
+        placeholder: '请输入单位',
       },
     },
     {
@@ -183,18 +199,18 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'result',
-      label: '结果：PASS/FAIL',
+      label: '结果',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入结果：PASS/FAIL',
+        placeholder: '请输入结果',
       },
     },
     {
       fieldName: 'collectionMode',
-      label: '采集方式：IOT_AUTO/MANUAL',
+      label: '采集方式',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入采集方式：IOT_AUTO/MANUAL',
+        placeholder: '请输入采集方式',
       },
     },
     {
@@ -227,10 +243,10 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'photoUrls',
-      label: '检测照片URL(逗号分隔)',
+      label: '检测照片',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入检测照片URL(逗号分隔)',
+        placeholder: '请输入检测照片',
       },
     },
     {

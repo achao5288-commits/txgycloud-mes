@@ -2,16 +2,21 @@ package cn.iocoder.txgy.module.mes.service.wm.itemreceipt;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.iocoder.txgy.framework.common.pojo.PageResult;
 import cn.iocoder.txgy.framework.common.util.collection.CollectionUtils;
 import cn.iocoder.txgy.framework.common.util.object.BeanUtils;
 import cn.iocoder.txgy.framework.common.util.object.ObjectUtils;
+import cn.iocoder.txgy.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.txgy.module.mes.controller.admin.wm.itemreceipt.vo.MesWmItemReceiptPageReqVO;
+import cn.iocoder.txgy.module.mes.controller.admin.wm.itemreceipt.vo.MesWmItemReceiptRespVO;
 import cn.iocoder.txgy.module.mes.controller.admin.wm.itemreceipt.vo.MesWmItemReceiptSaveReqVO;
+import cn.iocoder.txgy.module.mes.dal.dataobject.set.pollutioncheck.MesSetPollutionCheckDO;
 import cn.iocoder.txgy.module.mes.dal.dataobject.wm.arrivalnotice.MesWmArrivalNoticeDO;
 import cn.iocoder.txgy.module.mes.dal.dataobject.wm.itemreceipt.MesWmItemReceiptDO;
 import cn.iocoder.txgy.module.mes.dal.dataobject.wm.itemreceipt.MesWmItemReceiptDetailDO;
 import cn.iocoder.txgy.module.mes.dal.dataobject.wm.itemreceipt.MesWmItemReceiptLineDO;
+import cn.iocoder.txgy.module.mes.dal.mysql.wm.itemreceipt.MesWmItemReceiptLineMapper;
 import cn.iocoder.txgy.module.mes.dal.mysql.wm.itemreceipt.MesWmItemReceiptMapper;
 import cn.iocoder.txgy.module.mes.enums.MesBizTypeConstants;
 import cn.iocoder.txgy.module.mes.enums.wm.MesWmItemReceiptStatusEnum;
@@ -30,7 +35,11 @@ import org.springframework.validation.annotation.Validated;
 
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static cn.iocoder.txgy.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.txgy.framework.common.util.collection.CollectionUtils.convertList;
@@ -45,6 +54,9 @@ public class MesWmItemReceiptServiceImpl implements MesWmItemReceiptService {
 
     @Resource
     private MesWmItemReceiptMapper itemReceiptMapper;
+
+    @Resource
+    private MesWmItemReceiptLineMapper itemReceiptLineMapper;
 
     @Resource
     private MesWmItemReceiptLineService itemReceiptLineService;
@@ -62,6 +74,68 @@ public class MesWmItemReceiptServiceImpl implements MesWmItemReceiptService {
     private MesWmTransactionService wmTransactionService;
     @Resource
     private MesPollutionControlService pollutionControlService;
+
+    /**
+     * 环保判定状态（列表投影，非持久化字段）：与前端 data.ts 的 POLLUTION_STATUS_MAP 一一对应
+     */
+    private static final String POLLUTION_NOT_JUDGED = "NOT_JUDGED";
+    private static final String POLLUTION_PENDING = "PENDING";
+    private static final String POLLUTION_PARTIAL = "PARTIAL";
+    private static final String POLLUTION_DONE_CLEAN = "DONE_CLEAN";
+    private static final String POLLUTION_DONE_POLLUTED = "DONE_POLLUTED";
+
+    /**
+     * 归并键：同一物料行「重新检测」会再落一行判定，得认出它们说的是同一行。
+     * 用批次号而不是 batchId——判定行里 batchId 是请求方传的，实测同一批次会一半有值一半为空
+     * （见 run_e2e_compat 的批次锚点口径），只有批次号字符串是两边都有的。
+     */
+    private static String pollutionKey(MesSetPollutionCheckDO check) {
+        return StrUtil.isNotBlank(check.getBatchNo())
+                ? check.getBatchNo() : "item:" + check.getItemCode();
+    }
+
+    @Override
+    public void fillPollutionStatus(List<MesWmItemReceiptRespVO> receipts) {
+        if (CollUtil.isEmpty(receipts)) {
+            return;
+        }
+        // 1. 本页单据的物料行数：判定完成的分母。没有它，「3 行只判了 1 行」会被当成已完成
+        LambdaQueryWrapperX<MesWmItemReceiptLineDO> lineQuery = new LambdaQueryWrapperX<>();
+        lineQuery.in(MesWmItemReceiptLineDO::getReceiptId, convertList(receipts, MesWmItemReceiptRespVO::getId));
+        Map<Long, Long> lineCountMap = itemReceiptLineMapper.selectList(lineQuery).stream()
+                .collect(Collectors.groupingBy(MesWmItemReceiptLineDO::getReceiptId, Collectors.counting()));
+        // 2. 本页单据的判定行（一次批量查，按单据号分组）
+        Set<String> codes = convertList(receipts, MesWmItemReceiptRespVO::getCode).stream()
+                .filter(StrUtil::isNotBlank).collect(Collectors.toSet());
+        Map<String, List<MesSetPollutionCheckDO>> checkMap = pollutionControlService
+                .listByBizNos(MesPollutionControlService.STAGE_PURCHASE_INBOUND, codes).stream()
+                .collect(Collectors.groupingBy(MesSetPollutionCheckDO::getBizNo));
+        // 3. 逐单聚合
+        for (MesWmItemReceiptRespVO vo : receipts) {
+            // 同一行的多条判定只认最新一条，与台账/在库环保视图「按 id 取最新」口径一致：
+            // 否则「判有污染 → 重新检测判无污染」之后，这里会永远红着
+            Map<String, MesSetPollutionCheckDO> latest = new HashMap<>();
+            for (MesSetPollutionCheckDO check : checkMap.getOrDefault(vo.getCode(), List.of())) {
+                MesSetPollutionCheckDO exist = latest.get(pollutionKey(check));
+                if (exist == null || (check.getId() != null && check.getId() > exist.getId())) {
+                    latest.put(pollutionKey(check), check);
+                }
+            }
+            int lineCount = lineCountMap.getOrDefault(vo.getId(), 0L).intValue();
+            int judged = latest.size();
+            long pending = latest.values().stream().filter(c -> c.getReviewResult() == null).count();
+            boolean polluted = latest.values().stream()
+                    .anyMatch(c -> MesPollutionControlService.REVIEW_POLLUTED.equals(c.getReviewResult()));
+            vo.setPollutionLineCount(lineCount);
+            vo.setPollutionJudgedLines(judged);
+            vo.setPollutionPendingLines((int) pending);
+            vo.setPollutionStatus(
+                    judged == 0 ? POLLUTION_NOT_JUDGED
+                            : pending > 0 ? POLLUTION_PENDING
+                            : judged < lineCount ? POLLUTION_PARTIAL
+                            : polluted ? POLLUTION_DONE_POLLUTED : POLLUTION_DONE_CLEAN);
+        }
+    }
 
     @Override
     public Long createItemReceipt(MesWmItemReceiptSaveReqVO createReqVO) {

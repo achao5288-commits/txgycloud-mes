@@ -10,7 +10,7 @@ export const REPORT_TYPE_OPTIONS = [
 ];
 
 /** 报告来源：THIRD_PARTY/INTERNAL文案 */
-export const REPORT_TYPE_MAP: Record<string, { text: string; color: string }> = {
+export const REPORT_TYPE_MAP: Record<string, { color: string; text: string; }> = {
   MONTHLY: { text: '月', color: 'success' },
   QUARTERLY: { text: '季', color: 'error' },
   THIRD_PARTY: { text: '第三方', color: 'warning' },
@@ -23,9 +23,20 @@ export const STATUS_OPTIONS = [
 ];
 
 /** 状态：DRAFT/APPROVED/REJECTED/ARCHIVED文案 */
-export const STATUS_MAP: Record<string, { text: string; color: string }> = {
+export const STATUS_MAP: Record<string, { color: string; text: string; }> = {
   APPROVED: { text: '已通过', color: 'success' },
   DRAFT: { text: '草稿', color: 'error' },
+};
+
+export const REPORT_CATEGORY_MAP: Record<string, { color: string; text: string; }> = {
+  EXHAUST_GAS: { text: '废气', color: 'processing' },
+  WASTEWATER: { text: '废水', color: 'blue' },
+  NOISE: { text: '噪声', color: 'purple' },
+  SOLID_WASTE: { text: '固废', color: 'orange' },
+  AMBIENT: { text: '环境空气', color: 'cyan' },
+  ENVIRONMENT: { text: '环境', color: 'cyan' },
+  SAFETY: { text: '安全', color: 'gold' },
+  COMPREHENSIVE: { text: '综合', color: 'default' },
 };
 
 /** 搜索表单 */
@@ -33,11 +44,11 @@ export function useGridFormSchema(): VbenFormSchema[] {
   return [
     {
       fieldName: 'reportNo',
-      label: '报告编号 EP-YYYYMMDD-NNN',
+      label: '报告编号',
       component: 'Input',
       componentProps: {
         allowClear: true,
-        placeholder: '请输入报告编号 EP-YYYYMMDD-NNN',
+        placeholder: '请输入报告编号',
       },
     },
     {
@@ -51,7 +62,7 @@ export function useGridFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'reportType',
-      label: '报告来源：THIRD_PARTY/INTERNAL',
+      label: '报告来源',
       component: 'Select',
       componentProps: {
         allowClear: true,
@@ -61,16 +72,16 @@ export function useGridFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'reportCategory',
-      label: '类别：EXHAUST_GAS/WASTEWATER/NOISE/SOLID_WASTE/AMBIENT/COMPREHENSIVE等',
+      label: '类别',
       component: 'Input',
       componentProps: {
         allowClear: true,
-        placeholder: '请输入类别：EXHAUST_GAS/WASTEWATER/NOISE/SOLID_WASTE/AMBIENT/COMPREHENSIVE等',
+        placeholder: '请输入类别',
       },
     },
     {
       fieldName: 'status',
-      label: '状态：DRAFT/APPROVED/REJECTED/ARCHIVED',
+      label: '状态',
       component: 'Select',
       componentProps: {
         allowClear: true,
@@ -84,14 +95,14 @@ export function useGridFormSchema(): VbenFormSchema[] {
 /** 列表字段 */
 export function useGridColumns(): VxeTableGridOptions<MesSetEnvReportApi.EnvReport>['columns'] {
   return [
-    { field: 'reportNo', title: '报告编号 EP-YYYYMMDD-NNN', minWidth: 170, showOverflow: true },
+    { field: 'reportNo', title: '报告编号', minWidth: 170, showOverflow: true },
     { field: 'reportName', title: '报告名称', minWidth: 170, showOverflow: true },
-    { field: 'reportType', title: '报告来源：THIRD_PARTY/INTERNAL', minWidth: 170, showOverflow: true, slots: { default: 'reportType' } },
-    { field: 'reportCategory', title: '类别：EXHAUST_GAS/WASTEWATER/NOISE/SOLID_WASTE/AMBIENT/COMPREHENSIVE等', minWidth: 170, showOverflow: true },
+    { field: 'reportType', title: '报告来源', minWidth: 170, showOverflow: true, slots: { default: 'reportType' } },
+    { field: 'reportCategory', title: '类别', minWidth: 170, showOverflow: true, slots: { default: 'reportCategory' } },
     { field: 'periodStart', title: '报告统计期起', width: 120 },
     { field: 'periodEnd', title: '报告统计期止', width: 120 },
     { field: 'reportDate', title: '报告日期', width: 120 },
-    { field: 'status', title: '状态：DRAFT/APPROVED/REJECTED/ARCHIVED', minWidth: 170, showOverflow: true, slots: { default: 'status' } },
+    { field: 'status', title: '状态', minWidth: 170, showOverflow: true, slots: { default: 'status' } },
     {
       title: '操作',
       width: 150,
@@ -108,10 +119,10 @@ export function useFormSchema(): VbenFormSchema[] {
   return [
     {
       fieldName: 'reportNo',
-      label: '报告编号 EP-YYYYMMDD-NNN',
+      label: '报告编号',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入报告编号 EP-YYYYMMDD-NNN',
+        placeholder: '请输入报告编号',
       },
       rules: 'required',
     },
@@ -126,7 +137,7 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'reportType',
-      label: '报告来源：THIRD_PARTY/INTERNAL',
+      label: '报告来源',
       component: 'Select',
       componentProps: {
         options: REPORT_TYPE_OPTIONS,
@@ -136,10 +147,10 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'reportCategory',
-      label: '类别：EXHAUST_GAS/WASTEWATER/NOISE/SOLID_WASTE/AMBIENT/COMPREHENSIVE等',
+      label: '类别',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入类别：EXHAUST_GAS/WASTEWATER/NOISE/SOLID_WASTE/AMBIENT/COMPREHENSIVE等',
+        placeholder: '请输入类别',
       },
     },
     {
@@ -182,27 +193,27 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'dataSummary',
-      label: '检测结果摘要JSON文本',
+      label: '检测结果摘要',
       component: 'Textarea',
       componentProps: {
         rows: 3,
-        placeholder: '请输入检测结果摘要JSON文本',
+        placeholder: '请输入检测结果摘要',
       },
     },
     {
       fieldName: 'fileUrl',
-      label: '报告文件URL(第三方导入PDF)',
+      label: '报告文件',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入报告文件URL(第三方导入PDF)',
+        placeholder: '请输入报告文件',
       },
     },
     {
       fieldName: 'signUrl',
-      label: '电子签名文件URL',
+      label: '电子签名文件',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入电子签名文件URL',
+        placeholder: '请输入电子签名文件',
       },
     },
     {
@@ -215,7 +226,7 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'status',
-      label: '状态：DRAFT/APPROVED/REJECTED/ARCHIVED',
+      label: '状态',
       component: 'Select',
       componentProps: {
         options: STATUS_OPTIONS,

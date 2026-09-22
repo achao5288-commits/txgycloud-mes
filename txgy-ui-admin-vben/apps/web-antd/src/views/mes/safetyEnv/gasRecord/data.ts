@@ -9,9 +9,19 @@ export const GAS_TYPE_OPTIONS = [
 ];
 
 /** 气体类型：CO/H2S/O2/LEL/VOC/NH3/CL2文案 */
-export const GAS_TYPE_MAP: Record<string, { text: string; color: string }> = {
+export const GAS_TYPE_MAP: Record<string, { color: string; text: string; }> = {
   CO: { text: 'CO', color: 'success' },
   NO2: { text: 'NO2', color: 'error' },
+};
+
+export const RESULT_MAP: Record<string, { color: string; text: string; }> = {
+  PASS: { text: '合格', color: 'success' },
+  FAIL: { text: '不合格', color: 'error' },
+};
+
+export const COLLECTION_MODE_MAP: Record<string, { color: string; text: string; }> = {
+  IOT_AUTO: { text: '物联网自动采集', color: 'processing' },
+  MANUAL: { text: '手工录入', color: 'default' },
 };
 
 /** 搜索表单 */
@@ -37,7 +47,7 @@ export function useGridFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'gasType',
-      label: '气体类型：CO/H2S/O2/LEL/VOC/NH3/CL2',
+      label: '气体类型',
       component: 'Select',
       componentProps: {
         allowClear: true,
@@ -47,20 +57,20 @@ export function useGridFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'result',
-      label: '结果：PASS/FAIL',
+      label: '结果',
       component: 'Input',
       componentProps: {
         allowClear: true,
-        placeholder: '请输入结果：PASS/FAIL',
+        placeholder: '请输入结果',
       },
     },
     {
       fieldName: 'collectionMode',
-      label: '采集方式：IOT_AUTO/MANUAL',
+      label: '采集方式',
       component: 'Input',
       componentProps: {
         allowClear: true,
-        placeholder: '请输入采集方式：IOT_AUTO/MANUAL',
+        placeholder: '请输入采集方式',
       },
     },
   ];
@@ -71,12 +81,12 @@ export function useGridColumns(): VxeTableGridOptions<MesSetGasRecordApi.GasReco
   return [
     { field: 'recordNo', title: '记录编号', minWidth: 170, showOverflow: true },
     { field: 'location', title: '检测位置', minWidth: 170, showOverflow: true },
-    { field: 'gasType', title: '气体类型：CO/H2S/O2/LEL/VOC/NH3/CL2', minWidth: 170, showOverflow: true, slots: { default: 'gasType' } },
+    { field: 'gasType', title: '气体类型', minWidth: 170, showOverflow: true, slots: { default: 'gasType' } },
     { field: 'concentration', title: '检测浓度值', width: 120 },
-    { field: 'unit', title: '单位：mg/m3 / % / %LEL', minWidth: 170, showOverflow: true },
+    { field: 'unit', title: '单位', minWidth: 170, showOverflow: true },
     { field: 'limitValue', title: '限值', width: 120 },
-    { field: 'result', title: '结果：PASS/FAIL', minWidth: 170, showOverflow: true },
-    { field: 'collectionMode', title: '采集方式：IOT_AUTO/MANUAL', minWidth: 170, showOverflow: true },
+    { field: 'result', title: '结果', minWidth: 170, showOverflow: true, slots: { default: 'result' } },
+    { field: 'collectionMode', title: '采集方式', minWidth: 170, showOverflow: true, slots: { default: 'collectionMode' } },
     { field: 'inspectTime', title: '检测时间', width: 120 },
     {
       title: '操作',
@@ -143,7 +153,7 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'gasType',
-      label: '气体类型：CO/H2S/O2/LEL/VOC/NH3/CL2',
+      label: '气体类型',
       component: 'Select',
       componentProps: {
         options: GAS_TYPE_OPTIONS,
@@ -162,10 +172,10 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'unit',
-      label: '单位：mg/m3 / % / %LEL',
+      label: '单位',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入单位：mg/m3 / % / %LEL',
+        placeholder: '请输入单位',
       },
     },
     {
@@ -179,18 +189,18 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'result',
-      label: '结果：PASS/FAIL',
+      label: '结果',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入结果：PASS/FAIL',
+        placeholder: '请输入结果',
       },
     },
     {
       fieldName: 'collectionMode',
-      label: '采集方式：IOT_AUTO/MANUAL',
+      label: '采集方式',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入采集方式：IOT_AUTO/MANUAL',
+        placeholder: '请输入采集方式',
       },
     },
     {
@@ -223,10 +233,10 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'photoUrls',
-      label: '检测照片URL(逗号分隔)',
+      label: '检测照片',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入检测照片URL(逗号分隔)',
+        placeholder: '请输入检测照片',
       },
     },
     {

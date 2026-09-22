@@ -10,8 +10,8 @@ import { ACTION_ICON, TableAction, useVbenVxeGrid } from '#/adapter/vxe-table';
 import { getTraceChainPage } from '#/api/mes/safetyEnv/pollutionTrace';
 
 import {
-  nodeStatusMeta,
   NODE_STAGE_MAP,
+  nodeStatusMeta,
   TRACE_TYPE_MAP,
   useGridColumns,
   useGridFormSchema,

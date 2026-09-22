@@ -23,7 +23,7 @@ import {
 
 const emit = defineEmits(['success']);
 
-type Mode = 'publish' | 'file' | 'review';
+type Mode = 'file' | 'publish' | 'review';
 
 const row = ref<any>({});
 const mode = ref<Mode>('publish');

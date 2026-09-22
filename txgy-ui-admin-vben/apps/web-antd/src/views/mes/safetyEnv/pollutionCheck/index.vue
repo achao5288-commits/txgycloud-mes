@@ -15,6 +15,7 @@ import {
 } from '#/api/mes/safetyEnv/pollutionCheck';
 import { $t } from '#/locales';
 
+import TraceDrawer from '../pollutionTrace/modules/trace-drawer.vue';
 import {
   AI_RESULT_MAP,
   FINISHED_RESULT_MAP,
@@ -24,7 +25,6 @@ import {
   useGridFormSchema,
 } from './data';
 import Form from './modules/form.vue';
-import TraceDrawer from '../pollutionTrace/modules/trace-drawer.vue';
 import HistoryDrawer from './modules/history-drawer.vue';
 import Review from './modules/review.vue';
 
@@ -77,6 +77,11 @@ function handleCreate() {
 /** 编辑污染判定(仅待复核) */
 function handleEdit(row: MesSetPollutionCheckApi.PollutionCheck) {
   formModalApi.setData({ id: row.id, formType: 'update' }).open();
+}
+
+/** 发起变更(仅已复核且未被替代)：复核后内容冻死，要改只能新开一份记录接替它 */
+function handleAmend(row: MesSetPollutionCheckApi.PollutionCheck) {
+  formModalApi.setData({ id: row.id, formType: 'amend' }).open();
 }
 
 /** 人工复核(仅待复核) */
@@ -156,8 +161,32 @@ const [Grid, gridApi] = useVbenVxeGrid({
           ]"
         />
       </template>
+      <!--
+        变更链的两头都必须显形，否则读列表的人会拿一条已被推翻的结论当真：
+        已被替代的行（supersededBy 非空）结论作废，变更单（originRecordNo 非空）才是现行有效的那份。
+      -->
+      <template #recordNo="{ row }">
+        <span>{{ row.recordNo }}</span>
+        <!-- 事由是变更单上最该被看见的东西，列表放不下就进 tooltip -->
+        <Tag
+          v-if="row.originRecordNo"
+          class="ml-1"
+          color="processing"
+          :title="`变更自 ${row.originRecordNo}${row.amendReason ? `｜事由：${row.amendReason}` : ''}`"
+        >
+          变更单
+        </Tag>
+        <Tag v-if="row.supersededBy" class="ml-1" :title="`已被 ${row.supersededBy} 替代`">
+          已被替代
+        </Tag>
+      </template>
       <template #stage="{ row }">
-        <span>{{ STAGE_MAP[row.stage] ?? row.stage }}</span>
+        <span>{{ STAGE_MAP[row.stage ?? ''] ?? row.stage }}</span>
+      </template>
+      <!-- 没有 batchId 的行 = 人工打字的批次号，join 不回库存，冻结/台账都不认它。必须显形。 -->
+      <template #batchNo="{ row }">
+        <Tag v-if="row.batchId == null && row.batchNo" color="warning">未关联</Tag>
+        <span>{{ row.batchNo ?? '-' }}</span>
       </template>
       <template #aiResult="{ row }">
         <Tag v-if="row.aiResult" :color="AI_RESULT_MAP[row.aiResult]?.color">
@@ -209,6 +238,18 @@ const [Grid, gridApi] = useVbenVxeGrid({
               auth: ['mes:set-pollution-trace:query'],
               ifShow: () => !!row.reviewResult,
               onClick: handleTrace.bind(null, row),
+            },
+            {
+              // 复核一签字内容就冻死，所以「改」对已复核行不再可用——只能新开一份记录。
+              // 本节整块是 :actions 的属性值，注释里**不许出现半角双引号**：它会把属性提前收尾，
+              // 报出来的是后面几行莫名其妙的 TS1005（我在这一行上连踩两次，引号就写在本注释里）。
+              label: '发起变更',
+              type: 'link',
+              icon: ACTION_ICON.COPY,
+              auth: ['mes:set-pollution-check:create'],
+              // 已被替代的连变更也不能再发：一条链只许向前，否则会开出两张并列的新单
+              ifShow: () => !!row.reviewResult && !row.supersededBy,
+              onClick: handleAmend.bind(null, row),
             },
             {
               label: $t('common.edit'),

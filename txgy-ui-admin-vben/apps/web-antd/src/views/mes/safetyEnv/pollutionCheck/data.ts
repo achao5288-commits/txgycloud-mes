@@ -1,8 +1,13 @@
-import type { VbenFormSchema } from '#/adapter/form';
+import type { VbenFormApi, VbenFormSchema } from '#/adapter/form';
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { MesSetPollutionCheckApi } from '#/api/mes/safetyEnv/pollutionCheck';
+import type { MesWmBatchApi } from '#/api/mes/wm/batch';
 
+import { markRaw } from 'vue';
+
+import { getLegalBasisList } from '#/api/mes/safetyEnv/pollutionCheck';
 import { getRangePickerDefaultProps } from '#/utils';
+import WmBatchSelect from '#/views/mes/wm/batch/components/select.vue';
 import WmWarehouseAreaSelect from '#/views/mes/wm/warehouse/components/area-select.vue';
 
 /** 环节选项 */
@@ -11,6 +16,8 @@ export const STAGE_OPTIONS = [
   { label: '生产领用', value: 'MATERIAL_ISSUE' },
   { label: '中间废弃物', value: 'WASTE_INTERMEDIATE' },
   { label: '成品', value: 'FINISHED_PRODUCT' },
+  // 在库复查：没有发生业务动作，只是对存量批次做体检，锚点是 batchId
+  { label: '在库', value: 'IN_STOCK' },
 ];
 
 /** 环节文案 */
@@ -26,7 +33,7 @@ export const AI_RESULT_OPTIONS = [
 ];
 
 /** AI 结果展示(色值用于 tag) */
-export const AI_RESULT_MAP: Record<string, { text: string; color: string }> = {
+export const AI_RESULT_MAP: Record<string, { color: string; text: string; }> = {
   CLEAN: { text: '无污染', color: 'success' },
   POLLUTED: { text: '有污染', color: 'error' },
   UNCERTAIN: { text: '不确定', color: 'warning' },
@@ -39,7 +46,7 @@ export const REVIEW_RESULT_OPTIONS = [
 ];
 
 /** 人工结果展示 */
-export const REVIEW_RESULT_MAP: Record<string, { text: string; color: string }> = {
+export const REVIEW_RESULT_MAP: Record<string, { color: string; text: string; }> = {
   CLEAN: { text: '无污染', color: 'success' },
   POLLUTED: { text: '有污染', color: 'error' },
 };
@@ -52,7 +59,7 @@ export const FINISHED_RESULT_OPTIONS = [
 ];
 
 /** 达标分支展示(色值用于 tag) */
-export const FINISHED_RESULT_MAP: Record<string, { text: string; color: string }> = {
+export const FINISHED_RESULT_MAP: Record<string, { color: string; text: string; }> = {
   QUALIFIED: { text: '达标', color: 'success' },
   REWORK: { text: '局部缺陷·返工', color: 'warning' },
   SCRAPPED: { text: '整体报废', color: 'error' },
@@ -81,8 +88,23 @@ export const REVIEWED_OPTIONS = [
   { label: '已复核', value: true },
 ];
 
-/** 新增/修改污染判定的表单（AI 初筛字段由后端回填，无需录入） */
-export function useFormSchema(): VbenFormSchema[] {
+/**
+ * 批次关联状态筛选（对应后端 linked）。
+ * 实测 69 条在用判定里 32 条(46%)是人工打字的批次号，join 不回 mes_wm_batch——
+ * 这批记录进不了库存冻结/台账，只能看，需要一个单独的筛选项把它们捞出来。
+ */
+export const LINKED_OPTIONS = [
+  { label: '已关联批次', value: true },
+  { label: '未关联（历史手工录入）', value: false },
+];
+
+/**
+ * 新增/修改污染判定的表单（AI 初筛字段由后端回填，无需录入）
+ *
+ * @param formApi 选中批次后把物料四件套回填进表单。物料名/编码/规格改成从批次主数据带出
+ *                而不是手打——手打就是本模块 46% 记录 join 不回 mes_wm_batch 的根因。
+ */
+export function useFormSchema(formApi?: VbenFormApi): VbenFormSchema[] {
   return [
     {
       fieldName: 'id',
@@ -109,7 +131,7 @@ export function useFormSchema(): VbenFormSchema[] {
       component: 'Input',
       componentProps: {
         allowClear: true,
-        placeholder: '如：含铅涂料 / 无铅锡膏（AI 据此初筛）',
+        placeholder: '如：含铅涂料 / 无铅锡膏',
       },
       rules: 'required',
     },
@@ -134,12 +156,12 @@ export function useFormSchema(): VbenFormSchema[] {
     {
       // 全链重量的源头：判定时确认一次，台账/联单/衡算都从这里取，避免多处录入对不上账
       fieldName: 'weight',
-      label: '重量(kg)',
+      label: '重量',
       component: 'InputNumber',
       componentProps: {
         allowClear: true,
         min: 0,
-        placeholder: '请输入重量(kg)',
+        placeholder: '请输入重量',
         precision: 3,
       },
     },
@@ -153,12 +175,32 @@ export function useFormSchema(): VbenFormSchema[] {
       },
     },
     {
+      // 判定锚点：选了批次，服务端就以「批次+物料主数据」回填并覆盖下面四个字段，
+      // 库存冻结/台账/超期那些按 batch_no 匹配的既有逻辑才能落到真实批次上。
+      fieldName: 'batchId',
+      label: '关联批次',
+      component: markRaw(WmBatchSelect),
+      componentProps: {
+        allowClear: true,
+        placeholder: '入库/在库检测请选批次；中间废弃物等无批次环节可留空',
+        onChange: async (batch?: MesWmBatchApi.Batch) => {
+          await formApi?.setValues({
+            batchNo: batch?.code,
+            itemCode: batch?.itemCode,
+            itemName: batch?.itemName,
+            itemSpec: batch?.itemSpecification,
+          });
+        },
+      },
+    },
+    {
+      // 选批次时由上面的回调回填，不选批次才允许手打（历史/中间废弃物环节兼容）
       fieldName: 'batchNo',
       label: '批次号',
       component: 'Input',
       componentProps: {
         allowClear: true,
-        placeholder: '请输入批次号',
+        placeholder: '选批次后自动带出，未选批次可手输',
       },
     },
     {
@@ -211,6 +253,27 @@ export function useReviewFormSchema(): VbenFormSchema[] {
         options: REVIEW_RESULT_OPTIONS,
       },
       rules: 'required',
+    },
+    {
+      // 判定依据：与 AI 初筛共用同一份法规白名单（后端 /legal-basis），不复刻一份前端常量。
+      // **不强制**：填了就随复核落库、对外可引，没填也放行——结论本身才是终态权威，
+      // 逼着凑一条法条比留空更糟（现场特征只勾了"其他"时候选本来就是空的）。
+      // 控件值是数组，提交时由 review.vue 以**换行**拼成字符串（法条正文含「；」，不能用它做分隔）。
+      // 标签刻意叫「复核依据」不叫「判定依据」：后者已被 aiReason 占用（复核弹窗/录入弹窗/履历三处），
+      // 同名会让"这条到底是 AI 引的还是人勾的"看不出来。
+      fieldName: 'reviewBasis',
+      label: '复核依据',
+      component: 'ApiSelect',
+      componentProps: {
+        allowClear: true,
+        api: getLegalBasisList,
+        labelField: 'label',
+        mode: 'multiple',
+        placeholder: '选填：可勾选本次判定援引的法规条款',
+        valueField: 'value',
+      },
+      formItemClass: 'col-span-2',
+      help: '留空不记录；勾选后随本行一同留档，供环保检查追溯',
     },
     {
       fieldName: 'disposition',
@@ -306,6 +369,16 @@ export function useGridFormSchema(): VbenFormSchema[] {
       },
     },
     {
+      fieldName: 'linked',
+      label: '批次关联',
+      component: 'Select',
+      componentProps: {
+        allowClear: true,
+        options: LINKED_OPTIONS,
+        placeholder: '未关联=join 不回库存的历史记录',
+      },
+    },
+    {
       fieldName: 'aiResult',
       label: 'AI 初筛',
       component: 'Select',
@@ -358,12 +431,22 @@ export function useGridFormSchema(): VbenFormSchema[] {
 /** 列表的字段 */
 export function useGridColumns(): VxeTableGridOptions<MesSetPollutionCheckApi.PollutionCheck>['columns'] {
   return [
-    { field: 'recordNo', title: '记录编号', minWidth: 200 },
+    // 260 才装得下编号 + 「变更单/已被替代」两个标签：只给 200 时标签会被 .vxe-cell 裁掉半截
+    { field: 'recordNo', title: '记录编号', minWidth: 260, slots: { default: 'recordNo' } },
     { field: 'bizNo', title: '关联单号', minWidth: 160, showOverflow: true },
     { field: 'stage', title: '环节', width: 110, slots: { default: 'stage' } },
-    { field: 'batchNo', title: '批次号', minWidth: 150 },
+    // 未关联的记录占存量 46%，必须一眼能认出来，否则会被当成有效判定读
+    { field: 'batchNo', title: '批次号', minWidth: 150, slots: { default: 'batchNo' } },
     { field: 'itemName', title: '物料/产品名称', minWidth: 160 },
-    { field: 'weight', title: '重量(kg)', width: 110, formatter: ({ cellValue }) => (cellValue != null ? `${cellValue}` : '-') },
+    // 必须带单位：weight 是来源单据的数量原值，质量单位(kg/g/mg/t)已在建单时折成 KG，
+    // 其余(个/箱/米)原样保留。只显示裸数字的话 123 到底是 123kg 还是 123 个读不出来。
+    {
+      field: 'weight',
+      title: '重量',
+      width: 120,
+      formatter: ({ cellValue, row }) =>
+        cellValue == null ? '-' : `${cellValue}${row.unitName ? ` ${row.unitName}` : ''}`,
+    },
     { field: 'aiResult', title: 'AI 初筛', width: 110, slots: { default: 'aiResult' } },
     { field: 'aiConfidence', title: '置信度', width: 90, formatter: ({ cellValue }) => (cellValue != null ? `${cellValue}%` : '-') },
     { field: 'suggestedStorage', title: 'AI 推荐存储方法', minWidth: 200, showOverflow: true },
@@ -377,7 +460,10 @@ export function useGridColumns(): VxeTableGridOptions<MesSetPollutionCheckApi.Po
     { field: 'reviewTime', title: '复核时间', width: 170, formatter: 'formatDateTime' },
     {
       title: '操作',
-      width: 220,
+      // 220 装不下（实测 224px + 单元格内边距），删除按钮被 .vxe-cell 裁掉。
+      // 现在按钮多了「发起变更」，但它与 复核/修改/删除 互斥（前者只在已复核时出、后三者只在
+      // 未复核时出），单行同时最多 3 个 —— 260 仍有富余。
+      width: 260,
       fixed: 'right',
       slots: {
         default: 'actions',

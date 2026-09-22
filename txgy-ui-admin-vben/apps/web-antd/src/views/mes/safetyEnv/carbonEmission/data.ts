@@ -4,14 +4,24 @@ import type { MesSetCarbonEmissionApi } from '#/api/mes/safetyEnv/carbonEmission
 
 /** 能源类型：ELECTRICITY/NATURAL_GAS/DIESEL/STEAM选项 */
 export const ENERGY_TYPE_OPTIONS = [
-  { label: 'COAL', value: 'COAL' },
+  { label: '燃煤', value: 'COAL' },
   { label: '电', value: 'ELECTRICITY' },
 ];
 
 /** 能源类型：ELECTRICITY/NATURAL_GAS/DIESEL/STEAM文案 */
-export const ENERGY_TYPE_MAP: Record<string, { text: string; color: string }> = {
-  COAL: { text: 'COAL', color: 'success' },
+export const ENERGY_TYPE_MAP: Record<string, { color: string; text: string; }> = {
+  COAL: { text: '燃煤', color: 'success' },
   ELECTRICITY: { text: '电', color: 'error' },
+};
+
+export const PERIOD_TYPE_MAP: Record<string, { color: string; text: string; }> = {
+  MONTHLY: { text: '月', color: 'success' },
+  MONTH: { text: '月', color: 'success' },
+  DAILY: { text: '日', color: 'success' },
+  WEEKLY: { text: '周', color: 'success' },
+  QUARTERLY: { text: '季', color: 'success' },
+  YEARLY: { text: '年', color: 'success' },
+  YEAR: { text: '年', color: 'success' },
 };
 
 /** 搜索表单 */
@@ -19,20 +29,20 @@ export function useGridFormSchema(): VbenFormSchema[] {
   return [
     {
       fieldName: 'calcNo',
-      label: '核算批次号 CARBON-YYYYMM',
+      label: '核算批次号',
       component: 'Input',
       componentProps: {
         allowClear: true,
-        placeholder: '请输入核算批次号 CARBON-YYYYMM',
+        placeholder: '请输入核算批次号',
       },
     },
     {
       fieldName: 'periodType',
-      label: '核算周期：DAILY/MONTHLY/YEARLY',
+      label: '核算周期',
       component: 'Input',
       componentProps: {
         allowClear: true,
-        placeholder: '请输入核算周期：DAILY/MONTHLY/YEARLY',
+        placeholder: '请输入核算周期',
       },
     },
     {
@@ -46,7 +56,7 @@ export function useGridFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'energyType',
-      label: '能源类型：ELECTRICITY/NATURAL_GAS/DIESEL/STEAM',
+      label: '能源类型',
       component: 'Select',
       componentProps: {
         allowClear: true,
@@ -60,13 +70,13 @@ export function useGridFormSchema(): VbenFormSchema[] {
 /** 列表字段 */
 export function useGridColumns(): VxeTableGridOptions<MesSetCarbonEmissionApi.CarbonEmission>['columns'] {
   return [
-    { field: 'calcNo', title: '核算批次号 CARBON-YYYYMM', minWidth: 170, showOverflow: true },
-    { field: 'periodType', title: '核算周期：DAILY/MONTHLY/YEARLY', minWidth: 170, showOverflow: true },
-    { field: 'energyType', title: '能源类型：ELECTRICITY/NATURAL_GAS/DIESEL/STEAM', minWidth: 170, showOverflow: true, slots: { default: 'energyType' } },
+    { field: 'calcNo', title: '核算批次号', minWidth: 170, showOverflow: true },
+    { field: 'periodType', title: '核算周期', minWidth: 170, showOverflow: true, slots: { default: 'periodType' } },
+    { field: 'energyType', title: '能源类型', minWidth: 170, showOverflow: true, slots: { default: 'energyType' } },
     { field: 'consumption', title: '能源消耗量', width: 120 },
     { field: 'emissionFactor', title: '排放因子', width: 120 },
     { field: 'carbonEmission', title: '碳排放量=consumption*factor', width: 120 },
-    { field: 'unit', title: '单位 tCO2', minWidth: 170, showOverflow: true },
+    { field: 'unit', title: '单位', minWidth: 170, showOverflow: true },
     { field: 'totalEmission', title: '合计', width: 120 },
     {
       title: '操作',
@@ -84,19 +94,19 @@ export function useFormSchema(): VbenFormSchema[] {
   return [
     {
       fieldName: 'calcNo',
-      label: '核算批次号 CARBON-YYYYMM',
+      label: '核算批次号',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入核算批次号 CARBON-YYYYMM',
+        placeholder: '请输入核算批次号',
       },
       rules: 'required',
     },
     {
       fieldName: 'periodType',
-      label: '核算周期：DAILY/MONTHLY/YEARLY',
+      label: '核算周期',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入核算周期：DAILY/MONTHLY/YEARLY',
+        placeholder: '请输入核算周期',
       },
       rules: 'required',
     },
@@ -140,7 +150,7 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'energyType',
-      label: '能源类型：ELECTRICITY/NATURAL_GAS/DIESEL/STEAM',
+      label: '能源类型',
       component: 'Select',
       componentProps: {
         options: ENERGY_TYPE_OPTIONS,
@@ -177,10 +187,10 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'unit',
-      label: '单位 tCO2',
+      label: '单位',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入单位 tCO2',
+        placeholder: '请输入单位',
       },
     },
     {

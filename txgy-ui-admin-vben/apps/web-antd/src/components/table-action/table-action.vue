@@ -241,6 +241,10 @@ watch(
 
 <style lang="scss">
 .table-actions {
+  // 兜底横滑：操作列宽由各页面自己写死，写窄了内容就被 vxe 的 .vxe-cell 无声裁掉
+  // （没有报错、没有滚动条，只是右边几个按钮点不到）。够宽时滚动条不出现，不影响正常页面。
+  overflow-x: auto;
+
   .ant-btn-link {
     padding: 4px;
     margin-left: 0;

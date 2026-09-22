@@ -4,7 +4,7 @@ import type { MesSetPressureVesselApi } from '#/api/mes/safetyEnv/pressurevessel
 
 import { Page, useVbenModal } from '@vben/common-ui';
 
-import { message } from 'ant-design-vue';
+import { message, Tag } from 'ant-design-vue';
 
 import { ACTION_ICON, TableAction, useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
@@ -13,7 +13,7 @@ import {
 } from '#/api/mes/safetyEnv/pressurevessel';
 import { $t } from '#/locales';
 
-import { useGridColumns, useGridFormSchema } from './data';
+import { RESULT_MAP, useGridColumns, useGridFormSchema, YES_NO_MAP } from './data';
 import Form from './modules/form.vue';
 
 const [FormModal, formModalApi] = useVbenModal({
@@ -97,6 +97,21 @@ const [Grid, gridApi] = useVbenVxeGrid({
             },
           ]"
         />
+      </template>
+      <template #safetyValveOk="{ row }">
+        <Tag :color="YES_NO_MAP[row.safetyValveOk]?.color">
+          {{ YES_NO_MAP[row.safetyValveOk]?.text ?? row.safetyValveOk ?? '-' }}
+        </Tag>
+      </template>
+      <template #pressureTestResult="{ row }">
+        <Tag :color="RESULT_MAP[row.pressureTestResult]?.color">
+          {{ RESULT_MAP[row.pressureTestResult]?.text ?? row.pressureTestResult ?? '-' }}
+        </Tag>
+      </template>
+      <template #result="{ row }">
+        <Tag :color="RESULT_MAP[row.result]?.color">
+          {{ RESULT_MAP[row.result]?.text ?? row.result ?? '-' }}
+        </Tag>
       </template>
       <template #actions="{ row }">
         <TableAction

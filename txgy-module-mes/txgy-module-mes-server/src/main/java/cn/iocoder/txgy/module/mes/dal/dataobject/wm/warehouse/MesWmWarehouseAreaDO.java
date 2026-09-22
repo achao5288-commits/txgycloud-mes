@@ -89,6 +89,14 @@ public class MesWmWarehouseAreaDO extends BaseDO {
      */
     private Boolean pollutionControl;
     /**
+     * 储存专区：GENERAL 一般区 / EXPLOSION_PROOF 防爆区 / ISOLATION 隔离区
+     *
+     * 与 pollutionControl **相互独立**：一个库位可以既是被污染管控的危废暂存间、又是防爆区
+     * （受控库位与防爆分区是两回事，合在一列里会出现"既是又不是"的死结）。
+     * 危化品相容组的专区要求（如稀释剂须防爆存放）判的就是这一列。
+     */
+    private String storageZone;
+    /**
      * 备注
      */
     private String remark;

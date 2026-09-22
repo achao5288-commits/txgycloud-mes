@@ -48,8 +48,12 @@ INSERT INTO `system_user_role` (`user_id`, `role_id`, `creator`, `updater`, `ten
 SELECT u.`id`, 60468, 'system', 'system', 2010 FROM `system_users` u
 WHERE u.`username` = 'huahan_anquan' AND u.`tenant_id` = 2010;
 
+-- 祖先目录必须一起绑：后端 filterDisableMenus 按父链递归剪枝，链子断一节整棵子树
+-- 都被判成"无权"→ 解出 0 个权限码。5100/34011 都是空 permission 的目录，不发权限码。
 INSERT INTO `system_role_menu` (`role_id`, `menu_id`, `creator`, `updater`, `tenant_id`) VALUES
+    (60468, 5100, 'system', 'system', 2010),   -- MES 系统（根目录）
     (60468, 34000, 'system', 'system', 2010),  -- 安全环保检测（父分组）
+    (60468, 34011, 'system', 'system', 2010),  -- 危废与化学品（父分组）
     (60468, 34396, 'system', 'system', 2010),  -- 危化品档案
     (60468, 34397, 'system', 'system', 2010),  -- 查询
     (60468, 34461, 'system', 'system', 2010),  -- 库位校验

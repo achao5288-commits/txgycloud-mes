@@ -2,16 +2,26 @@ import type { VbenFormSchema } from '#/adapter/form';
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { MesSetPressureVesselApi } from '#/api/mes/safetyEnv/pressurevessel';
 
+export const YES_NO_MAP: Record<string, { color: string; text: string; }> = {
+  1: { text: '是', color: 'success' },
+  0: { text: '否', color: 'default' },
+};
+
+export const RESULT_MAP: Record<string, { color: string; text: string; }> = {
+  PASS: { text: '合格', color: 'success' },
+  FAIL: { text: '不合格', color: 'error' },
+};
+
 /** 搜索表单 */
 export function useGridFormSchema(): VbenFormSchema[] {
   return [
     {
       fieldName: 'recordNo',
-      label: '检验记录/报告编号 PV-YYYY-NNN',
+      label: '检验记录/报告编号',
       component: 'Input',
       componentProps: {
         allowClear: true,
-        placeholder: '请输入检验记录/报告编号 PV-YYYY-NNN',
+        placeholder: '请输入检验记录/报告编号',
       },
     },
     {
@@ -25,20 +35,20 @@ export function useGridFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'ndtMethods',
-      label: '无损检测方法：UT/RT/MT/PT(多选逗号分隔)',
+      label: '无损检测方法',
       component: 'Input',
       componentProps: {
         allowClear: true,
-        placeholder: '请输入无损检测方法：UT/RT/MT/PT(多选逗号分隔)',
+        placeholder: '请输入无损检测方法',
       },
     },
     {
       fieldName: 'result',
-      label: '综合结论 PASS/FAIL',
+      label: '综合结论',
       component: 'Input',
       componentProps: {
         allowClear: true,
-        placeholder: '请输入综合结论 PASS/FAIL',
+        placeholder: '请输入综合结论',
       },
     },
     {
@@ -56,14 +66,14 @@ export function useGridFormSchema(): VbenFormSchema[] {
 /** 列表字段 */
 export function useGridColumns(): VxeTableGridOptions<MesSetPressureVesselApi.PressureVessel>['columns'] {
   return [
-    { field: 'recordNo', title: '检验记录/报告编号 PV-YYYY-NNN', minWidth: 170, showOverflow: true },
+    { field: 'recordNo', title: '检验记录/报告编号', minWidth: 170, showOverflow: true },
     { field: 'vesselRegNo', title: '压力容器使用登记证号(特种设备注册代码)', minWidth: 170, showOverflow: true },
-    { field: 'wallThickness', title: '壁厚测定最小壁厚 mm', width: 120 },
-    { field: 'ndtMethods', title: '无损检测方法：UT/RT/MT/PT(多选逗号分隔)', minWidth: 170, showOverflow: true },
-    { field: 'safetyValveOk', title: '安全阀校验合格：1是/0否', width: 120 },
-    { field: 'pressureTestValue', title: '耐压试验压力 MPa', width: 120 },
-    { field: 'pressureTestResult', title: '耐压试验结果 PASS/FAIL', minWidth: 170, showOverflow: true },
-    { field: 'result', title: '综合结论 PASS/FAIL', minWidth: 170, showOverflow: true },
+    { field: 'wallThickness', title: '壁厚测定最小壁厚', width: 120 },
+    { field: 'ndtMethods', title: '无损检测方法', minWidth: 170, showOverflow: true },
+    { field: 'safetyValveOk', title: '安全阀校验合格', width: 120, slots: { default: 'safetyValveOk' } },
+    { field: 'pressureTestValue', title: '耐压试验压力', width: 120 },
+    { field: 'pressureTestResult', title: '耐压试验结果', minWidth: 170, showOverflow: true, slots: { default: 'pressureTestResult' } },
+    { field: 'result', title: '综合结论', minWidth: 170, showOverflow: true, slots: { default: 'result' } },
     { field: 'inspectOrg', title: '检验机构(需资质)', minWidth: 170, showOverflow: true },
     { field: 'nextInspectDate', title: '下次检验日期', width: 120 },
     { field: 'inspectTime', title: '检验时间', width: 120 },
@@ -83,10 +93,10 @@ export function useFormSchema(): VbenFormSchema[] {
   return [
     {
       fieldName: 'recordNo',
-      label: '检验记录/报告编号 PV-YYYY-NNN',
+      label: '检验记录/报告编号',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入检验记录/报告编号 PV-YYYY-NNN',
+        placeholder: '请输入检验记录/报告编号',
       },
       rules: 'required',
     },
@@ -117,32 +127,32 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'wallThickness',
-      label: '壁厚测定最小壁厚 mm',
+      label: '壁厚测定最小壁厚',
       component: 'InputNumber',
       componentProps: {
-        placeholder: '请输入壁厚测定最小壁厚 mm',
+        placeholder: '请输入壁厚测定最小壁厚',
         class: 'w-full',
       },
     },
     {
       fieldName: 'ndtMethods',
-      label: '无损检测方法：UT/RT/MT/PT(多选逗号分隔)',
+      label: '无损检测方法',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入无损检测方法：UT/RT/MT/PT(多选逗号分隔)',
+        placeholder: '请输入无损检测方法',
       },
     },
     {
       fieldName: 'ndtResults',
-      label: '无损检测结果JSON文本如{UT:PASS,MT:PASS}',
+      label: '无损检测结果',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入无损检测结果JSON文本如{UT:PASS,MT:PASS}',
+        placeholder: '请输入无损检测结果',
       },
     },
     {
       fieldName: 'safetyValveOk',
-      label: '安全阀校验合格：1是/0否',
+      label: '安全阀校验合格',
       component: 'Switch',
       componentProps: {
         checkedValue: true,
@@ -151,36 +161,36 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'pressureTestValue',
-      label: '耐压试验压力 MPa',
+      label: '耐压试验压力',
       component: 'InputNumber',
       componentProps: {
-        placeholder: '请输入耐压试验压力 MPa',
+        placeholder: '请输入耐压试验压力',
         class: 'w-full',
       },
     },
     {
       fieldName: 'pressureTestResult',
-      label: '耐压试验结果 PASS/FAIL',
+      label: '耐压试验结果',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入耐压试验结果 PASS/FAIL',
+        placeholder: '请输入耐压试验结果',
       },
     },
     {
       fieldName: 'processPressure',
-      label: '工艺允许压力 MPa',
+      label: '工艺允许压力',
       component: 'InputNumber',
       componentProps: {
-        placeholder: '请输入工艺允许压力 MPa',
+        placeholder: '请输入工艺允许压力',
         class: 'w-full',
       },
     },
     {
       fieldName: 'result',
-      label: '综合结论 PASS/FAIL',
+      label: '综合结论',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入综合结论 PASS/FAIL',
+        placeholder: '请输入综合结论',
       },
     },
     {
@@ -205,10 +215,10 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'reportFileUrl',
-      label: '检验报告文件URL',
+      label: '检验报告文件',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入检验报告文件URL',
+        placeholder: '请输入检验报告文件',
       },
     },
     {

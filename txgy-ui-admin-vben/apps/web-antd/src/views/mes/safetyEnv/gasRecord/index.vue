@@ -13,7 +13,7 @@ import {
 } from '#/api/mes/safetyEnv/gasrecord';
 import { $t } from '#/locales';
 
-import { GAS_TYPE_MAP, useGridColumns, useGridFormSchema } from './data';
+import { COLLECTION_MODE_MAP, GAS_TYPE_MAP, RESULT_MAP, useGridColumns, useGridFormSchema } from './data';
 import Form from './modules/form.vue';
 
 const [FormModal, formModalApi] = useVbenModal({
@@ -101,6 +101,16 @@ const [Grid, gridApi] = useVbenVxeGrid({
       <template #gasType="{ row }">
         <Tag :color="GAS_TYPE_MAP[row.gasType]?.color">
           {{ GAS_TYPE_MAP[row.gasType]?.text ?? row.gasType }}
+        </Tag>
+      </template>
+      <template #result="{ row }">
+        <Tag :color="RESULT_MAP[row.result]?.color">
+          {{ RESULT_MAP[row.result]?.text ?? row.result ?? '-' }}
+        </Tag>
+      </template>
+      <template #collectionMode="{ row }">
+        <Tag :color="COLLECTION_MODE_MAP[row.collectionMode]?.color">
+          {{ COLLECTION_MODE_MAP[row.collectionMode]?.text ?? row.collectionMode ?? '-' }}
         </Tag>
       </template>
       <template #actions="{ row }">

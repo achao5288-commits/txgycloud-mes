@@ -4,7 +4,7 @@ import type { MesSetElectricalRecordApi } from '#/api/mes/safetyEnv/electricalre
 
 import { Page, useVbenModal } from '@vben/common-ui';
 
-import { message } from 'ant-design-vue';
+import { message, Tag } from 'ant-design-vue';
 
 import { ACTION_ICON, TableAction, useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
@@ -13,7 +13,7 @@ import {
 } from '#/api/mes/safetyEnv/electricalrecord';
 import { $t } from '#/locales';
 
-import { useGridColumns, useGridFormSchema } from './data';
+import { CALIB_OK_MAP, RESULT_MAP, useGridColumns, useGridFormSchema } from './data';
 import Form from './modules/form.vue';
 
 const [FormModal, formModalApi] = useVbenModal({
@@ -97,6 +97,16 @@ const [Grid, gridApi] = useVbenVxeGrid({
             },
           ]"
         />
+      </template>
+      <template #result="{ row }">
+        <Tag :color="RESULT_MAP[row.result]?.color">
+          {{ RESULT_MAP[row.result]?.text ?? row.result ?? '-' }}
+        </Tag>
+      </template>
+      <template #instrumentCalibOk="{ row }">
+        <Tag :color="CALIB_OK_MAP[row.instrumentCalibOk]?.color">
+          {{ CALIB_OK_MAP[row.instrumentCalibOk]?.text ?? row.instrumentCalibOk ?? '-' }}
+        </Tag>
       </template>
       <template #actions="{ row }">
         <TableAction

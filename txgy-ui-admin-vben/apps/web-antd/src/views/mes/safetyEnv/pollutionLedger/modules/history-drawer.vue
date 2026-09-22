@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import type { MesPollutionLedgerApi } from '#/api/mes/safetyEnv/pollutionLedger';
 import type { MesSetPollutionCheckApi } from '#/api/mes/safetyEnv/pollutionCheck';
+import type { MesPollutionLedgerApi } from '#/api/mes/safetyEnv/pollutionLedger';
 
 import { ref } from 'vue';
 
@@ -113,7 +113,8 @@ const [Drawer, drawerApi] = useVbenDrawer({
             {{ AI_RESULT_MAP[sourceCheck.aiResult ?? '']?.text ?? sourceCheck.aiResult ?? '-' }}
           </Tag>
           <span class="text-muted-foreground">置信度 {{ sourceCheck.aiConfidence ?? '-' }}%</span>
-          <span v-if="sourceCheck.aiReason" class="text-muted-foreground">
+          <!-- AI 依据是要读的内容，比同排的「置信度」等标签深一档 -->
+          <span v-if="sourceCheck.aiReason" class="text-foreground/80">
             ｜依据：{{ sourceCheck.aiReason }}
           </span>
         </div>

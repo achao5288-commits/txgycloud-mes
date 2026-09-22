@@ -19,10 +19,10 @@ import {
 defineOptions({ name: 'MesAttachmentPanel' });
 
 const props = defineProps<{
-  /** 业务关联类型：CHECK/LEDGER/MANIFEST/FACILITY/EMERGENCY 等 */
-  bizType: string;
   /** 业务关联单号 */
   bizNo?: string;
+  /** 业务关联类型：CHECK/LEDGER/MANIFEST/FACILITY/EMERGENCY 等 */
+  bizType: string;
   /** 只读（已归档单据不给再传/删） */
   readonly?: boolean;
 }>();

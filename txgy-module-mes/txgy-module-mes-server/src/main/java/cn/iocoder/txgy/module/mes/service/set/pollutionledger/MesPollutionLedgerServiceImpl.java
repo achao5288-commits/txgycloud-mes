@@ -12,6 +12,7 @@ import cn.iocoder.txgy.module.mes.service.set.dischargerecord.MesSetDischargeRec
 import cn.iocoder.txgy.module.mes.dal.mysql.set.pollutionledger.MesPollutionLedgerLogMapper;
 import cn.iocoder.txgy.module.mes.dal.mysql.set.pollutionledger.MesPollutionLedgerMapper;
 import cn.iocoder.txgy.module.mes.service.pollution.MesPollutionControlService;
+import cn.iocoder.txgy.module.mes.service.set.signrecord.MesSetSignRecordService;
 import cn.iocoder.txgy.module.mes.service.set.tracechain.MesSetTraceChainService;
 import cn.hutool.core.util.StrUtil;
 import jakarta.annotation.Resource;
@@ -29,7 +30,9 @@ import java.util.Set;
 import static cn.iocoder.txgy.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.txgy.framework.security.core.util.SecurityFrameworkUtils.getLoginUserId;
 import static cn.iocoder.txgy.framework.security.core.util.SecurityFrameworkUtils.getLoginUserNickname;
+import static cn.iocoder.txgy.module.mes.enums.ErrorCodeConstants.SET_POLLUTION_LEDGER_FLOW_SIGN_REQUIRED;
 import static cn.iocoder.txgy.module.mes.enums.ErrorCodeConstants.SET_POLLUTION_LEDGER_NOT_EXISTS;
+import static cn.iocoder.txgy.module.mes.enums.ErrorCodeConstants.SET_POLLUTION_LEDGER_SIGN_REQUIRED;
 import static cn.iocoder.txgy.module.mes.enums.ErrorCodeConstants.SET_POLLUTION_LEDGER_STATUS_INVALID;
 
 /**
@@ -64,6 +67,10 @@ public class MesPollutionLedgerServiceImpl implements MesPollutionLedgerService 
      */
     public static final String TRACE_TYPE_LEDGER = "LEDGER";
     /**
+     * 签字角色：终审人（标记品终审是环保专员专属权限）
+     */
+    public static final String SIGN_ROLE_APPROVER = "APPROVER";
+    /**
      * 处置流转追溯节点环节
      */
     public static final String NODE_STAGE_DISPOSAL = "DISPOSAL";
@@ -89,6 +96,9 @@ public class MesPollutionLedgerServiceImpl implements MesPollutionLedgerService 
     @Resource
     private MesSetDischargeRecordService dischargeRecordService;
 
+    @Resource
+    private MesSetSignRecordService signRecordService;
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateLedgerStatus(MesPollutionLedgerStatusReqVO reqVO) {
@@ -101,6 +111,13 @@ public class MesPollutionLedgerServiceImpl implements MesPollutionLedgerService 
         if (CLOSED_STATUSES.contains(ledger.getStatus())) {
             throw exception(SET_POLLUTION_LEDGER_STATUS_INVALID);
         }
+        // 签字卡口：处置流转会写终态(reused/discharged/disposed)、落排放合规流水、并重投影批次戳，
+        // 是危废台账上最有后果的一步。签名键 = LEDGER + sourceRecordNo（判定来源就是判定的 recordNo，
+        // 产废登记就是作业票号）——与 /mark 同一个键，两处签字查得到一起。
+        // 排在所有写之前、同事务：后面任一处抛错一起回滚，不留"签了字但没流转"的假痕迹。
+        signRecordService.requireSigned(new MesSetSignRecordService.SignPayload(
+                TRACE_TYPE_LEDGER, ledger.getSourceRecordNo(), SIGN_ROLE_APPROVER,
+                reqVO.getSignImg(), reqVO.getOpinion()), SET_POLLUTION_LEDGER_FLOW_SIGN_REQUIRED);
         // 1. 流转
         String fromStatus = ledger.getStatus();
         ledger.setStatus(status);
@@ -140,8 +157,13 @@ public class MesPollutionLedgerServiceImpl implements MesPollutionLedgerService 
     public void updateLedgerMark(MesPollutionLedgerMarkReqVO reqVO) {
         MesPollutionLedgerDO ledger = validateLedgerExists(reqVO.getId());
         boolean marked = Boolean.TRUE.equals(reqVO.getMarked());
+        // 签字卡口：终审是环保专员专属的人为定夺（标记=禁止正常出库/销售）。必须排在下面那条
+        // 「结论未变」的早返回之前——结论没变不代表用户没操作，他点了确认就得留下是谁点的。
+        signRecordService.requireSigned(new MesSetSignRecordService.SignPayload(
+                TRACE_TYPE_LEDGER, ledger.getSourceRecordNo(), SIGN_ROLE_APPROVER,
+                reqVO.getSignImg(), reqVO.getRemark()), SET_POLLUTION_LEDGER_SIGN_REQUIRED);
         if (Boolean.TRUE.equals(ledger.getMarked()) == marked) {
-            return; // 结论未变，不重复留痕
+            return; // 结论未变：台账履历与追溯节点不重复留痕（签字在上一步已经落了，那是"谁点的"）
         }
         String operator = getCurrentUserName();
         LocalDateTime now = LocalDateTime.now();

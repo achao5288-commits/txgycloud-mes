@@ -9,9 +9,14 @@ export const RESULT_OPTIONS = [
 ];
 
 /** 结果：PASS/FAIL文案 */
-export const RESULT_MAP: Record<string, { text: string; color: string }> = {
+export const RESULT_MAP: Record<string, { color: string; text: string; }> = {
   FAIL: { text: '超标', color: 'success' },
   PASS: { text: '达标', color: 'error' },
+};
+
+export const YES_NO_MAP: Record<string, { color: string; text: string; }> = {
+  1: { text: '是', color: 'success' },
+  0: { text: '否', color: 'default' },
 };
 
 /** 搜索表单 */
@@ -46,7 +51,7 @@ export function useGridFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'result',
-      label: '结果：PASS/FAIL',
+      label: '结果',
       component: 'Select',
       componentProps: {
         allowClear: true,
@@ -64,10 +69,10 @@ export function useGridColumns(): VxeTableGridOptions<MesSetChemicalSafetyApi.Ch
     { field: 'chemicalCode', title: '危化品编码', minWidth: 170, showOverflow: true },
     { field: 'chemicalName', title: '危化品名称', minWidth: 170, showOverflow: true },
     { field: 'storageLocation', title: '存储地点', minWidth: 170, showOverflow: true },
-    { field: 'labelOk', title: '标识完整性：1是/0否', width: 120 },
-    { field: 'msdsOk', title: 'MSDS有效性：1是/0否', width: 120 },
-    { field: 'storageOk', title: '储存条件(温湿度/通风)合格：1是/0否', width: 120 },
-    { field: 'result', title: '结果：PASS/FAIL', minWidth: 170, showOverflow: true, slots: { default: 'result' } },
+    { field: 'labelOk', title: '标识完整性', width: 120, slots: { default: 'labelOk' } },
+    { field: 'msdsOk', title: 'MSDS有效性', width: 120, slots: { default: 'msdsOk' } },
+    { field: 'storageOk', title: '储存条件合格', width: 120, slots: { default: 'storageOk' } },
+    { field: 'result', title: '结果', minWidth: 170, showOverflow: true, slots: { default: 'result' } },
     { field: 'inspector', title: '检测人', minWidth: 170, showOverflow: true },
     { field: 'inspectTime', title: '检测时间', width: 120 },
     {
@@ -128,7 +133,7 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'labelOk',
-      label: '标识完整性：1是/0否',
+      label: '标识完整性',
       component: 'Switch',
       componentProps: {
         checkedValue: true,
@@ -137,7 +142,7 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'msdsOk',
-      label: 'MSDS有效性：1是/0否',
+      label: 'MSDS有效性',
       component: 'Switch',
       componentProps: {
         checkedValue: true,
@@ -146,7 +151,7 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'storageOk',
-      label: '储存条件(温湿度/通风)合格：1是/0否',
+      label: '储存条件合格',
       component: 'Switch',
       componentProps: {
         checkedValue: true,
@@ -155,7 +160,7 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'separationOk',
-      label: '禁忌物分离合格：1是/0否',
+      label: '禁忌物分离合格',
       component: 'Switch',
       componentProps: {
         checkedValue: true,
@@ -164,7 +169,7 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'result',
-      label: '结果：PASS/FAIL',
+      label: '结果',
       component: 'Select',
       componentProps: {
         options: RESULT_OPTIONS,

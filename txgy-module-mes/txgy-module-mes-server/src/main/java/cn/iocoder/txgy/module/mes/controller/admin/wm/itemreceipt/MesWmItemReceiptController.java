@@ -163,7 +163,7 @@ public class MesWmItemReceiptController {
         Map<Long, MesWmArrivalNoticeDO> noticeMap = arrivalNoticeService.getArrivalNoticeMap(
                 convertSet(list, MesWmItemReceiptDO::getNoticeId));
         // 2. 构建结果
-        return BeanUtils.toBean(list, MesWmItemReceiptRespVO.class, vo -> {
+        List<MesWmItemReceiptRespVO> result = BeanUtils.toBean(list, MesWmItemReceiptRespVO.class, vo -> {
             MapUtils.findAndThen(vendorMap, vo.getVendorId(),
                     vendor -> vo.setVendorName(vendor.getName()));
             MapUtils.findAndThen(iqcMap, vo.getIqcId(),
@@ -171,6 +171,9 @@ public class MesWmItemReceiptController {
             MapUtils.findAndThen(noticeMap, vo.getNoticeId(), notice ->
                     vo.setNoticeCode(notice.getCode()).setPurchaseOrderCode(notice.getPurchaseOrderCode()));
         });
+        // 3. 环保判定投影：判定行只认 biz_no=入库单编码，批量查完在这里回填
+        itemReceiptService.fillPollutionStatus(result);
+        return result;
     }
 
 }

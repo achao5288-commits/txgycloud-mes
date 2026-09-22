@@ -9,9 +9,14 @@ export const COLLECTION_MODE_OPTIONS = [
 ];
 
 /** 采集方式：CEMS_AUTO/MANUAL文案 */
-export const COLLECTION_MODE_MAP: Record<string, { text: string; color: string }> = {
+export const COLLECTION_MODE_MAP: Record<string, { color: string; text: string; }> = {
   CEMS_AUTO: { text: '在线自动', color: 'success' },
   MANUAL: { text: '手工', color: 'error' },
+};
+
+export const RESULT_MAP: Record<string, { color: string; text: string; }> = {
+  PASS: { text: '合格', color: 'success' },
+  FAIL: { text: '不合格', color: 'error' },
 };
 
 /** 搜索表单 */
@@ -19,11 +24,11 @@ export function useGridFormSchema(): VbenFormSchema[] {
   return [
     {
       fieldName: 'recordNo',
-      label: '记录编号 EXGAS-YYYYMMDD-NNN',
+      label: '记录编号',
       component: 'Input',
       componentProps: {
         allowClear: true,
-        placeholder: '请输入记录编号 EXGAS-YYYYMMDD-NNN',
+        placeholder: '请输入记录编号',
       },
     },
     {
@@ -37,25 +42,25 @@ export function useGridFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'pollutantCode',
-      label: '污染物：SO2/NOX/PM/VOCs/HCL/HF等',
+      label: '污染物',
       component: 'Input',
       componentProps: {
         allowClear: true,
-        placeholder: '请输入污染物：SO2/NOX/PM/VOCs/HCL/HF等',
+        placeholder: '请输入污染物',
       },
     },
     {
       fieldName: 'result',
-      label: '结果：PASS/FAIL',
+      label: '结果',
       component: 'Input',
       componentProps: {
         allowClear: true,
-        placeholder: '请输入结果：PASS/FAIL',
+        placeholder: '请输入结果',
       },
     },
     {
       fieldName: 'collectionMode',
-      label: '采集方式：CEMS_AUTO/MANUAL',
+      label: '采集方式',
       component: 'Select',
       componentProps: {
         allowClear: true,
@@ -69,13 +74,13 @@ export function useGridFormSchema(): VbenFormSchema[] {
 /** 列表字段 */
 export function useGridColumns(): VxeTableGridOptions<MesSetExhaustGasApi.ExhaustGas>['columns'] {
   return [
-    { field: 'recordNo', title: '记录编号 EXGAS-YYYYMMDD-NNN', minWidth: 170, showOverflow: true },
+    { field: 'recordNo', title: '记录编号', minWidth: 170, showOverflow: true },
     { field: 'outletId', title: '关联排放口编号', width: 120 },
-    { field: 'pollutantCode', title: '污染物：SO2/NOX/PM/VOCs/HCL/HF等', minWidth: 170, showOverflow: true },
-    { field: 'concentration', title: '排放浓度 mg/m3', width: 120 },
+    { field: 'pollutantCode', title: '污染物', minWidth: 170, showOverflow: true },
+    { field: 'concentration', title: '排放浓度', width: 120 },
     { field: 'limitValue', title: '限值', width: 120 },
-    { field: 'result', title: '结果：PASS/FAIL', minWidth: 170, showOverflow: true },
-    { field: 'collectionMode', title: '采集方式：CEMS_AUTO/MANUAL', minWidth: 170, showOverflow: true, slots: { default: 'collectionMode' } },
+    { field: 'result', title: '结果', minWidth: 170, showOverflow: true, slots: { default: 'result' } },
+    { field: 'collectionMode', title: '采集方式', minWidth: 170, showOverflow: true, slots: { default: 'collectionMode' } },
     { field: 'monitorTime', title: '监测时间', width: 120 },
     {
       title: '操作',
@@ -93,10 +98,10 @@ export function useFormSchema(): VbenFormSchema[] {
   return [
     {
       fieldName: 'recordNo',
-      label: '记录编号 EXGAS-YYYYMMDD-NNN',
+      label: '记录编号',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入记录编号 EXGAS-YYYYMMDD-NNN',
+        placeholder: '请输入记录编号',
       },
       rules: 'required',
     },
@@ -119,45 +124,45 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'pollutantCode',
-      label: '污染物：SO2/NOX/PM/VOCs/HCL/HF等',
+      label: '污染物',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入污染物：SO2/NOX/PM/VOCs/HCL/HF等',
+        placeholder: '请输入污染物',
       },
       rules: 'required',
     },
     {
       fieldName: 'concentration',
-      label: '排放浓度 mg/m3',
+      label: '排放浓度',
       component: 'InputNumber',
       componentProps: {
-        placeholder: '请输入排放浓度 mg/m3',
+        placeholder: '请输入排放浓度',
         class: 'w-full',
       },
     },
     {
       fieldName: 'unit',
-      label: '单位 mg/m3等',
+      label: '单位',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入单位 mg/m3等',
+        placeholder: '请输入单位',
       },
     },
     {
       fieldName: 'flowRate',
-      label: '标态干烟气流量 m3/h',
+      label: '标态干烟气流量',
       component: 'InputNumber',
       componentProps: {
-        placeholder: '请输入标态干烟气流量 m3/h',
+        placeholder: '请输入标态干烟气流量',
         class: 'w-full',
       },
     },
     {
       fieldName: 'emissionAmount',
-      label: '折算排放速率 kg/h',
+      label: '折算排放速率',
       component: 'InputNumber',
       componentProps: {
-        placeholder: '请输入折算排放速率 kg/h',
+        placeholder: '请输入折算排放速率',
         class: 'w-full',
       },
     },
@@ -172,15 +177,15 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'result',
-      label: '结果：PASS/FAIL',
+      label: '结果',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入结果：PASS/FAIL',
+        placeholder: '请输入结果',
       },
     },
     {
       fieldName: 'collectionMode',
-      label: '采集方式：CEMS_AUTO/MANUAL',
+      label: '采集方式',
       component: 'Select',
       componentProps: {
         options: COLLECTION_MODE_OPTIONS,

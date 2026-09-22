@@ -3,6 +3,7 @@ package cn.iocoder.txgy.module.mes.service.wm.materialstock;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ObjUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.iocoder.txgy.framework.common.pojo.PageResult;
 import cn.iocoder.txgy.framework.common.util.collection.SetUtils;
 import cn.iocoder.txgy.module.mes.controller.admin.wm.materialstock.vo.MesWmMaterialStockFreezeReqVO;
@@ -16,11 +17,13 @@ import cn.iocoder.txgy.module.mes.dal.dataobject.wm.warehouse.MesWmWarehouseDO;
 import cn.iocoder.txgy.module.mes.dal.mysql.wm.materialstock.MesWmMaterialStockMapper;
 import cn.iocoder.txgy.module.mes.service.md.item.MesMdItemService;
 import cn.iocoder.txgy.module.mes.service.md.item.MesMdItemTypeService;
+import cn.iocoder.txgy.module.mes.service.set.signrecord.MesSetSignRecordService;
 import cn.iocoder.txgy.module.mes.service.wm.warehouse.MesWmWarehouseAreaService;
 import cn.iocoder.txgy.module.mes.service.wm.warehouse.MesWmWarehouseService;
 import jakarta.annotation.Resource;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.math.BigDecimal;
@@ -50,6 +53,9 @@ public class MesWmMaterialStockServiceImpl implements MesWmMaterialStockService 
     @Resource
     @Lazy
     private MesWmWarehouseService warehouseService;
+
+    @Resource
+    private MesSetSignRecordService signRecordService;
 
     @Override
     public MesWmMaterialStockDO getMaterialStock(Long id) {
@@ -100,9 +106,22 @@ public class MesWmMaterialStockServiceImpl implements MesWmMaterialStockService 
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updateMaterialStockFrozen(MesWmMaterialStockFreezeReqVO updateReqVO) {
         // 校验存在
-        validateMaterialStockExists(updateReqVO.getId());
+        MesWmMaterialStockDO stock = validateMaterialStockExists(updateReqVO.getId());
+
+        // 签字卡口：这是"人在页面上手点的冻结/解冻"，缺签名直接拒。签名与下面的写同事务
+        // （本方法原先没有 @Transactional，单表 update 不需要；现在两处写必须原子）。
+        // opinion 里点明"人工覆盖"——frozen 是批次投影，会被 refreshBatchStamp 重刷盖掉，
+        // 不写清楚的话事后看到这条签字会以为"签了字这批就该是冻着的"。
+        signRecordService.requireSigned(new MesSetSignRecordService.SignPayload(
+                SIGN_BIZ_TYPE_MATERIAL_STOCK,
+                StrUtil.blankToDefault(stock.getBatchCode(), String.valueOf(stock.getId())),
+                "OPERATOR", updateReqVO.getSignImg(),
+                StrUtil.blankToDefault(updateReqVO.getOpinion(), "人工" + (Boolean.TRUE.equals(updateReqVO.getFrozen()) ? "冻结" : "解冻"))
+                        + "（人工覆盖，批次污染投影重算时会覆盖该状态）"),
+                WM_MATERIAL_STOCK_SIGN_REQUIRED);
 
         // 更新冻结状态
         materialStockMapper.updateById(new MesWmMaterialStockDO()

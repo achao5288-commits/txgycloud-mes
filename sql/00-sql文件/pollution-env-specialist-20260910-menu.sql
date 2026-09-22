@@ -26,8 +26,15 @@ SELECT u.`id`, 60466, 'system', 'system', 2010 FROM `system_users` u
 WHERE u.`username` = 'huahan_huanbao' AND u.`tenant_id` = 2010;
 
 -- 5. 角色 → 菜单：仅阅览类页面 + 终审按钮（不含复核/新增/修改/删除）
+--
+-- 必须先绑祖先目录 5100(MES 系统) / 34010(污染管控)：后端 filterDisableMenus 是
+-- 按父链递归剪枝的，链子断在哪一节，那一节的整棵子树都会被判成"无权"→
+-- 解出来就是 0 个权限码，页面上按钮全被前端 auth 过滤隐藏。
+-- 5100/34010 都是 type=1 目录且 permission 为空，绑它们不发任何权限码，只是把链子接通。
 INSERT INTO `system_role_menu` (`role_id`, `menu_id`, `creator`, `updater`, `tenant_id`) VALUES
+    (60466, 5100, 'system', 'system', 2010),   -- MES 系统（根目录）
     (60466, 34000, 'system', 'system', 2010),  -- 安全环保检测（父分组）
+    (60466, 34010, 'system', 'system', 2010),  -- 污染管控（父分组）
     (60466, 34301, 'system', 'system', 2010),  -- 污染判定（只读：判定查询权限是台账页的后端权限）
     (60466, 34302, 'system', 'system', 2010),  -- 污染暂存台账
     (60466, 34370, 'system', 'system', 2010),  -- 污染追溯

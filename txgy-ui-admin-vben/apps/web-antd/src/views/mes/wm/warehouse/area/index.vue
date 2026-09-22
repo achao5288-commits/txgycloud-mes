@@ -188,6 +188,11 @@ const [Grid, gridApi] = useVbenVxeGrid({
         <Tag v-if="row.pollutionControl" color="orange">受控库位</Tag>
         <span v-else>-</span>
       </template>
+      <template #storageZone="{ row }">
+        <Tag v-if="row.storageZone === 'EXPLOSION_PROOF'" color="red">防爆区</Tag>
+        <Tag v-else-if="row.storageZone === 'ISOLATION'" color="purple">隔离区</Tag>
+        <span v-else class="text-gray-400">一般区</span>
+      </template>
       <template #actions="{ row }">
         <TableAction
           :actions="[

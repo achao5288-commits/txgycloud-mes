@@ -2,7 +2,7 @@
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { MesHazwasteApi } from '#/api/mes/safetyEnv/hazwaste';
 
-import { Page, useVbenModal } from '@vben/common-ui';
+import { Page, useVbenDrawer, useVbenModal } from '@vben/common-ui';
 
 import { message, Tag } from 'ant-design-vue';
 
@@ -35,7 +35,11 @@ const [Label, labelApi] = useVbenModal({
   destroyOnClose: true,
 });
 
-const [Manifest, manifestApi] = useVbenModal({
+// 这里必须是 useVbenDrawer：manifest-drawer.vue 内部调的是 useVbenDrawer，
+// 而 useVbenModal / useVbenDrawer 的 provide 键是两个不同的 Symbol，
+// 用 useVbenModal 包它 → 子组件 inject 不到父的 api，自己另起一个抽屉，
+// 父的 manifestApi.open() 落在一个接不上原型对象的空 reactive 上，点击毫无反应。
+const [Manifest, manifestApi] = useVbenDrawer({
   connectedComponent: ManifestDrawer,
   destroyOnClose: true,
 });
@@ -163,6 +167,10 @@ const [Grid, gridApi] = useVbenVxeGrid({
         </Tag>
       </template>
       <template #actions="{ row }">
+        <!-- 「推进」的显隐必须是 ifShow：ActionItem 上只有 ifShow，写 show 会被静默忽略 →
+             终态行（nextStage 为 undefined）照样渲染出一个"推进环节"，
+             点确认走的是 advanceHazwasteStage(id, '')，注定失败。
+             注意：Vue 模板表达式里不能写 // 注释，会直接把这段属性解析搞崩（vite 500）。 -->
         <TableAction
           :actions="[
             {
@@ -181,7 +189,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
               label: nextStage(row) ? `推进到${nextStage(row)!.label}` : '推进环节',
               type: 'link',
               auth: ['mes:set-hazwaste:update'],
-              show: !!nextStage(row),
+              ifShow: !!nextStage(row),
               popConfirm: {
                 title: `确认把 ${row.manifestNo} 推进到「${nextStage(row)?.label ?? ''}」？环节不可回退。`,
                 confirm: handleAdvance.bind(null, row, nextStage(row)?.value ?? ''),

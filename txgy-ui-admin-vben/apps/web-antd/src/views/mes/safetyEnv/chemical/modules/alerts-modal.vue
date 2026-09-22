@@ -38,7 +38,7 @@ const [Modal, modalApi] = useVbenModal({
   <Modal title="危化品预警（超量 / MSDS 缺失 / MSDS 将到期）" class="w-2/3">
     <div class="mx-4">
       <Tabs>
-        <Tabs.TabPane :key="'over'">
+        <Tabs.TabPane key="over">
           <template #tab>
             超量预警 ({{ rows(alerts.overQuota).length }})
           </template>
@@ -52,7 +52,7 @@ const [Modal, modalApi] = useVbenModal({
           </div>
         </Tabs.TabPane>
 
-        <Tabs.TabPane :key="'missing'">
+        <Tabs.TabPane key="missing">
           <template #tab>
             MSDS 缺失 ({{ rows(alerts.msdsMissing).length }})
           </template>
@@ -68,7 +68,7 @@ const [Modal, modalApi] = useVbenModal({
           </div>
         </Tabs.TabPane>
 
-        <Tabs.TabPane :key="'expiring'">
+        <Tabs.TabPane key="expiring">
           <template #tab>
             MSDS 将到期 ({{ rows(alerts.msdsExpiring).length }})
           </template>

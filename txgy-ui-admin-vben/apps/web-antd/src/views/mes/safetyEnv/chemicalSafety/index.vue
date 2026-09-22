@@ -13,7 +13,7 @@ import {
 } from '#/api/mes/safetyEnv/chemicalSafety';
 import { $t } from '#/locales';
 
-import { RESULT_MAP, useGridColumns, useGridFormSchema } from './data';
+import { RESULT_MAP, useGridColumns, useGridFormSchema, YES_NO_MAP } from './data';
 import Form from './modules/form.vue';
 
 const [FormModal, formModalApi] = useVbenModal({
@@ -101,6 +101,21 @@ const [Grid, gridApi] = useVbenVxeGrid({
       <template #result="{ row }">
         <Tag :color="RESULT_MAP[row.result]?.color">
           {{ RESULT_MAP[row.result]?.text ?? row.result }}
+        </Tag>
+      </template>
+      <template #labelOk="{ row }">
+        <Tag :color="YES_NO_MAP[row.labelOk]?.color">
+          {{ YES_NO_MAP[row.labelOk]?.text ?? row.labelOk ?? '-' }}
+        </Tag>
+      </template>
+      <template #msdsOk="{ row }">
+        <Tag :color="YES_NO_MAP[row.msdsOk]?.color">
+          {{ YES_NO_MAP[row.msdsOk]?.text ?? row.msdsOk ?? '-' }}
+        </Tag>
+      </template>
+      <template #storageOk="{ row }">
+        <Tag :color="YES_NO_MAP[row.storageOk]?.color">
+          {{ YES_NO_MAP[row.storageOk]?.text ?? row.storageOk ?? '-' }}
         </Tag>
       </template>
       <template #actions="{ row }">

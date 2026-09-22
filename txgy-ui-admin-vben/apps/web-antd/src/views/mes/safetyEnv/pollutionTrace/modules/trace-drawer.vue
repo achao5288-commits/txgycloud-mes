@@ -9,6 +9,7 @@ import { formatDateTime } from '@vben/utils';
 import {
   Button,
   Empty,
+  Image,
   Spin,
   Table,
   TabPane,
@@ -16,6 +17,7 @@ import {
   Tag,
   Timeline,
   TimelineItem,
+  Tooltip,
 } from 'ant-design-vue';
 
 import {
@@ -26,10 +28,11 @@ import {
 
 import AttachmentPanel from '../../components/AttachmentPanel.vue';
 import { nodeStatusMeta, TRACE_TYPE_MAP } from '../data';
+import SignModal from './sign-modal.vue';
 import WeighModal from './weigh-modal.vue';
 
 /** 签字角色文案 */
-const SIGN_ROLE_MAP: Record<string, { text: string; color: string }> = {
+const SIGN_ROLE_MAP: Record<string, { color: string; text: string; }> = {
   REVIEWER: { text: '复核人', color: 'green' },
   OPERATOR: { text: '录入人', color: 'blue' },
   APPROVER: { text: '审批人', color: 'orange' },
@@ -80,6 +83,18 @@ const [WeighModalComp, weighModalApi] = useVbenModal({
 /** 手工登记称重（电子秤未联网场景），登记成功后刷新称重 Tab */
 function handleWeighAdd() {
   weighModalApi
+    .setData({ bizNo: row.value?.bizNo, bizType: row.value?.bizType })
+    .open();
+}
+
+const [SignModalComp, signModalApi] = useVbenModal({
+  connectedComponent: SignModal,
+  destroyOnClose: true,
+});
+
+/** 手工签字：签在当前追溯对象（业务单号）上，与复核自动留的那条同一维度 */
+function handleSignAdd() {
+  signModalApi
     .setData({ bizNo: row.value?.bizNo, bizType: row.value?.bizType })
     .open();
 }
@@ -146,17 +161,28 @@ const [Drawer, drawerApi] = useVbenDrawer({
         </TabPane>
 
         <TabPane key="sign" :tab="`签字记录${signs.length ? ` (${signs.length})` : ''}`">
+          <div class="mb-2 flex justify-end">
+            <Button
+              size="small"
+              type="primary"
+              :disabled="!row?.bizNo"
+              @click="handleSignAdd"
+            >
+              签字
+            </Button>
+          </div>
           <Table
             v-if="signs.length"
             :data-source="signs"
             :pagination="false"
             row-key="id"
             size="small"
+            :scroll="{ x: 860 }"
             :columns="[
               { title: '角色', dataIndex: 'signRole', width: 90 },
-              { title: '签字人', dataIndex: 'signUser', width: 110 },
+              { title: '签字人', dataIndex: 'signUser', width: 130 },
               { title: '签字时间', dataIndex: 'signTime', width: 170 },
-              { title: '地点/去向', dataIndex: 'location' },
+              { title: '地点/去向', dataIndex: 'location', width: 140 },
               { title: '意见', dataIndex: 'opinion' },
               { title: '签名', dataIndex: 'signImg', width: 110 },
             ]"
@@ -167,16 +193,35 @@ const [Drawer, drawerApi] = useVbenDrawer({
                   {{ SIGN_ROLE_MAP[record.signRole]?.text ?? record.signRole ?? '-' }}
                 </Tag>
               </template>
-              <template v-else-if="column.dataIndex === 'signUser'">{{ record.signUser ?? '-' }}</template>
+              <template v-else-if="column.dataIndex === 'signUser'">
+                {{ record.signUser ?? '-' }}
+                <!-- 代签：签字人≠实际操作人，必须一眼看得出来 -->
+                <Tooltip
+                  v-if="
+                    record.operatorUserId &&
+                    record.signUserId &&
+                    record.operatorUserId !== record.signUserId
+                  "
+                  title="代签：签字人不是操作这条记录的人"
+                >
+                  <Tag class="ml-1" color="purple">代签</Tag>
+                </Tooltip>
+              </template>
               <template v-else-if="column.dataIndex === 'signTime'">{{ fmt(record.signTime) }}</template>
               <template v-else-if="column.dataIndex === 'signImg'">
-                <img v-if="record.signImg" :src="record.signImg" class="h-10 border border-solid border-gray-200" alt="签名" />
+                <!-- Image 自带点击放大预览：签名是追责依据，缩略图看不清等于没留 -->
+                <Image
+                  v-if="record.signImg"
+                  :src="record.signImg"
+                  :width="72"
+                  class="border border-solid border-gray-200"
+                />
                 <span v-else class="text-gray-400">未签</span>
               </template>
               <template v-else>{{ record[column.dataIndex] ?? '-' }}</template>
             </template>
           </Table>
-          <Empty v-else description="暂无签字记录（复核收口自动留档）" />
+          <Empty v-else description="暂无签字记录（复核收口自动留档，也可点右上角「签字」手工补签）" />
         </TabPane>
 
         <TabPane key="attachment" tab="附件">
@@ -212,7 +257,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
             :columns="[
               { title: '类型', dataIndex: 'weighType', width: 90 },
               { title: '容器', dataIndex: 'containerCode', width: 130 },
-              { title: '净重(kg)', dataIndex: 'netWeight', width: 110 },
+              { title: '净重', dataIndex: 'netWeight', width: 110 },
               { title: '来源', dataIndex: 'dataSource', width: 90 },
               { title: '称重人', dataIndex: 'operatorName', width: 110 },
               { title: '称重时间', dataIndex: 'weighTime', width: 170 },
@@ -228,5 +273,6 @@ const [Drawer, drawerApi] = useVbenDrawer({
       </Tabs>
     </Spin>
     <WeighModalComp @success="loadAll(row?.bizNo)" />
+    <SignModalComp @success="loadAll(row?.bizNo)" />
   </Drawer>
 </template>

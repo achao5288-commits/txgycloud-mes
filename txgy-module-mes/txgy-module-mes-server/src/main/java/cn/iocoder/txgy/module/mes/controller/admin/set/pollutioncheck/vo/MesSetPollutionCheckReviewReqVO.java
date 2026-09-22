@@ -21,6 +21,10 @@ public class MesSetPollutionCheckReviewReqVO {
     @Schema(description = "成品达标分支(仅成品环节必填)：QUALIFIED(达标)/REWORK(局部缺陷返工)/SCRAPPED(整体报废)")
     private String finishedResult;
 
+    @Schema(description = "人工复核的判定依据（复选法条，多项以**换行**连接；取自 /legal-basis 白名单）。"
+            + "口径为**不强制**：填了就落库并对外可引，未填也放行")
+    private String reviewBasis;
+
     @Schema(description = "最终存储方法（留空则按复核结果取默认/沿用 AI 建议）")
     private String storageMethod;
 

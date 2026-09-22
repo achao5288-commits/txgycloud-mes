@@ -41,6 +41,17 @@ public class MesSetChemicalProfileDO extends BaseDO {
      */
     private String chemicalCode;
     /**
+     * 关联物料 id（mes_md_item.id）
+     *
+     * **这张表与本表的唯一可靠关联**：chemicalCode/casNo 是 CAS 号，物料主数据用物料编码，
+     * 两者永远对不上（设计文档 F10）。所以要判「某个在库批次的物料是不是危化品」，
+     * 只能靠这条显式绑定，不能靠编码字符串猜。
+     *
+     * 为空 = 未绑定：在库侧（受控库位调整）**不判**禁配/专区——未绑定的物料不当危化品管，
+     * 与「未锚定的禁配组合不猜」同一口径。
+     */
+    private Long itemId;
+    /**
      * 危化品名称
      */
     private String chemicalName;

@@ -13,7 +13,7 @@ import {
 } from '#/api/mes/safetyEnv/occupationalhazard';
 import { $t } from '#/locales';
 
-import { FACTOR_CATEGORY_MAP, RESULT_MAP, useGridColumns, useGridFormSchema } from './data';
+import { FACTOR_CATEGORY_MAP, LIMIT_TYPE_MAP, RESULT_MAP, useGridColumns, useGridFormSchema } from './data';
 import Form from './modules/form.vue';
 
 const [FormModal, formModalApi] = useVbenModal({
@@ -106,6 +106,11 @@ const [Grid, gridApi] = useVbenVxeGrid({
       <template #result="{ row }">
         <Tag :color="RESULT_MAP[row.result]?.color">
           {{ RESULT_MAP[row.result]?.text ?? row.result }}
+        </Tag>
+      </template>
+      <template #limitType="{ row }">
+        <Tag :color="LIMIT_TYPE_MAP[row.limitType]?.color">
+          {{ LIMIT_TYPE_MAP[row.limitType]?.text ?? row.limitType ?? '-' }}
         </Tag>
       </template>
       <template #actions="{ row }">

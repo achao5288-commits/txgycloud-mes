@@ -14,7 +14,8 @@ export namespace MesPollutionLedgerApi {
     itemCode?: string; // 物料/产品编码
     itemName?: string; // 物料/产品名称
     itemSpec?: string; // 规格
-    weight?: number; // 重量(kg)，由源判定行带入
+    weight?: number; // 重量——单位见 unitName，由源判定行带入
+    unitName?: string; // 重量单位：KG=已换算的质量，其余为物料原单位(个/箱/米…)
     disposition?: string; // 处置方式
     storageMethod?: string; // 最终存储方法
     location?: string; // 去向/库位
@@ -30,16 +31,24 @@ export namespace MesPollutionLedgerApi {
   export interface StatusPayload {
     id: number;
     status: string;
+    /** 流转备注（与签字说明是两回事：这个是业务说明，opinion 进签字记录） */
     remark?: string;
     destination?: string;
     standard?: string;
+    /** 手写签名图 URL：流转会写终态、落排放合规流水、重投影批次污染戳，后端缺签名直接拒（1040819005）。必传 */
+    signImg: string;
+    /** 签署意见（随签字记录留档） */
+    opinion?: string;
   }
 
   /** 标记品终审参数（环保专员） */
   export interface MarkPayload {
     id: number;
     marked: boolean;
+    /** 会作为这次签字的说明落进签字记录（后端拿它当 opinion） */
     remark?: string;
+    /** 手写签名图 URL：终审是人为主张，后端缺签名直接拒（1040819004）。必传，见 changePollutionControlLocation 的同一理由 */
+    signImg: string;
   }
 
   /** 台账流转历史行：登记/处置/闭环 每步一行(只增不改) */

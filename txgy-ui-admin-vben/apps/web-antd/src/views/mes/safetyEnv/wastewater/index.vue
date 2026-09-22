@@ -13,7 +13,7 @@ import {
 } from '#/api/mes/safetyEnv/wastewater';
 import { $t } from '#/locales';
 
-import { COLLECTION_MODE_MAP, useGridColumns, useGridFormSchema } from './data';
+import { COLLECTION_MODE_MAP, RESULT_MAP, useGridColumns, useGridFormSchema } from './data';
 import Form from './modules/form.vue';
 
 const [FormModal, formModalApi] = useVbenModal({
@@ -101,6 +101,11 @@ const [Grid, gridApi] = useVbenVxeGrid({
       <template #collectionMode="{ row }">
         <Tag :color="COLLECTION_MODE_MAP[row.collectionMode]?.color">
           {{ COLLECTION_MODE_MAP[row.collectionMode]?.text ?? row.collectionMode }}
+        </Tag>
+      </template>
+      <template #result="{ row }">
+        <Tag :color="RESULT_MAP[row.result]?.color">
+          {{ RESULT_MAP[row.result]?.text ?? row.result ?? '-' }}
         </Tag>
       </template>
       <template #actions="{ row }">

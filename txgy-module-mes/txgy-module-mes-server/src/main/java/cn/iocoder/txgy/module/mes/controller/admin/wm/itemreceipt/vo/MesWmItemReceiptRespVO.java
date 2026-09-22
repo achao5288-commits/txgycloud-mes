@@ -61,6 +61,22 @@ public class MesWmItemReceiptRespVO {
     @ExcelProperty("备注")
     private String remark;
 
+    /**
+     * 以下四项是「整单环保判定」投影，非本表字段，由 Service 按 biz_no=入库单编码 聚合判定表回填。
+     * 不加 @ExcelProperty：导出列已定型，加进去会动到别人对表头的预期。
+     */
+    @Schema(description = "环保判定状态：NOT_JUDGED 未判定 / PENDING 待复核 / PARTIAL 部分判定 / DONE_CLEAN 已完成·无污染 / DONE_POLLUTED 已完成·有污染")
+    private String pollutionStatus;
+
+    @Schema(description = "已判定物料行数（同一行的重复判定只算一行）")
+    private Integer pollutionJudgedLines;
+
+    @Schema(description = "物料行总数")
+    private Integer pollutionLineCount;
+
+    @Schema(description = "待复核行数")
+    private Integer pollutionPendingLines;
+
     @Schema(description = "创建时间", requiredMode = Schema.RequiredMode.REQUIRED)
     @ExcelProperty("创建时间")
     private LocalDateTime createTime;

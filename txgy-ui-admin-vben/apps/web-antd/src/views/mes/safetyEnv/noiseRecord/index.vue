@@ -13,7 +13,7 @@ import {
 } from '#/api/mes/safetyEnv/noiserecord';
 import { $t } from '#/locales';
 
-import { COLLECTION_MODE_MAP, RESULT_MAP, useGridColumns, useGridFormSchema } from './data';
+import { COLLECTION_MODE_MAP, RESULT_MAP, SOURCE_TYPE_MAP, useGridColumns, useGridFormSchema } from './data';
 import Form from './modules/form.vue';
 
 const [FormModal, formModalApi] = useVbenModal({
@@ -106,6 +106,11 @@ const [Grid, gridApi] = useVbenVxeGrid({
       <template #result="{ row }">
         <Tag :color="RESULT_MAP[row.result]?.color">
           {{ RESULT_MAP[row.result]?.text ?? row.result }}
+        </Tag>
+      </template>
+      <template #sourceType="{ row }">
+        <Tag :color="SOURCE_TYPE_MAP[row.sourceType]?.color">
+          {{ SOURCE_TYPE_MAP[row.sourceType]?.text ?? row.sourceType ?? '-' }}
         </Tag>
       </template>
       <template #actions="{ row }">

@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import cn.iocoder.txgy.framework.common.pojo.PageResult;
 import cn.iocoder.txgy.framework.common.util.object.BeanUtils;
 import cn.iocoder.txgy.framework.mybatis.core.query.LambdaQueryWrapperX;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import cn.iocoder.txgy.module.mes.controller.admin.set.chemical.vo.*;
 import cn.iocoder.txgy.module.mes.controller.admin.set.signrecord.vo.MesSetSignRecordPageReqVO;
 import cn.iocoder.txgy.module.mes.dal.dataobject.set.chemical.MesSetChemicalProfileDO;
@@ -38,39 +39,8 @@ import static cn.iocoder.txgy.module.mes.enums.ErrorCodeConstants.*;
 @Slf4j
 public class MesSetChemicalProfileServiceImpl implements MesSetChemicalProfileService {
 
-    /**
-     * 相容组中文名。
-     *
-     * 只收设计文档 §5.2 / §130 点名的物料族（黑料/白料/稀释剂/环氧粉末/水/醇/胺）；
-     * **没收录的按原值回显、不猜**——与 HW_HAZARD_TRAITS 同一口径，编错了比留空危险。
-     */
-    private static final Map<String, String> GROUP_NAMES = Map.of(
-            "ISOCYANATE", "异氰酸酯(黑料)",
-            "POLYOL", "组合聚醚(白料)",
-            "THINNER", "稀释剂",
-            "EPOXY", "环氧粉末",
-            "WATER", "水",
-            "ALCOHOL", "醇类",
-            "AMINE", "胺类");
-
-    /**
-     * 禁配矩阵（设计文档 §5.2 锚定）：
-     * 「异氰酸酯(黑料)…远离水醇胺（放热剧反应）」、「组合聚醚(白料)…与黑料剧烈反应 → 分间、双锁分开」。
-     *
-     * 只列文档点名的组合。其余组合**不判**——禁配是有化学依据的事，宁可漏判让人工确认，
-     * 也不能凭"看起来像"就拦货。
-     */
-    private static final String[][] INCOMPATIBLE_PAIRS = {
-            {"ISOCYANATE", "POLYOL"},
-            {"ISOCYANATE", "WATER"},
-            {"ISOCYANATE", "ALCOHOL"},
-            {"ISOCYANATE", "AMINE"},
-    };
-
-    /**
-     * 必须存放于防爆区的相容组（设计文档 §5.2「稀释剂：易燃液体专柜」）。
-     */
-    private static final Set<String> EXPLOSION_PROOF_GROUPS = Set.of("THINNER");
+    // 禁配矩阵、防爆组白名单、相容组/专区中文名都住在 {@link ChemicalCompatRules}——
+    // 在库侧（MesPollutionControlServiceImpl）要跑同一套规则，规则留两份是这类校验最典型的腐化方式。
 
     @Resource
     private MesSetChemicalProfileMapper profileMapper;
@@ -85,6 +55,7 @@ public class MesSetChemicalProfileServiceImpl implements MesSetChemicalProfileSe
         if (profileMapper.selectByProfileNo(createReqVO.getProfileNo()) != null) {
             throw exception(SET_CHEMICAL_PROFILE_NO_DUPLICATE);
         }
+        validateItemBinding(createReqVO.getItemId(), null);
         MesSetChemicalProfileDO obj = BeanUtils.toBean(createReqVO, MesSetChemicalProfileDO.class);
         obj.setStockQuantity(BigDecimal.ZERO);
         if (obj.getStatus() == null) {
@@ -101,6 +72,7 @@ public class MesSetChemicalProfileServiceImpl implements MesSetChemicalProfileSe
         if (dup != null && !dup.getId().equals(exist.getId())) {
             throw exception(SET_CHEMICAL_PROFILE_NO_DUPLICATE);
         }
+        validateItemBinding(updateReqVO.getItemId(), exist.getId());
         MesSetChemicalProfileDO updateObj = BeanUtils.toBean(updateReqVO, MesSetChemicalProfileDO.class);
         // 存量只由 stockIn 累加，改档案不许覆盖——那是账，不是属性
         updateObj.setStockQuantity(null);
@@ -108,6 +80,13 @@ public class MesSetChemicalProfileServiceImpl implements MesSetChemicalProfileSe
             throw exception(SET_CHEMICAL_PROFILE_STATUS_INVALID);
         }
         profileMapper.updateById(updateObj);
+        // itemId 走窄更新：updateById 跳过 null，那样就**解不了绑**了。
+        // 绑定是安全相关的事实（决定该物料在在库侧判不判禁配），必须能显式清掉，所以这一列不吃"null=不改"的惯例。
+        if (!Objects.equals(updateReqVO.getItemId(), exist.getItemId())) {
+            profileMapper.update(null, new LambdaUpdateWrapper<MesSetChemicalProfileDO>()
+                    .eq(MesSetChemicalProfileDO::getId, exist.getId())
+                    .set(MesSetChemicalProfileDO::getItemId, updateReqVO.getItemId()));
+        }
     }
 
     @Override
@@ -147,7 +126,7 @@ public class MesSetChemicalProfileServiceImpl implements MesSetChemicalProfileSe
         resp.setProfileNo(profile.getProfileNo());
         resp.setChemicalName(profile.getChemicalName());
         resp.setCompatGroup(profile.getCompatGroup());
-        resp.setCompatGroupName(GROUP_NAMES.getOrDefault(profile.getCompatGroup(), profile.getCompatGroup()));
+        resp.setCompatGroupName(ChemicalCompatRules.groupName(profile.getCompatGroup()));
         resp.setStorageLocation(location);
         resp.setStockQuantity(profile.getStockQuantity());
         resp.setStorageLimit(profile.getStorageLimit());
@@ -174,7 +153,7 @@ public class MesSetChemicalProfileServiceImpl implements MesSetChemicalProfileSe
                 if (isIncompatible(profile, other)) {
                     incompatibleWith.add(String.format("%s（%s，组 %s）",
                             other.getChemicalName(), other.getProfileNo(),
-                            GROUP_NAMES.getOrDefault(other.getCompatGroup(), other.getCompatGroup())));
+                            ChemicalCompatRules.groupName(other.getCompatGroup())));
                 }
             }
         }
@@ -242,9 +221,8 @@ public class MesSetChemicalProfileServiceImpl implements MesSetChemicalProfileSe
     }
 
     private boolean checkZone(MesSetChemicalProfileDO profile) {
-        boolean needExplosionProof = Boolean.TRUE.equals(profile.getExplosionProof())
-                || EXPLOSION_PROOF_GROUPS.contains(profile.getCompatGroup());
-        return !needExplosionProof || "EXPLOSION_PROOF".equals(profile.getStorageZone());
+        return ChemicalCompatRules.zoneSatisfies(profile.getCompatGroup(),
+                profile.getExplosionProof(), profile.getStorageZone());
     }
 
     private boolean checkQuota(MesSetChemicalProfileDO profile, BigDecimal quantity) {
@@ -258,28 +236,7 @@ public class MesSetChemicalProfileServiceImpl implements MesSetChemicalProfileSe
      * 两物料是否禁配：命中矩阵（对无序），或任一方在 incompatibleGroups 里人工点名了对方。
      */
     private boolean isIncompatible(MesSetChemicalProfileDO a, MesSetChemicalProfileDO b) {
-        String ga = a.getCompatGroup();
-        String gb = b.getCompatGroup();
-        if (ga != null && gb != null) {
-            for (String[] pair : INCOMPATIBLE_PAIRS) {
-                if ((pair[0].equals(ga) && pair[1].equals(gb)) || (pair[1].equals(ga) && pair[0].equals(gb))) {
-                    return true;
-                }
-            }
-        }
-        return inExtraList(a.getIncompatibleGroups(), gb) || inExtraList(b.getIncompatibleGroups(), ga);
-    }
-
-    private boolean inExtraList(String extra, String group) {
-        if (StrUtil.isBlank(extra) || group == null) {
-            return false;
-        }
-        for (String s : extra.split(",")) {
-            if (group.equals(s.trim())) {
-                return true;
-            }
-        }
-        return false;
+        return ChemicalCompatRules.isIncompatible(a, b);
     }
 
     // ==================== 五双双人签字 ====================
@@ -379,6 +336,22 @@ public class MesSetChemicalProfileServiceImpl implements MesSetChemicalProfileSe
     }
 
     // ==================== 内部工具 ====================
+
+    /**
+     * 一个物料只能按一条危化品档案管：绑重了在库侧 {@code selectEnabledByItemId} 会炸，
+     * 而且两条档案的禁配结论可能互相打架，届时按哪条算都说不清。
+     *
+     * @param excludeId 修改时传自身 id，避免自己和自己撞
+     */
+    private void validateItemBinding(Long itemId, Long excludeId) {
+        if (itemId == null) {
+            return; // 不绑定是合法状态：不绑 = 在库侧不当危化品管
+        }
+        MesSetChemicalProfileDO bound = profileMapper.selectByItemId(itemId, excludeId);
+        if (bound != null) {
+            throw exception(SET_CHEMICAL_ITEM_BOUND_DUPLICATE, bound.getChemicalName());
+        }
+    }
 
     private MesSetChemicalProfileDO validateProfileExists(Long id) {
         if (id == null) {

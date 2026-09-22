@@ -13,7 +13,7 @@ import {
 } from '#/api/mes/safetyEnv/emissionOutlet';
 import { $t } from '#/locales';
 
-import { MONITOR_METHOD_MAP, OUTLET_TYPE_MAP, useGridColumns, useGridFormSchema } from './data';
+import { MONITOR_METHOD_MAP, OUTLET_TYPE_MAP, STATUS_MAP, useGridColumns, useGridFormSchema } from './data';
 import Form from './modules/form.vue';
 
 const [FormModal, formModalApi] = useVbenModal({
@@ -106,6 +106,11 @@ const [Grid, gridApi] = useVbenVxeGrid({
       <template #monitorMethod="{ row }">
         <Tag :color="MONITOR_METHOD_MAP[row.monitorMethod]?.color">
           {{ MONITOR_METHOD_MAP[row.monitorMethod]?.text ?? row.monitorMethod }}
+        </Tag>
+      </template>
+      <template #status="{ row }">
+        <Tag :color="STATUS_MAP[row.status]?.color">
+          {{ STATUS_MAP[row.status]?.text ?? row.status ?? '-' }}
         </Tag>
       </template>
       <template #actions="{ row }">

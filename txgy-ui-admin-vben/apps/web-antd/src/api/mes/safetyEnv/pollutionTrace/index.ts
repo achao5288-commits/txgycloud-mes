@@ -27,11 +27,24 @@ export namespace MesPollutionTraceApi {
     bizNo?: string;
     signRole?: string; // REVIEWER/OPERATOR/APPROVER
     signUser?: string;
+    signUserId?: number; // 签的是谁（下拉选的签字人）
+    operatorUserId?: number; // 谁点的这一下；与 signUserId 不同即代签
     signTime?: number;
     location?: string;
     opinion?: string;
     signImg?: string;
     createTime?: number;
+  }
+
+  /** 手工签字参数（签字人昵称由服务端按 signUserId 反查，前端不传名字） */
+  export interface SignSavePayload {
+    bizType: string;
+    bizNo: string;
+    signRole: string;
+    signUserId: number;
+    location?: string;
+    opinion?: string;
+    signImg?: string;
   }
 
   /** 手工登记称重参数（净重服务端算） */
@@ -134,6 +147,18 @@ export function getSignRecordPage(params: PageParam & { bizType?: string; bizNo?
   return requestClient.get<PageResult<MesPollutionTraceApi.SignRecord>>(
     '/mes/safety-env/pollution-sign/page',
     { params },
+  );
+}
+
+/** 手工追加签字(追溯页：选签字人 + 手写签名) */
+export function createSignRecord(data: MesPollutionTraceApi.SignSavePayload) {
+  return requestClient.post('/mes/safety-env/pollution-sign/create', data);
+}
+
+/** 反向查来源·全量：打开即列出全部危废台账行及源头判定，无需先输桶码 */
+export function listAllSources() {
+  return requestClient.get<MesPollutionTraceApi.ReverseLedger[]>(
+    '/mes/safety-env/pollution-trace/reverse-list',
   );
 }
 

@@ -12,7 +12,7 @@ export const TRACE_TYPE_OPTIONS = [
 ];
 
 /** 类型文案(色值用于 tag) */
-export const TRACE_TYPE_MAP: Record<string, { text: string; color: string }> = {
+export const TRACE_TYPE_MAP: Record<string, { color: string; text: string; }> = {
   CHECK: { text: '污染判定', color: 'blue' },
   LEDGER: { text: '台账处置', color: 'green' },
 };
@@ -32,7 +32,7 @@ export const NODE_STAGE_MAP: Record<string, string> = Object.fromEntries(
 );
 
 /** 节点状态 tag（CHECK 复核终值取污染判定文案，LEDGER 取台账状态文案） */
-export function nodeStatusMeta(node: MesPollutionTraceApi.TraceNode): { text: string; color: string } {
+export function nodeStatusMeta(node: MesPollutionTraceApi.TraceNode): { color: string; text: string; } {
   const status = node.batchStatus;
   if (!status) {
     return { text: '-', color: 'default' };

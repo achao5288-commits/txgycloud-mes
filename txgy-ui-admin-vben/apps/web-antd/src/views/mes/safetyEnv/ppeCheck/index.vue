@@ -13,7 +13,7 @@ import {
 } from '#/api/mes/safetyEnv/ppecheck';
 import { $t } from '#/locales';
 
-import { CHECK_MODE_MAP, RESULT_MAP, useGridColumns, useGridFormSchema } from './data';
+import { BLOCK_FLAG_MAP, CHECK_MODE_MAP, PPE_TYPE_MAP, RESULT_MAP, useGridColumns, useGridFormSchema, YES_NO_MAP } from './data';
 import Form from './modules/form.vue';
 
 const [FormModal, formModalApi] = useVbenModal({
@@ -106,6 +106,31 @@ const [Grid, gridApi] = useVbenVxeGrid({
       <template #result="{ row }">
         <Tag :color="RESULT_MAP[row.result]?.color">
           {{ RESULT_MAP[row.result]?.text ?? row.result }}
+        </Tag>
+      </template>
+      <template #ppeType="{ row }">
+        <Tag :color="PPE_TYPE_MAP[row.ppeType]?.color">
+          {{ PPE_TYPE_MAP[row.ppeType]?.text ?? row.ppeType ?? '-' }}
+        </Tag>
+      </template>
+      <template #wearingOk="{ row }">
+        <Tag :color="YES_NO_MAP[row.wearingOk]?.color">
+          {{ YES_NO_MAP[row.wearingOk]?.text ?? row.wearingOk ?? '-' }}
+        </Tag>
+      </template>
+      <template #gradeMatchOk="{ row }">
+        <Tag :color="YES_NO_MAP[row.gradeMatchOk]?.color">
+          {{ YES_NO_MAP[row.gradeMatchOk]?.text ?? row.gradeMatchOk ?? '-' }}
+        </Tag>
+      </template>
+      <template #validOk="{ row }">
+        <Tag :color="YES_NO_MAP[row.validOk]?.color">
+          {{ YES_NO_MAP[row.validOk]?.text ?? row.validOk ?? '-' }}
+        </Tag>
+      </template>
+      <template #blockFlag="{ row }">
+        <Tag :color="BLOCK_FLAG_MAP[row.blockFlag]?.color">
+          {{ BLOCK_FLAG_MAP[row.blockFlag]?.text ?? row.blockFlag ?? '-' }}
         </Tag>
       </template>
       <template #actions="{ row }">

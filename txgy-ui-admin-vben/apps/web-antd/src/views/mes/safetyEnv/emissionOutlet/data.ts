@@ -6,14 +6,14 @@ import type { MesSetEmissionOutletApi } from '#/api/mes/safetyEnv/emissionOutlet
 export const OUTLET_TYPE_OPTIONS = [
   { label: '废气', value: 'EXHAUST_GAS' },
   { label: '废气', value: 'GAS' },
-  { label: 'WASTE_WATER', value: 'WASTE_WATER' },
+  { label: '废水', value: 'WASTE_WATER' },
 ];
 
 /** 排放类型：GAS/WASTEWATER/NOISE文案 */
-export const OUTLET_TYPE_MAP: Record<string, { text: string; color: string }> = {
+export const OUTLET_TYPE_MAP: Record<string, { color: string; text: string; }> = {
   EXHAUST_GAS: { text: '废气', color: 'success' },
   GAS: { text: '废气', color: 'error' },
-  WASTE_WATER: { text: 'WASTE_WATER', color: 'warning' },
+  WASTE_WATER: { text: '废水', color: 'warning' },
 };
 
 /** 在线监测方式：CEMS/MANUAL/NONE选项 */
@@ -23,9 +23,14 @@ export const MONITOR_METHOD_OPTIONS = [
 ];
 
 /** 在线监测方式：CEMS/MANUAL/NONE文案 */
-export const MONITOR_METHOD_MAP: Record<string, { text: string; color: string }> = {
+export const MONITOR_METHOD_MAP: Record<string, { color: string; text: string; }> = {
   CEMS: { text: '在线监测', color: 'success' },
   MANUAL: { text: '手工', color: 'error' },
+};
+
+export const STATUS_MAP: Record<string, { color: string; text: string; }> = {
+  ACTIVE: { text: '启用', color: 'success' },
+  INACTIVE: { text: '停用', color: 'default' },
 };
 
 /** 搜索表单 */
@@ -33,11 +38,11 @@ export function useGridFormSchema(): VbenFormSchema[] {
   return [
     {
       fieldName: 'outletCode',
-      label: '排放口编号(如 DA001/DW001)',
+      label: '排放口编号',
       component: 'Input',
       componentProps: {
         allowClear: true,
-        placeholder: '请输入排放口编号(如 DA001/DW001)',
+        placeholder: '请输入排放口编号',
       },
     },
     {
@@ -51,7 +56,7 @@ export function useGridFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'outletType',
-      label: '排放类型：GAS/WASTEWATER/NOISE',
+      label: '排放类型',
       component: 'Select',
       componentProps: {
         allowClear: true,
@@ -61,7 +66,7 @@ export function useGridFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'monitorMethod',
-      label: '在线监测方式：CEMS/MANUAL/NONE',
+      label: '在线监测方式',
       component: 'Select',
       componentProps: {
         allowClear: true,
@@ -71,11 +76,11 @@ export function useGridFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'status',
-      label: '状态：ACTIVE/INACTIVE',
+      label: '状态',
       component: 'Input',
       componentProps: {
         allowClear: true,
-        placeholder: '请输入状态：ACTIVE/INACTIVE',
+        placeholder: '请输入状态',
       },
     },
   ];
@@ -84,14 +89,14 @@ export function useGridFormSchema(): VbenFormSchema[] {
 /** 列表字段 */
 export function useGridColumns(): VxeTableGridOptions<MesSetEmissionOutletApi.EmissionOutlet>['columns'] {
   return [
-    { field: 'outletCode', title: '排放口编号(如 DA001/DW001)', minWidth: 170, showOverflow: true },
+    { field: 'outletCode', title: '排放口编号', minWidth: 170, showOverflow: true },
     { field: 'outletName', title: '排放口名称', minWidth: 170, showOverflow: true },
-    { field: 'outletType', title: '排放类型：GAS/WASTEWATER/NOISE', minWidth: 170, showOverflow: true, slots: { default: 'outletType' } },
-    { field: 'stackHeight', title: '排气筒高度 m', width: 120 },
-    { field: 'monitorMethod', title: '在线监测方式：CEMS/MANUAL/NONE', minWidth: 170, showOverflow: true, slots: { default: 'monitorMethod' } },
+    { field: 'outletType', title: '排放类型', minWidth: 170, showOverflow: true, slots: { default: 'outletType' } },
+    { field: 'stackHeight', title: '排气筒高度', width: 120 },
+    { field: 'monitorMethod', title: '在线监测方式', minWidth: 170, showOverflow: true, slots: { default: 'monitorMethod' } },
     { field: 'permitNo', title: '关联排污许可证号', minWidth: 170, showOverflow: true },
-    { field: 'isKeyOutlet', title: '是否重点/国控排放口：1是/0否', width: 120 },
-    { field: 'status', title: '状态：ACTIVE/INACTIVE', minWidth: 170, showOverflow: true },
+    { field: 'isKeyOutlet', title: '是否重点/国控排放口', width: 120 },
+    { field: 'status', title: '状态', minWidth: 170, showOverflow: true, slots: { default: 'status' } },
     {
       title: '操作',
       width: 150,
@@ -108,10 +113,10 @@ export function useFormSchema(): VbenFormSchema[] {
   return [
     {
       fieldName: 'outletCode',
-      label: '排放口编号(如 DA001/DW001)',
+      label: '排放口编号',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入排放口编号(如 DA001/DW001)',
+        placeholder: '请输入排放口编号',
       },
       rules: 'required',
     },
@@ -126,7 +131,7 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'outletType',
-      label: '排放类型：GAS/WASTEWATER/NOISE',
+      label: '排放类型',
       component: 'Select',
       componentProps: {
         options: OUTLET_TYPE_OPTIONS,
@@ -136,11 +141,11 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'pollutantCodes',
-      label: '主要污染物列表(JSON/CSV文本)',
+      label: '主要污染物列表',
       component: 'Textarea',
       componentProps: {
         rows: 3,
-        placeholder: '请输入主要污染物列表(JSON/CSV文本)',
+        placeholder: '请输入主要污染物列表',
       },
     },
     {
@@ -171,16 +176,16 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'stackHeight',
-      label: '排气筒高度 m',
+      label: '排气筒高度',
       component: 'InputNumber',
       componentProps: {
-        placeholder: '请输入排气筒高度 m',
+        placeholder: '请输入排气筒高度',
         class: 'w-full',
       },
     },
     {
       fieldName: 'monitorMethod',
-      label: '在线监测方式：CEMS/MANUAL/NONE',
+      label: '在线监测方式',
       component: 'Select',
       componentProps: {
         options: MONITOR_METHOD_OPTIONS,
@@ -197,16 +202,16 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'permitLimits',
-      label: '许可排放限值JSON文本',
+      label: '许可排放限值',
       component: 'Textarea',
       componentProps: {
         rows: 3,
-        placeholder: '请输入许可排放限值JSON文本',
+        placeholder: '请输入许可排放限值',
       },
     },
     {
       fieldName: 'isKeyOutlet',
-      label: '是否重点/国控排放口：1是/0否',
+      label: '是否重点/国控排放口',
       component: 'Switch',
       componentProps: {
         checkedValue: true,
@@ -215,10 +220,10 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'status',
-      label: '状态：ACTIVE/INACTIVE',
+      label: '状态',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入状态：ACTIVE/INACTIVE',
+        placeholder: '请输入状态',
       },
     },
     {

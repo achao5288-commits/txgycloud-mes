@@ -2,6 +2,22 @@ import type { VbenFormSchema } from '#/adapter/form';
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { MesChemicalApi } from '#/api/mes/safetyEnv/chemical';
 
+import { getItemPage } from '#/api/mes/md/item';
+
+/**
+ * 供「关联物料」下拉用。
+ *
+ * ponytail: 物料没有 simple-list 端点，就用现成的分页接口取一页，不为此新开端点。
+ * 天花板：物料过百后，没被这一页取到的搜不到。升级路径：加 /mes/md/item/simple-list 并接远端搜索。
+ */
+async function getChemicalBindableItems() {
+  const data = await getItemPage({ pageNo: 1, pageSize: 100 });
+  return (data?.list ?? []).map((item) => ({
+    id: item.id,
+    name: `${item.code ?? ''} ${item.name ?? ''}`.trim(),
+  }));
+}
+
 /**
  * 相容组：只列设计文档 §5.2 / §130 点名的物料族，与后端 GROUP_NAMES 同一份口径。
  * 没收录的组，后端按原值回显、不猜——前端也不给"看起来像"的选项。
@@ -22,11 +38,11 @@ export const COMPAT_GROUP_MAP: Record<string, string> = Object.fromEntries(
 
 /** 禁配矩阵里出现的组——选中即提示"须分间存放" */
 export const INCOMPATIBLE_GROUPS = new Set([
+  'ALCOHOL',
+  'AMINE',
   'ISOCYANATE',
   'POLYOL',
   'WATER',
-  'ALCOHOL',
-  'AMINE',
 ]);
 
 export const STORAGE_ZONE_OPTIONS = [
@@ -177,6 +193,22 @@ export function useFormSchema(): VbenFormSchema[] {
       componentProps: { placeholder: '请输入 CAS 号' },
     },
     {
+      // 绑定了才会在在库侧（受控库位调整）按危化品判禁配/专区。
+      // CAS 号与物料编码永远对不上，系统只能靠这条显式绑定认出"这个物料是危化品"，不靠字符串猜。
+      fieldName: 'itemId',
+      label: '关联物料',
+      component: 'ApiSelect',
+      componentProps: {
+        allowClear: true,
+        api: getChemicalBindableItems,
+        labelField: 'name',
+        placeholder: '选填；绑定后在库侧才判禁配/专区',
+        showSearch: true,
+        valueField: 'id',
+      },
+      help: '不绑定 = 该物料在在库侧不当危化品管',
+    },
+    {
       fieldName: 'compatGroup',
       label: '相容组',
       component: 'Select',
@@ -218,7 +250,7 @@ export function useFormSchema(): VbenFormSchema[] {
       fieldName: 'storageUnit',
       label: '储量单位',
       component: 'Input',
-      componentProps: { placeholder: '如：吨 / kg / L' },
+      componentProps: { placeholder: '如：吨/kg/L' },
     },
     {
       fieldName: 'explosionProof',
@@ -231,7 +263,7 @@ export function useFormSchema(): VbenFormSchema[] {
       label: '追加禁配组',
       component: 'Input',
       componentProps: {
-        placeholder: '逗号分隔，如 ISOCYANATE,WATER（矩阵之外的人工补充）',
+        placeholder: '逗号分隔，如',
       },
     },
     {

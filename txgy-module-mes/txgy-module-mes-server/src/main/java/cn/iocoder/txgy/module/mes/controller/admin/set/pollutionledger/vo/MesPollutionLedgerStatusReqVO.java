@@ -27,4 +27,11 @@ public class MesPollutionLedgerStatusReqVO {
     @Schema(description = "执行排放标准/达标口径（目标状态=已排放时填）", example = "GB8978-1996 三级")
     private String standard;
 
+    @Schema(description = "手写签名图片地址（前端手写板上传 infra 文件服务后回填）。必填：处置流转会改动环保数据，"
+            + "缺签名后端直接拒绝（错误码 1_040_819_005）")
+    private String signImg;
+
+    @Schema(description = "签署意见（随签字记录留档）")
+    private String opinion;
+
 }

@@ -39,11 +39,11 @@ export function useGridFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'eventType',
-      label: '事件类型：LEAK(泄漏)/EXCEED(超标)/FACILITY_FAULT(设施故障)/OTHER(其他)',
+      label: '事件类型',
       component: 'Input',
       componentProps: {
         allowClear: true,
-        placeholder: '请输入事件类型：LEAK(泄漏)/EXCEED(超标)/FACILITY_FAULT(设施故障)/OTHER(其他)',
+        placeholder: '请输入事件类型',
       },
     },
     {
@@ -57,11 +57,11 @@ export function useGridFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'status',
-      label: '状态：REPORTED(已上报)/DISPOSING(处置中)/PENDING_REPORT(待报告)/CLOSED(已闭环)',
+      label: '状态',
       component: 'Input',
       componentProps: {
         allowClear: true,
-        placeholder: '请输入状态：REPORTED(已上报)/DISPOSING(处置中)/PENDING_REPORT(待报告)/CLOSED(已闭环)',
+        placeholder: '请输入状态',
       },
     },
   ];
@@ -71,14 +71,14 @@ export function useGridFormSchema(): VbenFormSchema[] {
 export function useGridColumns(): VxeTableGridOptions<MesSetEmergencyEventApi.EmergencyEvent>['columns'] {
   return [
     { field: 'eventNo', title: '事件编号', minWidth: 170, showOverflow: true },
-    { field: 'eventType', title: '事件类型：LEAK(泄漏)/EXCEED(超标)/FACILITY_FAULT(设施故障)/OTHER(其他)', minWidth: 170, showOverflow: true , slots: { default: 'eventType' } },
-    { field: 'scenario', title: '泄漏场景（对应处置卡）：MDI_LEAK/THINNER_LEAK/WASTE_OIL_LEAK', minWidth: 170, showOverflow: true , slots: { default: 'scenario' } },
+    { field: 'eventType', title: '事件类型', minWidth: 170, showOverflow: true , slots: { default: 'eventType' } },
+    { field: 'scenario', title: '泄漏场景（对应处置卡）', minWidth: 170, showOverflow: true , slots: { default: 'scenario' } },
     { field: 'occurTime', title: '发生时间', width: 120 },
     { field: 'location', title: '发生地点', minWidth: 170, showOverflow: true },
-    { field: 'chemicalCode', title: '涉事化学品编码（关联危化品档案取 MSDS/禁配）', minWidth: 170, showOverflow: true },
+    { field: 'chemicalCode', title: '涉事化学品编码', minWidth: 170, showOverflow: true },
     { field: 'leakQuantity', title: '泄漏量', width: 120 },
     { field: 'handler', title: '处置人（派发时指定）', minWidth: 170, showOverflow: true },
-    { field: 'status', title: '状态：REPORTED(已上报)/DISPOSING(处置中)/PENDING_REPORT(待报告)/CLOSED(已闭环)', minWidth: 170, showOverflow: true , slots: { default: 'status' } },
+    { field: 'status', title: '状态', minWidth: 170, showOverflow: true , slots: { default: 'status' } },
     {
       title: '操作',
       width: 150,
@@ -104,19 +104,19 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'eventType',
-      label: '事件类型：LEAK(泄漏)/EXCEED(超标)/FACILITY_FAULT(设施故障)/OTHER(其他)',
+      label: '事件类型',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入事件类型：LEAK(泄漏)/EXCEED(超标)/FACILITY_FAULT(设施故障)/OTHER(其他)',
+        placeholder: '请输入事件类型',
       },
       rules: 'required',
     },
     {
       fieldName: 'scenario',
-      label: '泄漏场景（对应处置卡）：MDI_LEAK/THINNER_LEAK/WASTE_OIL_LEAK',
+      label: '泄漏场景（对应处置卡）',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入泄漏场景（对应处置卡）：MDI_LEAK/THINNER_LEAK/WASTE_OIL_LEAK',
+        placeholder: '请输入泄漏场景（对应处置卡）',
       },
     },
     {
@@ -140,10 +140,10 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'chemicalCode',
-      label: '涉事化学品编码（关联危化品档案取 MSDS/禁配）',
+      label: '涉事化学品编码',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入涉事化学品编码（关联危化品档案取 MSDS/禁配）',
+        placeholder: '请输入涉事化学品编码',
       },
     },
     {
@@ -173,7 +173,7 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'reportTime',
-      label: '上报时间（PDA 一键上报）',
+      label: '上报时间',
       component: 'DatePicker',
       componentProps: {
         showTime: true,
@@ -228,10 +228,10 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'wasteQuantity',
-      label: '应急废物合计净重 kg（处置时按明细回填，非人工填写）',
+      label: '应急废物合计净重',
       component: 'InputNumber',
       componentProps: {
-        placeholder: '请输入应急废物合计净重 kg（处置时按明细回填，非人工填写）',
+        placeholder: '请输入应急废物合计净重',
         class: 'w-full',
       },
     },
@@ -275,10 +275,10 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'status',
-      label: '状态：REPORTED(已上报)/DISPOSING(处置中)/PENDING_REPORT(待报告)/CLOSED(已闭环)',
+      label: '状态',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入状态：REPORTED(已上报)/DISPOSING(处置中)/PENDING_REPORT(待报告)/CLOSED(已闭环)',
+        placeholder: '请输入状态',
       },
     },
     {

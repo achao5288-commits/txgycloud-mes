@@ -2,6 +2,7 @@ package cn.iocoder.txgy.module.mes.service.wm.itemreceipt;
 
 import cn.iocoder.txgy.framework.common.pojo.PageResult;
 import cn.iocoder.txgy.module.mes.controller.admin.wm.itemreceipt.vo.MesWmItemReceiptPageReqVO;
+import cn.iocoder.txgy.module.mes.controller.admin.wm.itemreceipt.vo.MesWmItemReceiptRespVO;
 import cn.iocoder.txgy.module.mes.controller.admin.wm.itemreceipt.vo.MesWmItemReceiptSaveReqVO;
 import cn.iocoder.txgy.module.mes.dal.dataobject.wm.itemreceipt.MesWmItemReceiptDO;
 import jakarta.validation.Valid;
@@ -53,6 +54,17 @@ public interface MesWmItemReceiptService {
      * @return 采购入库单分页
      */
     PageResult<MesWmItemReceiptDO> getItemReceiptPage(MesWmItemReceiptPageReqVO pageReqVO);
+
+    /**
+     * 给采购入库单列表补「整单环保判定」投影（列表与导出共用）。
+     *
+     * 判定行与入库单的唯一句柄是 biz_no=入库单编码：两个批量查询后内存聚合，不做逐单查询。
+     * 「判定完成」必须拿**单据行数**去比——只看判定行会把「3 行只判了 1 行」误报成完成。
+     * 同一物料行「重新检测」会再落一行判定，按批次（无批次退化到物料编码）归并后取最新一条为准。
+     *
+     * @param receipts 已拼好的单头 VO，原地回填 pollution* 四项
+     */
+    void fillPollutionStatus(List<MesWmItemReceiptRespVO> receipts);
 
     /**
      * 提交采购入库单（草稿 → 待上架）

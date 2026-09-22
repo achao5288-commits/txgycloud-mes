@@ -4,14 +4,14 @@ import type { MesSetOccupationalHazardApi } from '#/api/mes/safetyEnv/occupation
 
 /** 因素类别：CHEMICAL/PHYSICAL/BIOLOGICAL选项 */
 export const FACTOR_CATEGORY_OPTIONS = [
-  { label: 'CHEMICAL', value: 'CHEMICAL' },
-  { label: 'PHYSICAL', value: 'PHYSICAL' },
+  { label: '化学因素', value: 'CHEMICAL' },
+  { label: '物理因素', value: 'PHYSICAL' },
 ];
 
 /** 因素类别：CHEMICAL/PHYSICAL/BIOLOGICAL文案 */
-export const FACTOR_CATEGORY_MAP: Record<string, { text: string; color: string }> = {
-  CHEMICAL: { text: 'CHEMICAL', color: 'success' },
-  PHYSICAL: { text: 'PHYSICAL', color: 'error' },
+export const FACTOR_CATEGORY_MAP: Record<string, { color: string; text: string; }> = {
+  CHEMICAL: { text: '化学因素', color: 'success' },
+  PHYSICAL: { text: '物理因素', color: 'error' },
 };
 
 /** 结果：PASS/FAIL选项 */
@@ -21,9 +21,18 @@ export const RESULT_OPTIONS = [
 ];
 
 /** 结果：PASS/FAIL文案 */
-export const RESULT_MAP: Record<string, { text: string; color: string }> = {
-  FAIL: { text: '超标', color: 'success' },
-  PASS: { text: '达标', color: 'error' },
+export const RESULT_MAP: Record<string, { color: string; text: string; }> = {
+  FAIL: { text: '超标', color: 'error' },
+  PASS: { text: '达标', color: 'success' },
+};
+
+export const LIMIT_TYPE_MAP: Record<string, { color: string; text: string; }> = {
+  MAC: { text: '最高容许浓度', color: 'error' },
+  'PC-TWA': { text: '时间加权平均容许浓度', color: 'processing' },
+  'PC-STEL': { text: '短时间接触容许浓度', color: 'warning' },
+  LEX_8H: { text: '8 小时等效声级', color: 'purple' },
+  NOISE: { text: '噪声', color: 'purple' },
+  WBGT: { text: '湿球黑球温度', color: 'orange' },
 };
 
 /** 搜索表单 */
@@ -31,16 +40,16 @@ export function useGridFormSchema(): VbenFormSchema[] {
   return [
     {
       fieldName: 'recordNo',
-      label: '记录编号 OH-YYYYMMDD-NNN',
+      label: '记录编号',
       component: 'Input',
       componentProps: {
         allowClear: true,
-        placeholder: '请输入记录编号 OH-YYYYMMDD-NNN',
+        placeholder: '请输入记录编号',
       },
     },
     {
       fieldName: 'factorCategory',
-      label: '因素类别：CHEMICAL/PHYSICAL/BIOLOGICAL',
+      label: '因素类别',
       component: 'Select',
       componentProps: {
         allowClear: true,
@@ -50,11 +59,11 @@ export function useGridFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'factorCode',
-      label: '具体因素：TOXIC/DUST/NOISE/RADIATION/HEAT/VIBRATION/BIOAGENT',
+      label: '具体因素',
       component: 'Input',
       componentProps: {
         allowClear: true,
-        placeholder: '请输入具体因素：TOXIC/DUST/NOISE/RADIATION/HEAT/VIBRATION/BIOAGENT',
+        placeholder: '请输入具体因素',
       },
     },
     {
@@ -68,7 +77,7 @@ export function useGridFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'result',
-      label: '结果：PASS/FAIL',
+      label: '结果',
       component: 'Select',
       componentProps: {
         allowClear: true,
@@ -82,16 +91,16 @@ export function useGridFormSchema(): VbenFormSchema[] {
 /** 列表字段 */
 export function useGridColumns(): VxeTableGridOptions<MesSetOccupationalHazardApi.OccupationalHazard>['columns'] {
   return [
-    { field: 'recordNo', title: '记录编号 OH-YYYYMMDD-NNN', minWidth: 170, showOverflow: true },
-    { field: 'factorCategory', title: '因素类别：CHEMICAL/PHYSICAL/BIOLOGICAL', minWidth: 170, showOverflow: true, slots: { default: 'factorCategory' } },
-    { field: 'factorCode', title: '具体因素：TOXIC/DUST/NOISE/RADIATION/HEAT/VIBRATION/BIOAGENT', minWidth: 170, showOverflow: true },
+    { field: 'recordNo', title: '记录编号', minWidth: 170, showOverflow: true },
+    { field: 'factorCategory', title: '因素类别', minWidth: 170, showOverflow: true, slots: { default: 'factorCategory' } },
+    { field: 'factorCode', title: '具体因素', minWidth: 170, showOverflow: true },
     { field: 'workplace', title: '检测岗位/工作场所', minWidth: 170, showOverflow: true },
     { field: 'measuredValue', title: '实测浓度/强度', width: 120 },
-    { field: 'unit', title: '单位 mg/m3/dB(A)/mSv/C/m-s2等', minWidth: 170, showOverflow: true },
-    { field: 'limitType', title: '接触限值类型：MAC/PC-TWA/PC-STEL', minWidth: 170, showOverflow: true },
+    { field: 'unit', title: '单位', minWidth: 170, showOverflow: true },
+    { field: 'limitType', title: '接触限值类型', minWidth: 170, showOverflow: true, slots: { default: 'limitType' } },
     { field: 'oelValue', title: '职业接触限值', width: 120 },
     { field: 'refStandard', title: '引用国标', minWidth: 170, showOverflow: true },
-    { field: 'result', title: '结果：PASS/FAIL', minWidth: 170, showOverflow: true, slots: { default: 'result' } },
+    { field: 'result', title: '结果', minWidth: 170, showOverflow: true, slots: { default: 'result' } },
     { field: 'inspectTime', title: '检测时间', width: 120 },
     {
       title: '操作',
@@ -109,10 +118,10 @@ export function useFormSchema(): VbenFormSchema[] {
   return [
     {
       fieldName: 'recordNo',
-      label: '记录编号 OH-YYYYMMDD-NNN',
+      label: '记录编号',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入记录编号 OH-YYYYMMDD-NNN',
+        placeholder: '请输入记录编号',
       },
       rules: 'required',
     },
@@ -134,7 +143,7 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'factorCategory',
-      label: '因素类别：CHEMICAL/PHYSICAL/BIOLOGICAL',
+      label: '因素类别',
       component: 'Select',
       componentProps: {
         options: FACTOR_CATEGORY_OPTIONS,
@@ -144,10 +153,10 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'factorCode',
-      label: '具体因素：TOXIC/DUST/NOISE/RADIATION/HEAT/VIBRATION/BIOAGENT',
+      label: '具体因素',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入具体因素：TOXIC/DUST/NOISE/RADIATION/HEAT/VIBRATION/BIOAGENT',
+        placeholder: '请输入具体因素',
       },
       rules: 'required',
     },
@@ -162,10 +171,10 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'sourceRefType',
-      label: '数据来源：REUSE/ORIGINAL',
+      label: '数据来源',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入数据来源：REUSE/ORIGINAL',
+        placeholder: '请输入数据来源',
       },
     },
     {
@@ -187,18 +196,18 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'unit',
-      label: '单位 mg/m3/dB(A)/mSv/C/m-s2等',
+      label: '单位',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入单位 mg/m3/dB(A)/mSv/C/m-s2等',
+        placeholder: '请输入单位',
       },
     },
     {
       fieldName: 'limitType',
-      label: '接触限值类型：MAC/PC-TWA/PC-STEL',
+      label: '接触限值类型',
       component: 'Input',
       componentProps: {
-        placeholder: '请输入接触限值类型：MAC/PC-TWA/PC-STEL',
+        placeholder: '请输入接触限值类型',
       },
     },
     {
@@ -220,7 +229,7 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'result',
-      label: '结果：PASS/FAIL',
+      label: '结果',
       component: 'Select',
       componentProps: {
         options: RESULT_OPTIONS,

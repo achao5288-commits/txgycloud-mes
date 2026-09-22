@@ -13,7 +13,7 @@ export const LEDGER_STATUS_OPTIONS = [
 ];
 
 /** 台账状态文案 */
-export const LEDGER_STATUS_MAP: Record<string, { text: string; color: string }> = {
+export const LEDGER_STATUS_MAP: Record<string, { color: string; text: string; }> = {
   STORED: { text: '暂存', color: 'orange' },
   PROCESSING: { text: '处置中', color: 'processing' },
   REUSED: { text: '已回用', color: 'cyan' },
@@ -158,7 +158,14 @@ export function useGridColumns(): VxeTableGridOptions<MesPollutionLedgerApi.Ledg
     { field: 'bizNo', title: '关联单号', minWidth: 150, showOverflow: true },
     { field: 'batchNo', title: '批次号', minWidth: 140 },
     { field: 'itemName', title: '物料/产品名称', minWidth: 150 },
-    { field: 'weight', title: '重量(kg)', width: 110, formatter: ({ cellValue }) => (cellValue != null ? `${cellValue}` : '-') },
+    // 同污染判定台账：带单位显示，KG 是已换算的质量，其余是物料原单位
+    {
+      field: 'weight',
+      title: '重量',
+      width: 120,
+      formatter: ({ cellValue, row }) =>
+        cellValue == null ? '-' : `${cellValue}${row.unitName ? ` ${row.unitName}` : ''}`,
+    },
     { field: 'disposition', title: '处置方式', width: 120, formatter: ({ cellValue }) => (cellValue ? (DISPOSITION_MAP[cellValue] ?? cellValue) : '-') },
     { field: 'location', title: '去向/库位', minWidth: 130 },
     { field: 'marked', title: '标记品', width: 90, slots: { default: 'marked' } },

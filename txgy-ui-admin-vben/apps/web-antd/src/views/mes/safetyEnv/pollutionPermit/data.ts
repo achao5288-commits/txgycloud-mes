@@ -10,7 +10,7 @@ export const PERMIT_STATUS_OPTIONS = [
 ];
 
 /** 许可证状态文案 */
-export const PERMIT_STATUS_MAP: Record<string, { text: string; color: string }> = {
+export const PERMIT_STATUS_MAP: Record<string, { color: string; text: string; }> = {
   ACTIVE: { text: '有效', color: 'success' },
   EXPIRED: { text: '已过期', color: 'error' },
   REVOKED: { text: '已注销', color: 'default' },
@@ -137,7 +137,7 @@ export function useFormSchema(): VbenFormSchema[] {
       label: '排放口',
       component: 'Input',
       componentProps: {
-        placeholder: '逗号分隔，如 DA001,DA002',
+        placeholder: '逗号分隔，如',
       },
       rules: 'required',
     },
@@ -152,7 +152,7 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'annualLimits',
-      label: '许可年排放总量(JSON)',
+      label: '许可年排放总量',
       component: 'Textarea',
       formItemClass: 'col-span-2',
       componentProps: {
@@ -162,7 +162,7 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'annualReports',
-      label: '执行报告配置(JSON)',
+      label: '执行报告配置',
       component: 'Textarea',
       formItemClass: 'col-span-2',
       componentProps: {

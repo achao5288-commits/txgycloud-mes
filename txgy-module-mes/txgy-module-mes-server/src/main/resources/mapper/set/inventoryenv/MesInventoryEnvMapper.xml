@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.iocoder.txgy.module.mes.dal.mysql.set.inventoryenv.MesInventoryEnvMapper">
+
+    <!--
+        在库环保视图：一个在库库存行一行。分页查询、体检汇总、看板下钻共用下面三个片段，
+        保证「页面上筛出来的」和「看板算出来的」永远是同一口径。
+
+        两个刻意的写法，改之前先读：
+
+        1. 「最近一次判定」用两层：先派生表取每个锚点的 MAX(id)，再 join 回原表。
+           直接 LEFT JOIN mes_set_pollution_check 会因一个批次多条判定而把库存行放大。
+           现在允许同批次重复检测（体检是周期性的），所以这个去重是必须的。
+
+        2. 判定锚点有两个：batch_id（phase 1 之后的新记录）和 batch_no 字符串（之前的历史记录，
+           实测存量 100% 是这种）。batch_id 优先，取不到才退字符串。
+           batch_no 与 batch_code 的排序规则不同（0900_ai_ci vs unicode_ci），
+           直接列对列比较会报 Illegal mix of collations，必须显式 COLLATE。
+    -->
+    <sql id="checkAnchor">
+        LEFT JOIN (
+            SELECT batch_id, MAX(id) AS max_id FROM mes_set_pollution_check
+            WHERE deleted = 0 AND batch_id IS NOT NULL GROUP BY batch_id
+        ) pmb ON pmb.batch_id = s.batch_id
+        LEFT JOIN (
+            SELECT batch_no, MAX(id) AS max_id FROM mes_set_pollution_check
+            WHERE deleted = 0 AND batch_id IS NULL AND batch_no IS NOT NULL GROUP BY batch_no
+        ) pmn ON s.batch_code IS NOT NULL
+             AND pmn.batch_no = s.batch_code COLLATE utf8mb4_0900_ai_ci
+        LEFT JOIN mes_set_pollution_check p ON p.id = COALESCE(pmb.max_id, pmn.max_id)
+    </sql>
+
+    <sql id="envFrom">
+        FROM mes_wm_material_stock s
+            LEFT JOIN mes_wm_batch b ON b.id = s.batch_id AND b.deleted = 0
+            LEFT JOIN mes_md_item i ON i.id = s.item_id AND i.deleted = 0
+            <!-- 只有看板分维度查询用得上 it，但片段必须以 WHERE 结尾（各查询还要往下接筛选），
+                 所以统一点在这里，多一次主键查维表换片段可复用 -->
+            LEFT JOIN mes_md_item_type it ON it.id = s.item_type_id AND it.deleted = 0
+            LEFT JOIN mes_md_unit_measure u ON u.id = i.unit_measure_id AND u.deleted = 0
+            LEFT JOIN mes_wm_warehouse w ON w.id = s.warehouse_id AND w.deleted = 0
+            LEFT JOIN mes_wm_warehouse_location wl ON wl.id = s.location_id AND wl.deleted = 0
+            LEFT JOIN mes_wm_warehouse_area wa ON wa.id = s.area_id AND wa.deleted = 0
+            <include refid="checkAnchor"/>
+            LEFT JOIN mes_pollution_ledger l ON l.source_check_id = p.id AND l.deleted = 0
+        WHERE s.deleted = 0 AND s.quantity &lt;&gt; 0
+    </sql>
+
+    <!--
+        混放判据：同库位下既有 POLLUTED 批次、又有非 POLLUTED 批次。
+        按 F16，pollution_status 为 NULL 不当作「干净」，所以「非 POLLUTED」一侧含 NULL。
+        两侧任一为空都不算混放（只有一个批次时不叫混放）。
+    -->
+    <sql id="mixedExists">
+        s.area_id IS NOT NULL
+        AND EXISTS (
+            SELECT 1 FROM mes_wm_material_stock s2
+                JOIN mes_wm_batch b2 ON b2.id = s2.batch_id AND b2.deleted = 0
+            WHERE s2.deleted = 0 AND s2.quantity &lt;&gt; 0 AND s2.area_id = s.area_id
+              AND b2.pollution_status = 'POLLUTED'
+        )
+        AND EXISTS (
+            SELECT 1 FROM mes_wm_material_stock s3
+                LEFT JOIN mes_wm_batch b3 ON b3.id = s3.batch_id AND b3.deleted = 0
+            WHERE s3.deleted = 0 AND s3.quantity &lt;&gt; 0 AND s3.area_id = s.area_id
+              AND (b3.pollution_status IS NULL OR b3.pollution_status &lt;&gt; 'POLLUTED')
+        )
+    </sql>
+
+    <!-- 超期未检：距上次复核（无复核则按入库时间）已超过检测周期。待复核的判定不算有效判定。 -->
+    <sql id="overdueExpr">
+        (s.receipt_time IS NOT NULL
+            AND COALESCE(p.review_time, s.receipt_time)
+                &lt; DATE_SUB(NOW(), INTERVAL #{reqVO.cycleDays} DAY))
+    </sql>
+
+    <!-- 积压：入库超过积压阈值，与判没判过无关 -->
+    <sql id="stockpiledExpr">
+        (s.receipt_time IS NOT NULL
+            AND s.receipt_time &lt; DATE_SUB(NOW(), INTERVAL #{reqVO.stockpileDays} DAY))
+    </sql>
+
+    <sql id="criteriaCols">
+        (p.id IS NULL) AS notChecked,
+        <include refid="overdueExpr"/> AS overdue,
+        <include refid="stockpiledExpr"/> AS stockpiled,
+        (<include refid="mixedExists"/>) AS mixed
+    </sql>
+
+    <select id="selectInventoryEnvPage"
+            resultType="cn.iocoder.txgy.module.mes.controller.admin.set.inventoryenv.vo.MesInventoryEnvRespVO">
+        SELECT
+            s.id,
+            s.item_type_id          AS itemTypeId,
+            s.item_id               AS itemId,
+            i.code                  AS itemCode,
+            i.name                  AS itemName,
+            i.specification         AS specification,
+            u.name                  AS unitMeasureName,
+            s.batch_id              AS batchId,
+            s.batch_code            AS batchCode,
+            s.warehouse_id          AS warehouseId,
+            w.name                  AS warehouseName,
+            s.location_id           AS locationId,
+            wl.name                 AS locationName,
+            s.area_id               AS areaId,
+            wa.name                 AS areaName,
+            wa.pollution_control    AS areaPollutionControl,
+            s.quantity              AS quantity,
+            s.receipt_time          AS receiptTime,
+            DATEDIFF(NOW(), s.receipt_time) AS stockDays,
+            s.frozen                AS frozen,
+            b.pollution_status      AS pollutionStatus,
+            b.pollution_location    AS pollutionLocation,
+            b.pollution_marked      AS pollutionMarked,
+            b.pollution_src_record  AS pollutionSrcRecord,
+            p.id                    AS checkId,
+            p.record_no             AS checkRecordNo,
+            p.ai_result             AS aiResult,
+            p.ai_confidence         AS aiConfidence,
+            p.review_result         AS reviewResult,
+            p.review_time           AS reviewTime,
+            p.disposition           AS disposition,
+            p.location              AS checkLocation,
+            p.location_id           AS checkLocationId,
+            p.marked                AS checkMarked,
+            l.id                    AS ledgerId,
+            l.marked                AS ledgerMarked,
+            <!-- 没有判定时留 NULL，好和「有判定但只能按批次号匹配」区分开 -->
+            CASE WHEN p.id IS NULL THEN NULL ELSE (pmb.max_id IS NULL) END AS checkByBatchNo,
+            <include refid="criteriaCols"/>
+        <include refid="envFrom"/>
+        <if test="reqVO.batchCode != null and reqVO.batchCode != ''">
+            AND s.batch_code LIKE CONCAT('%', #{reqVO.batchCode}, '%')
+        </if>
+        <if test="reqVO.itemName != null and reqVO.itemName != ''">
+            AND (i.name LIKE CONCAT('%', #{reqVO.itemName}, '%')
+                 OR i.code LIKE CONCAT('%', #{reqVO.itemName}, '%'))
+        </if>
+        <if test="itemTypeIds != null and itemTypeIds.size() > 0">
+            AND s.item_type_id IN
+            <foreach collection="itemTypeIds" item="typeId" open="(" separator="," close=")">#{typeId}</foreach>
+        </if>
+        <if test="reqVO.warehouseId != null">
+            AND s.warehouse_id = #{reqVO.warehouseId}
+        </if>
+        <if test="reqVO.pollutionStatus == 'POLLUTED'">
+            AND b.pollution_status = 'POLLUTED'
+        </if>
+        <if test="reqVO.pollutionStatus == 'CLEAN'">
+            AND b.pollution_status IS NOT NULL AND b.pollution_status &lt;&gt; 'POLLUTED'
+        </if>
+        <if test="reqVO.pollutionStatus == 'UNKNOWN'">
+            AND b.pollution_status IS NULL
+        </if>
+        <if test="reqVO.minStockDays != null">
+            AND s.receipt_time IS NOT NULL
+            AND DATEDIFF(NOW(), s.receipt_time) &gt; #{reqVO.minStockDays}
+        </if>
+        <if test="reqVO.mixed != null and reqVO.mixed">
+            AND <include refid="mixedExists"/>
+        </if>
+        <if test="reqVO.inspectStatus == 'CHECKED'">
+            AND p.id IS NOT NULL
+        </if>
+        <if test="reqVO.inspectStatus == 'NOT_CHECKED'">
+            AND p.id IS NULL
+        </if>
+        <if test="reqVO.inspectStatus == 'OVERDUE'">
+            AND <include refid="overdueExpr"/>
+        </if>
+        <if test="reqVO.inspectStatus == 'STOCKPILE'">
+            AND <include refid="stockpiledExpr"/>
+        </if>
+        <!-- 待检清单：命中任一项即入单。overdue 已含「从未检测且早已过期」，不必再 OR 一次未检 -->
+        <if test="reqVO.inspectStatus == 'PENDING'">
+            AND (p.id IS NULL
+                OR <include refid="overdueExpr"/>
+                OR <include refid="stockpiledExpr"/>
+                OR (<include refid="mixedExists"/>) )
+        </if>
+        <!-- 最老的排最前：体检视图先看积压最久的 -->
+        ORDER BY s.receipt_time ASC, s.id ASC
+    </select>
+
+    <!--
+        体检汇总：四项判据各自的命中数。不加任何筛选条件——体检是对全库做的，
+        带上页面筛选就成了「筛选结果的汇总」，标题上的数字会跟着筛选跳。
+    -->
+    <select id="selectInspectSummary"
+            resultType="cn.iocoder.txgy.module.mes.controller.admin.set.inventoryenv.vo.MesInventoryEnvInspectSummaryRespVO">
+        SELECT
+            COUNT(*) AS stockRows,
+            COUNT(DISTINCT s.batch_id) AS batchCount,
+            COUNT(DISTINCT CASE WHEN p.review_result IS NOT NULL THEN s.batch_id END) AS coveredBatchCount,
+            COUNT(DISTINCT CASE WHEN p.review_result = 'POLLUTED' THEN s.batch_id END) AS pollutedBatchCount,
+            COALESCE(SUM(p.id IS NULL), 0) AS notChecked,
+            COALESCE(SUM(<include refid="overdueExpr"/>), 0) AS overdue,
+            COALESCE(SUM(<include refid="stockpiledExpr"/>), 0) AS stockpiled,
+            COALESCE(SUM(<include refid="mixedExists"/>), 0) AS mixed,
+            <!-- 行口径的污染数：看板卡片点了要下钻到列表，卡片就得是行数，
+                 用批次数当卡片值会「显示 3 批、点开 7 行」——批次数另给一列做提示 -->
+            COALESCE(SUM(b.pollution_status = 'POLLUTED'), 0) AS pollutedRows,
+            <!-- 待检 = 命中任一项；overdue 已含「从未检测且早已过期」，不必再 OR 一次 -->
+            COALESCE(SUM(p.id IS NULL
+                OR <include refid="overdueExpr"/>
+                OR <include refid="stockpiledExpr"/>
+                OR (<include refid="mixedExists"/>) ), 0) AS pending
+        <include refid="envFrom"/>
+    </select>
+
+    <!-- 看板分维度下钻：同一套判据按仓库/物料分类分组 -->
+    <sql id="dashboardGroupCols">
+        COUNT(*) AS stockRows,
+        COUNT(DISTINCT s.batch_id) AS batchCount,
+        COUNT(DISTINCT CASE WHEN p.review_result IS NOT NULL THEN s.batch_id END) AS coveredBatchCount,
+        COUNT(DISTINCT CASE WHEN p.review_result = 'POLLUTED' THEN s.batch_id END) AS pollutedBatchCount,
+        COALESCE(SUM(p.id IS NULL), 0) AS notChecked,
+        COALESCE(SUM(<include refid="overdueExpr"/>), 0) AS overdue,
+        COALESCE(SUM(<include refid="stockpiledExpr"/>), 0) AS stockpiled,
+        COALESCE(SUM(<include refid="mixedExists"/>), 0) AS mixed,
+        COALESCE(SUM(b.pollution_status = 'POLLUTED'), 0) AS pollutedRows
+    </sql>
+
+    <select id="selectDashboardByWarehouse"
+            resultType="cn.iocoder.txgy.module.mes.controller.admin.set.inventoryenv.vo.MesInventoryEnvDashboardItemRespVO">
+        SELECT s.warehouse_id AS dimId, w.name AS dimName,
+        <include refid="dashboardGroupCols"/>
+        <include refid="envFrom"/>
+        GROUP BY s.warehouse_id, w.name
+        ORDER BY stockRows DESC
+    </select>
+
+    <select id="selectDashboardByItemType"
+            resultType="cn.iocoder.txgy.module.mes.controller.admin.set.inventoryenv.vo.MesInventoryEnvDashboardItemRespVO">
+        SELECT s.item_type_id AS dimId, it.name AS dimName,
+        <include refid="dashboardGroupCols"/>
+        <include refid="envFrom"/>
+        GROUP BY s.item_type_id, it.name
+        ORDER BY stockRows DESC
+    </select>
+
+    <!-- 待复核积压：全表口径，不限于在库（待复核的判定哪来的都要有人收口） -->
+    <select id="selectPendingReview"
+            resultType="cn.iocoder.txgy.module.mes.controller.admin.set.inventoryenv.vo.MesInventoryEnvPendingReviewRespVO">
+        SELECT COUNT(*) AS count,
+               COALESCE(MAX(DATEDIFF(NOW(), create_time)), 0) AS maxWaitDays
+        FROM mes_set_pollution_check
+        WHERE deleted = 0 AND review_result IS NULL
+    </select>
+
+    <!-- 处置时效：台账从登记到离开「已暂存」的天数 -->
+    <select id="selectLedgerDuration"
+            resultType="cn.iocoder.txgy.module.mes.controller.admin.set.inventoryenv.vo.MesInventoryEnvLedgerDurationRespVO">
+        SELECT COUNT(*) AS closedCount,
+               COALESCE(ROUND(AVG(TIMESTAMPDIFF(DAY, create_time, status_time))), 0) AS avgDays,
+               COALESCE(MAX(TIMESTAMPDIFF(DAY, create_time, status_time)), 0) AS maxDays
+        FROM mes_pollution_ledger
+        WHERE deleted = 0 AND status &lt;&gt; 'STORED' AND status_time IS NOT NULL
+    </select>
+
+</mapper>
